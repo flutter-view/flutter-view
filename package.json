@@ -1,0 +1,27 @@
+{
+  "name": "flutter-template",
+  "version": "1.0.0",
+  "description": "Create flutter widgets using pug templates",
+  "main": "compiler.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "mz": "^2.7.0",
+    "pug": "^2.0.3",
+    "pug-lexer": "^4.0.0",
+    "pug-parser": "^5.0.0",
+    "request": "^2.87.0"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "@types/mz": "0.0.32",
+    "@types/pug": "^2.0.4",
+    "@types/request": "^2.47.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
