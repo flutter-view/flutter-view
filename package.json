@@ -7,6 +7,8 @@
     "test": "test"
   },
   "dependencies": {
+    "@types/handlebars": "^4.0.38",
+    "handlebars": "^4.0.11",
     "mz": "^2.7.0",
     "pug": "^2.0.3",
     "pug-lexer": "^4.0.0",

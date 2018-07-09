@@ -1,4 +1,5 @@
 export interface Node {
+	type: 'Block' | 'Tag'
 	line: number
 	column?: number
 }
