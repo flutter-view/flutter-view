@@ -28,7 +28,9 @@ function compileTag(tag) {
     if (tag.attrs) {
         for (var attr of tag.attrs) {
             if (attr.name != 'slot') {
+                const expression = attr.name.startsWith(':');
                 params.push({
+                    type: expression ? 'reference' : 'literal',
                     name: attr.name,
                     value: attr.val,
                     line: tag.line,
@@ -49,6 +51,7 @@ function compileTag(tag) {
                     // if a subtag is a slot, it is actually a widget as a property
                     if (slot) {
                         params.push({
+                            type: 'widget',
                             name: slot.val,
                             value: widget,
                             line: subTag.line,
@@ -74,6 +77,7 @@ function compileTag(tag) {
         // add the child or children parameter to the widget
         if (children.length == 1) {
             params.push({
+                type: 'widget',
                 name: 'child',
                 value: children[0],
                 line: tag.line,
@@ -82,6 +86,7 @@ function compileTag(tag) {
         }
         else if (children.length > 1) {
             params.push({
+                type: 'widgets',
                 name: 'children',
                 value: children
             });

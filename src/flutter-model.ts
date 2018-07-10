@@ -8,6 +8,7 @@ export interface Widget {
 }
 
 export interface Param {
+	type: 'literal' | 'reference' | 'widget' | 'widgets'
 	name: string
 	value: string | Widget | Widget[]
 
