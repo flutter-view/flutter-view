@@ -1,7 +1,12 @@
 export interface Node {
-	type: 'Block' | 'Tag'
+	type: 'Block' | 'Tag' | 'Text'
 	line: number
 	column?: number
+}
+
+export interface Text extends Node {
+	type: 'Text'
+	val: string
 }
 
 export interface Block extends Node {

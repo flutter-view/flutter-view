@@ -9,6 +9,6 @@ const compiler_1 = require("./compiler");
 let data = fs.readFileSync('test/examples/simple.pug').toString();
 let tokens = lex(data, {});
 let parsed = parse(tokens);
-console.log('parsed:', parsed);
+// console.log('pug', JSON.stringify(parsed, null, 3))
 let flutterCode = compiler_1.compile(parsed);
-console.log(flutterCode);
+console.log(JSON.stringify(flutterCode, null, 3));

@@ -1,0 +1,120 @@
+{
+	"type": "Block",
+	"nodes": [
+		{
+			"type": "Tag",
+			"name": "PlatformScaffold",
+			"selfClosing": false,
+			"block": {
+				"type": "Block",
+				"nodes": [
+					{
+						"type": "Tag",
+						"name": "PlatformAppBar",
+						"selfClosing": false,
+						"block": {
+							"type": "Block",
+							"nodes": [
+								{
+									"type": "Tag",
+									"name": "div",
+									"selfClosing": false,
+									"block": {
+										"type": "Block",
+										"nodes": [
+											{
+												"type": "Text",
+												"val": "Profile",
+												"line": 3,
+												"column": 24
+											}
+										],
+										"line": 3
+									},
+									"attrs": [
+										{
+											"name": "class",
+											"val": "'title'",
+											"line": 3,
+											"column": 3,
+											"mustEscape": false
+										},
+										{
+											"name": "slot",
+											"val": "'title'",
+											"line": 3,
+											"column": 10,
+											"mustEscape": true
+										}
+									],
+									"attributeBlocks": [],
+									"isInline": false,
+									"line": 3,
+									"column": 3
+								},
+								{
+									"type": "Tag",
+									"name": "div",
+									"selfClosing": false,
+									"block": {
+										"type": "Block",
+										"nodes": [],
+										"line": 4
+									},
+									"attrs": [
+										{
+											"name": "class",
+											"val": "'body'",
+											"line": 4,
+											"column": 3,
+											"mustEscape": false
+										},
+										{
+											"name": "slot",
+											"val": "'body'",
+											"line": 4,
+											"column": 9,
+											"mustEscape": true
+										}
+									],
+									"attributeBlocks": [],
+									"isInline": false,
+									"line": 4,
+									"column": 3
+								}
+							],
+							"line": 2
+						},
+						"attrs": [
+							{
+								"name": "slot",
+								"val": "'appbar'",
+								"line": 2,
+								"column": 17,
+								"mustEscape": true
+							},
+							{
+								"name": "trailingActions",
+								"val": "actions",
+								"line": 2,
+								"column": 31,
+								"mustEscape": true
+							}
+						],
+						"attributeBlocks": [],
+						"isInline": false,
+						"line": 2,
+						"column": 2
+					}
+				],
+				"line": 1
+			},
+			"attrs": [],
+			"attributeBlocks": [],
+			"isInline": false,
+			"line": 1,
+			"column": 1
+		}
+	],
+	"line": 0
+}
