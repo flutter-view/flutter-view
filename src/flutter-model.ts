@@ -8,10 +8,19 @@ export interface Widget {
 }
 
 export interface Param {
-	type: 'literal' | 'reference' | 'widget' | 'widgets'
+	type: 'literal' | 'expression' | 'widget' | 'widgets'
 	name: string
 	value: string | Widget | Widget[]
 
 	line?: number
 	column?: number
+}
+
+export interface Reference {
+	type: 'method'
+	name: string
+}
+
+export interface MethodReference extends Reference {
+	type: 'method'
 }

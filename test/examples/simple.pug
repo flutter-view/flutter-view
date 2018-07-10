@@ -1,4 +1,5 @@
-PlatformScaffold(test='true')
-	PlatformAppBar(slot='appbar' trailingActions=actions)
-		.title(slot='title' :height='getHeight') Profile
-		.body(slot='body')
+SimplePage(flutter-widget :page)
+	PlatformScaffold
+		PlatformAppBar(slot='appBar')
+			Container(slot='title' :height='page.titleHeight') ${page.title}
+		Container(slot='body') Welcome ${page.firstName}!

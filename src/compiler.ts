@@ -28,8 +28,8 @@ function compileTag(tag: Tag) : Widget {
 			if(attr.name != 'slot') {
 				const expression = attr.name.startsWith(':')
 				params.push({
-					type: expression ? 'reference' : 'literal',
-					name: attr.name,
+					type: expression ? 'expression' : 'literal',
+					name: expression ? attr.name.substring(1) : attr.name,
 					value: attr.val,
 					line: tag.line,
 					column: tag.column

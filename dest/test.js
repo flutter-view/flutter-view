@@ -10,8 +10,8 @@ const renderer_1 = require("./renderer");
 let data = fs.readFileSync('test/examples/simple.pug').toString();
 let tokens = lex(data, {});
 let parsed = parse(tokens);
-// console.log('pug', JSON.stringify(parsed, null, 3))
+console.log('pug', JSON.stringify(parsed, null, 3));
 let flutter = compiler_1.compile(parsed);
 console.log(JSON.stringify(flutter, null, 3));
-let code = renderer_1.render(flutter);
+let code = renderer_1.renderClass(flutter);
 console.log(code);
