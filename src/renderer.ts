@@ -16,7 +16,7 @@ const defaultRenderOptions: RenderOptions = {
 		'package:scoped_model/scoped_model.dart'
 	],
 	lineNumbers: false,
-	indentation: 2
+	indentation: 4
 }
 
 function findParam(widget: Widget, name: string) : Param | null {
@@ -45,7 +45,7 @@ export function renderClass(widget: Widget, options?: RenderOptions) : string | 
 				`Widget build(BuildContext context) {`,
 				indent(multiline(
 					`return`,
-					indent(built, opts.indentation)
+					indent(built+';', opts.indentation)
 				), opts.indentation),
 				`}`
 			)
@@ -93,7 +93,7 @@ function renderWidget(widget: Widget, options: RenderOptions) : string {
 			default: return multiline(
 				`${widget.name}(`,
 				`${indent(renderParams(widget, options), options.indentation)}`,
-				`),`
+				`)`
 			)
 		}
 	}
@@ -106,27 +106,27 @@ function renderParams(widget: Widget, options: RenderOptions) : string {
 			params.push(renderParam(param, options))
 		}
 	}
-	return params.join('\n')
+	return params.join(',\n')
 }
 
 function renderParam(param: Param, options: RenderOptions) : string {
 	const name = unquote(param.name)
 	switch(param.type) {
 		case 'literal': {
-			return `${name}: ${param.value}, ${pugRef(param, options)}`
+			return `${name}: ${param.value}${pugRef(param, options)}`
 		}
 		case 'expression': {
-			return `${name}: ${unquote(param.value.toString())} ${pugRef(param, options)}`
+			return `${name}: ${unquote(param.value.toString())}${pugRef(param, options)}`
 		}
 		case 'widget': {
-			return `${name}: ${renderWidget(param.value as Widget, options)} ${pugRef(param, options)}`
+			return `${name}: ${renderWidget(param.value as Widget, options)}${pugRef(param, options)}`
 		}
 		case 'widgets': {
 			const widgets = param.value as Widget[]
-			const values = widgets.map(widget=>`${renderWidget(widget, options)} ${pugRef(param, options)}`)
+			const values = widgets.map(widget=>`${renderWidget(widget, options)}${pugRef(param, options)}`)
 			return multiline(
 				`${name}: [`,
-				indent(values.join('\n'), options.indentation),
+				indent(values.join(',\n'), options.indentation),
 				`]`
 			)
 		}

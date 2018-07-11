@@ -9,7 +9,7 @@ const defaultRenderOptions = {
         'package:scoped_model/scoped_model.dart'
     ],
     lineNumbers: false,
-    indentation: 2
+    indentation: 4
 };
 function findParam(widget, name) {
     if (!widget.params)
@@ -24,7 +24,7 @@ function renderClass(widget, options) {
     const fields = getClassFields(widget);
     const child = findParam(widget, 'child').value;
     const built = renderWidget(child, opts);
-    return multiline(renderClassImports(opts.imports), '', `class ${widget.name} extends StatelessWidget {`, indent(multiline(renderClassFields(fields), ``, renderConstructor(widget.name, fields), ``, multiline(`@override`, `Widget build(BuildContext context) {`, indent(multiline(`return`, indent(built, opts.indentation)), opts.indentation), `}`)), opts.indentation), '}');
+    return multiline(renderClassImports(opts.imports), '', `class ${widget.name} extends StatelessWidget {`, indent(multiline(renderClassFields(fields), ``, renderConstructor(widget.name, fields), ``, multiline(`@override`, `Widget build(BuildContext context) {`, indent(multiline(`return`, indent(built + ';', opts.indentation)), opts.indentation), `}`)), opts.indentation), '}');
 }
 exports.renderClass = renderClass;
 function getClassFields(widget) {
@@ -63,7 +63,7 @@ function renderWidget(widget, options) {
     }
     else {
         switch (widget.name) {
-            default: return multiline(`${widget.name}(`, `${indent(renderParams(widget, options), options.indentation)}`, `),`);
+            default: return multiline(`${widget.name}(`, `${indent(renderParams(widget, options), options.indentation)}`, `)`);
         }
     }
 }
@@ -74,24 +74,24 @@ function renderParams(widget, options) {
             params.push(renderParam(param, options));
         }
     }
-    return params.join('\n');
+    return params.join(',\n');
 }
 function renderParam(param, options) {
     const name = unquote(param.name);
     switch (param.type) {
         case 'literal': {
-            return `${name}: ${param.value}, ${pugRef(param, options)}`;
+            return `${name}: ${param.value}${pugRef(param, options)}`;
         }
         case 'expression': {
-            return `${name}: ${unquote(param.value.toString())} ${pugRef(param, options)}`;
+            return `${name}: ${unquote(param.value.toString())}${pugRef(param, options)}`;
         }
         case 'widget': {
-            return `${name}: ${renderWidget(param.value, options)} ${pugRef(param, options)}`;
+            return `${name}: ${renderWidget(param.value, options)}${pugRef(param, options)}`;
         }
         case 'widgets': {
             const widgets = param.value;
-            const values = widgets.map(widget => `${renderWidget(widget, options)} ${pugRef(param, options)}`);
-            return multiline(`${name}: [`, indent(values.join('\n'), options.indentation), `]`);
+            const values = widgets.map(widget => `${renderWidget(widget, options)}${pugRef(param, options)}`);
+            return multiline(`${name}: [`, indent(values.join(',\n'), options.indentation), `]`);
         }
     }
     throw `unknown parameter type ${param.type}`;
