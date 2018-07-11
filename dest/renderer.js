@@ -8,9 +8,8 @@ const defaultRenderOptions = {
         'package:flutter_platform_widgets/flutter_platform_widgets.dart',
         'package:scoped_model/scoped_model.dart'
     ],
-    textClass: 'Text',
-    divClass: 'Container',
-    lineNumbers: false
+    lineNumbers: false,
+    indentation: 2
 };
 function findParam(widget, name) {
     if (!widget.params)
@@ -25,23 +24,7 @@ function renderClass(widget, options) {
     const fields = getClassFields(widget);
     const child = findParam(widget, 'child').value;
     const built = renderWidget(child, opts);
-    return `
-${renderClassImports(opts.imports)}
-
-class ${widget.name} extends StatelessWidget {
-
-${indent(renderClassFields(fields), 2)}
-
-${indent(renderConstructor(widget.name, fields), 2)}
-
-  @override
-  Widget build(BuildContext context) {
-    return 
-${indent(built, 6)};
-  }
-
-}
-`;
+    return multiline(renderClassImports(opts.imports), '', `class ${widget.name} extends StatelessWidget {`, indent(multiline(renderClassFields(fields), ``, renderConstructor(widget.name, fields), ``, multiline(`@override`, `Widget build(BuildContext context) {`, indent(multiline(`return`, indent(built, opts.indentation)), opts.indentation), `}`)), opts.indentation), '}');
 }
 exports.renderClass = renderClass;
 function getClassFields(widget) {
@@ -74,18 +57,13 @@ function renderClassFields(fields) {
 function renderConstructor(name, fields) {
     return `${name}(${fields.map(f => `this.${f.name}`).join(', ')});`;
 }
-// function renderMembers(widget: Widget, options: RenderOptions) : string {
-// 	if(!widget.params)
-// }
 function renderWidget(widget, options) {
-    switch (widget.name) {
-        case 'text': {
-            return `${options.textClass}('''${widget.value.toString()}''')`;
-        }
-        default: {
-            return `${widget.name}(
-${indent(renderParams(widget, options))}
-)`;
+    if (widget.value) {
+        return `${widget.name}('''${widget.value}''')`;
+    }
+    else {
+        switch (widget.name) {
+            default: return multiline(`${widget.name}(`, `${indent(renderParams(widget, options), options.indentation)}`, `),`);
         }
     }
 }
@@ -93,7 +71,7 @@ function renderParams(widget, options) {
     const params = [];
     if (widget.params) {
         for (var param of widget.params) {
-            params.push(indent(renderParam(param, options)));
+            params.push(renderParam(param, options));
         }
     }
     return params.join('\n');
@@ -105,17 +83,15 @@ function renderParam(param, options) {
             return `${name}: ${param.value}, ${pugRef(param, options)}`;
         }
         case 'expression': {
-            return `${name}: ${unquote(param.value.toString())}, ${pugRef(param, options)}`;
+            return `${name}: ${unquote(param.value.toString())} ${pugRef(param, options)}`;
         }
         case 'widget': {
-            return `${name}: ${renderWidget(param.value, options)}, ${pugRef(param, options)}`;
+            return `${name}: ${renderWidget(param.value, options)} ${pugRef(param, options)}`;
         }
         case 'widgets': {
             const widgets = param.value;
-            const values = widgets.map(widget => `${renderWidget(widget, options)}, ${pugRef(param, options)}`);
-            return `${name}: [
-${indent(values.join('\n'), 2)}
-]`;
+            const values = widgets.map(widget => `${renderWidget(widget, options)} ${pugRef(param, options)}`);
+            return multiline(`${name}: [`, indent(values.join('\n'), options.indentation), `]`);
         }
     }
     throw `unknown parameter type ${param.type}`;
@@ -136,4 +112,7 @@ function unquote(text) {
         return text.substring(1, text.length - 1);
     }
     return text;
+}
+function multiline(...lines) {
+    return lines.join('\n');
 }

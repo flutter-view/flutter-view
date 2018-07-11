@@ -1,13 +1,11 @@
 import { RenderOptions } from './renderer';
 import { Widget, Param } from './flutter-model';
-import * as handlebar from 'handlebars'
 import * as indent from 'indent-string'
 
 export interface RenderOptions {
 	imports?: string[]
-	textClass?: string
-	divClass?: string
-	lineNumbers?: boolean
+	lineNumbers?: boolean,
+	indentation: number
 }
 
 const defaultRenderOptions: RenderOptions = {
@@ -17,9 +15,8 @@ const defaultRenderOptions: RenderOptions = {
 		'package:flutter_platform_widgets/flutter_platform_widgets.dart',
 		'package:scoped_model/scoped_model.dart'
 	],
-	textClass: 'Text',
-	divClass: 'Container',
-	lineNumbers: false
+	lineNumbers: false,
+	indentation: 2
 }
 
 function findParam(widget: Widget, name: string) : Param | null {
@@ -34,23 +31,27 @@ export function renderClass(widget: Widget, options?: RenderOptions) : string | 
 	const fields = getClassFields(widget)
 	const child = findParam(widget, 'child').value as Widget
 	const built = renderWidget(child, opts)
-	return `
-${renderClassImports(opts.imports)}
-
-class ${widget.name} extends StatelessWidget {
-
-${indent(renderClassFields(fields), 2)}
-
-${indent(renderConstructor(widget.name, fields), 2)}
-
-  @override
-  Widget build(BuildContext context) {
-    return 
-${indent(built, 6)};
-  }
-
-}
-`
+	return multiline(
+		renderClassImports(opts.imports),
+		'',
+		`class ${widget.name} extends StatelessWidget {`,
+		indent(multiline(
+			renderClassFields(fields),
+			``,
+			renderConstructor(widget.name, fields),
+			``,
+			multiline(
+				`@override`,
+				`Widget build(BuildContext context) {`,
+				indent(multiline(
+					`return`,
+					indent(built, opts.indentation)
+				), opts.indentation),
+				`}`
+			)
+		), opts.indentation),
+		'}'
+	)
 }
 
 function getClassFields(widget: Widget) {
@@ -84,19 +85,16 @@ function renderConstructor(name: string, fields: { name: string, value: string }
 	return `${name}(${fields.map(f=>`this.${f.name}`).join(', ')});`
 }
 
-// function renderMembers(widget: Widget, options: RenderOptions) : string {
-// 	if(!widget.params)
-// }
-
 function renderWidget(widget: Widget, options: RenderOptions) : string {
-	switch(widget.name) {
-		case 'text': {
-return `${options.textClass}('''${widget.value.toString()}''')`
-		}
-		default: {
-return `${widget.name}(
-${indent(renderParams(widget, options))}
-)`
+	if(widget.value) {
+		return `${widget.name}('''${widget.value}''')`
+	} else {
+		switch(widget.name) {
+			default: return multiline(
+				`${widget.name}(`,
+				`${indent(renderParams(widget, options), options.indentation)}`,
+				`),`
+			)
 		}
 	}
 }
@@ -105,7 +103,7 @@ function renderParams(widget: Widget, options: RenderOptions) : string {
 	const params : string[] = []
 	if(widget.params) {
 		for(var param of widget.params) {
-			params.push(indent(renderParam(param, options)))
+			params.push(renderParam(param, options))
 		}
 	}
 	return params.join('\n')
@@ -118,17 +116,19 @@ function renderParam(param: Param, options: RenderOptions) : string {
 			return `${name}: ${param.value}, ${pugRef(param, options)}`
 		}
 		case 'expression': {
-			return `${name}: ${unquote(param.value.toString())}, ${pugRef(param, options)}`
+			return `${name}: ${unquote(param.value.toString())} ${pugRef(param, options)}`
 		}
 		case 'widget': {
-			return `${name}: ${renderWidget(param.value as Widget, options)}, ${pugRef(param, options)}`
+			return `${name}: ${renderWidget(param.value as Widget, options)} ${pugRef(param, options)}`
 		}
 		case 'widgets': {
 			const widgets = param.value as Widget[]
-			const values = widgets.map(widget=>`${renderWidget(widget, options)}, ${pugRef(param, options)}`)
-return `${name}: [
-${indent(values.join('\n'), 2)}
-]`
+			const values = widgets.map(widget=>`${renderWidget(widget, options)} ${pugRef(param, options)}`)
+			return multiline(
+				`${name}: [`,
+				indent(values.join('\n'), options.indentation),
+				`]`
+			)
 		}
 	}
 	throw `unknown parameter type ${param.type}`
@@ -150,4 +150,8 @@ function unquote(text: string) : string {
 		return text.substring(1, text.length-1)
 	}
 	return text
+}
+
+function multiline(...lines: string[]) : string {
+	return lines.join('\n')
 }

@@ -1,19 +1,23 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// import * as handlebar from 'handlebars'
+const defaultCompileOptions = {
+    textClass: 'Text',
+    divClass: 'Container'
+};
 /**
  * Compiles a parsed pug tree into Flutter Dart code
  * @param {Block} pug parsed pug code block
  * @returns {Widget} generated Dart widget tree
  */
-function compile(pug) {
+function compile(pug, options) {
+    const opts = options ? Object.assign(defaultCompileOptions, options) : defaultCompileOptions;
     if (pug.type != 'Block')
         throw 'Pug code should start with a block, is this parsed pug code?';
     if (pug.nodes.length === 0)
         return null;
     if (pug.nodes.length > 1)
         throw 'Pug flutter code should start with a single top level tag';
-    return compileTag(pug.nodes[0]);
+    return compileTag(pug.nodes[0], opts);
 }
 exports.compile = compile;
 function findAttribute(tag, name) {
@@ -21,9 +25,11 @@ function findAttribute(tag, name) {
         return null;
     return tag.attrs.find(attr => attr.name == name);
 }
-function compileTag(tag) {
-    // let isSlotTag = tag.attrs.find(attr=>attr.name=='slot')
-    // if(isSlotTag) return null
+function compileTag(tag, options) {
+    console.log(tag.name);
+    if (tag.name == 'div')
+        tag.name = options.divClass;
+    // if(tag.name == 'text') tag.name = options.textClass
     let params = [];
     if (tag.attrs) {
         for (var attr of tag.attrs) {
@@ -46,7 +52,7 @@ function compileTag(tag) {
             switch (node.type) {
                 case 'Tag': {
                     let subTag = node;
-                    let widget = compileTag(subTag);
+                    let widget = compileTag(subTag, options);
                     let slot = findAttribute(subTag, 'slot');
                     // if a subtag is a slot, it is actually a widget as a property
                     if (slot) {
@@ -68,8 +74,8 @@ function compileTag(tag) {
                     const value = text.val.trim();
                     if (value.length !== 0) {
                         children.push({
-                            name: 'text',
-                            value,
+                            name: options.textClass,
+                            value: value,
                             line: text.line,
                             column: text.column
                         });
@@ -100,14 +106,3 @@ function compileTag(tag) {
         params: params
     };
 }
-// function compileText(block: Text) {
-// }
-// function compileBlock(block: Block) {
-// 	for(var node of block.nodes) {
-// 		switch(node.type) {
-// 			case 'Block': compileBlock(node as Block); break
-// 			case 'Tag': compileTag(node as Tag); break
-// 			case 'Text': compileText(node as Text); break
-// 		}
-// 	}
-// }

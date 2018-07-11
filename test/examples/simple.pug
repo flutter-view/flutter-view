@@ -1,10 +1,12 @@
 SimplePage(flutter-widget :page)
 	PlatformScaffold
 		PlatformAppBar(slot='appBar')
-			Container(slot='title' :height='page.titleHeight') 
+			#title(slot='title' :height='page.titleHeight') 
 				| ${page.title}
-		Container(slot='body')
+		#body(slot='body')
 			Column
 				| Welcome ${page.firstName}!
-				Container Hello
-				Container World
+				#greeting Hello
+				#actions
+					BoxDecoration(slot='decoration' :border='Border.all(width: 1.0)')
+					PlatformButton(:onPressed='page.tapped') Click me!

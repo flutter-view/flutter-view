@@ -1,17 +1,30 @@
+import { CompileOptions } from './compiler';
 import { Widget, Param } from './flutter-model';
 import { Block, Tag, Attribute, Text } from './pug-model'
-// import * as handlebar from 'handlebars'
+
+export interface CompileOptions {
+	imports?: string[]
+	textClass?: string
+	divClass?: string
+	lineNumbers?: boolean
+}
+
+const defaultCompileOptions: CompileOptions = {
+	textClass: 'Text',
+	divClass: 'Container'
+}
 
 /**
  * Compiles a parsed pug tree into Flutter Dart code
  * @param {Block} pug parsed pug code block
  * @returns {Widget} generated Dart widget tree
  */
-export function compile(pug: Block): Widget {
+export function compile(pug: Block, options?: CompileOptions): Widget {
+	const opts = options ? Object.assign(defaultCompileOptions, options) : defaultCompileOptions
 	if(pug.type != 'Block') throw 'Pug code should start with a block, is this parsed pug code?'
 	if(pug.nodes.length === 0) return null
 	if(pug.nodes.length > 1) throw 'Pug flutter code should start with a single top level tag'
-	return compileTag(pug.nodes[0] as Tag);
+	return compileTag(pug.nodes[0] as Tag, opts);
 }
 
 function findAttribute(tag: Tag, name: string) : Attribute | null {
@@ -19,9 +32,11 @@ function findAttribute(tag: Tag, name: string) : Attribute | null {
 	return tag.attrs.find(attr => attr.name==name)
 }
 
-function compileTag(tag: Tag) : Widget {
-	// let isSlotTag = tag.attrs.find(attr=>attr.name=='slot')
-	// if(isSlotTag) return null
+function compileTag(tag: Tag, options: CompileOptions) : Widget {
+	console.log(tag.name)
+	if(tag.name == 'div') tag.name = options.divClass
+	// if(tag.name == 'text') tag.name = options.textClass
+
 	let params: Param[] = []
 	if(tag.attrs) {
 		for(var attr of tag.attrs) {
@@ -44,7 +59,7 @@ function compileTag(tag: Tag) : Widget {
 			switch(node.type) {
 				case 'Tag': {
 					let subTag = node as Tag
-					let widget = compileTag(subTag)
+					let widget = compileTag(subTag, options)
 					let slot = findAttribute(subTag, 'slot')
 					// if a subtag is a slot, it is actually a widget as a property
 					if(slot) {
@@ -65,8 +80,8 @@ function compileTag(tag: Tag) : Widget {
 					const value = text.val.trim()
 					if(value.length !== 0) {
 						children.push({
-							name: 'text',
-							value,
+							name: options.textClass,
+							value: value,
 							line: text.line,
 							column: text.column
 						})
@@ -96,16 +111,3 @@ function compileTag(tag: Tag) : Widget {
 		params: params
 	}
 }
-
-// function compileText(block: Text) {
-// }
-
-// function compileBlock(block: Block) {
-// 	for(var node of block.nodes) {
-// 		switch(node.type) {
-// 			case 'Block': compileBlock(node as Block); break
-// 			case 'Tag': compileTag(node as Tag); break
-// 			case 'Text': compileText(node as Text); break
-// 		}
-// 	}
-// }
