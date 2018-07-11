@@ -61,13 +61,16 @@ function compileTag(tag: Tag) : Widget {
 					break
 				}
 				case 'Text': {
-					let text = node as Text
-					children.push({
-						name: 'text',
-						value: text.val,
-						line: text.line,
-						column: text.column
-					})
+					const text = node as Text
+					const value = text.val.trim()
+					if(value.length !== 0) {
+						children.push({
+							name: 'text',
+							value,
+							line: text.line,
+							column: text.column
+						})
+					}
 				}
 			}
 		}

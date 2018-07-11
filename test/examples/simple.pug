@@ -1,5 +1,10 @@
 SimplePage(flutter-widget :page)
 	PlatformScaffold
 		PlatformAppBar(slot='appBar')
-			Container(slot='title' :height='page.titleHeight') ${page.title}
-		Container(slot='body') Welcome ${page.firstName}!
+			Container(slot='title' :height='page.titleHeight') 
+				| ${page.title}
+		Container(slot='body')
+			Column
+				| Welcome ${page.firstName}!
+				Container Hello
+				Container World

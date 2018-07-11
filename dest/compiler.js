@@ -64,13 +64,16 @@ function compileTag(tag) {
                     break;
                 }
                 case 'Text': {
-                    let text = node;
-                    children.push({
-                        name: 'text',
-                        value: text.val,
-                        line: text.line,
-                        column: text.column
-                    });
+                    const text = node;
+                    const value = text.val.trim();
+                    if (value.length !== 0) {
+                        children.push({
+                            name: 'text',
+                            value,
+                            line: text.line,
+                            column: text.column
+                        });
+                    }
                 }
             }
         }

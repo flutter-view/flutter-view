@@ -31,15 +31,15 @@ export function renderClass(widget: Widget, options?: RenderOptions) : string | 
 	const opts = options ? Object.assign(defaultRenderOptions, options) : defaultRenderOptions
 	const flutterParam = findParam(widget, 'flutter-widget')
 	if(!flutterParam) return null
-	const fields = getFields(widget)
+	const fields = getClassFields(widget)
 	const child = findParam(widget, 'child').value as Widget
 	const built = renderWidget(child, opts)
 	return `
-${renderImports(opts.imports)}
+${renderClassImports(opts.imports)}
 
 class ${widget.name} extends StatelessWidget {
 
-${indent(renderFields(fields), 2)}
+${indent(renderClassFields(fields), 2)}
 
 ${indent(renderConstructor(widget.name, fields), 2)}
 
@@ -53,7 +53,7 @@ ${indent(built, 6)};
 `
 }
 
-function getFields(widget: Widget) {
+function getClassFields(widget: Widget) {
 	if(widget.params) {
 		return widget.params
 			.filter(p=>p.type=='expression')
@@ -63,12 +63,12 @@ function getFields(widget: Widget) {
 	}
 }
 
-function renderImports(imports: string[]) : string {
+function renderClassImports(imports: string[]) : string {
 	if(!imports) return ''
 	return imports.map(_import => `import '${_import}';`).join('\n')
 }
 
-function renderFields(fields: { name: string, value: string }[]) : string {
+function renderClassFields(fields: { name: string, value: string }[]) : string {
 	return fields
 		.map(field=> {
 			if(field.value && field.value != 'true') {
@@ -108,34 +108,38 @@ function renderParams(widget: Widget, options: RenderOptions) : string {
 			params.push(indent(renderParam(param, options)))
 		}
 	}
-	return params.join(',\n')
-}
-
-function pugRef(param: Param, options: RenderOptions) : string {
-	if(options.lineNumbers) {
-		return `/*@pug(${param.line})*/`
-	} else {
-		return ''
-	}
+	return params.join('\n')
 }
 
 function renderParam(param: Param, options: RenderOptions) : string {
 	const name = unquote(param.name)
 	switch(param.type) {
 		case 'literal': {
-			return `${name}: ${param.value} ${pugRef(param, options)}`
+			return `${name}: ${param.value}, ${pugRef(param, options)}`
 		}
 		case 'expression': {
-			return `${name}: ${unquote(param.value.toString())} ${pugRef(param, options)}`
+			return `${name}: ${unquote(param.value.toString())}, ${pugRef(param, options)}`
 		}
 		case 'widget': {
-			return `${name}: ${renderWidget(param.value as Widget, options)} ${pugRef(param, options)}`
+			return `${name}: ${renderWidget(param.value as Widget, options)}, ${pugRef(param, options)}`
 		}
 		case 'widgets': {
-			break
+			const widgets = param.value as Widget[]
+			const values = widgets.map(widget=>`${renderWidget(widget, options)}, ${pugRef(param, options)}`)
+return `${name}: [
+${indent(values.join('\n'), 2)}
+]`
 		}
 	}
-	return `${param.name}`
+	throw `unknown parameter type ${param.type}`
+}
+
+function pugRef(param: Param, options: RenderOptions) : string {
+	if(options.lineNumbers && param.line) {
+		return `/*@pug(${param.line})*/`
+	} else {
+		return ''
+	}
 }
 
 function unquote(text: string) : string {

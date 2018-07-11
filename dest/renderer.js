@@ -22,15 +22,15 @@ function renderClass(widget, options) {
     const flutterParam = findParam(widget, 'flutter-widget');
     if (!flutterParam)
         return null;
-    const fields = getFields(widget);
+    const fields = getClassFields(widget);
     const child = findParam(widget, 'child').value;
     const built = renderWidget(child, opts);
     return `
-${renderImports(opts.imports)}
+${renderClassImports(opts.imports)}
 
 class ${widget.name} extends StatelessWidget {
 
-${indent(renderFields(fields), 2)}
+${indent(renderClassFields(fields), 2)}
 
 ${indent(renderConstructor(widget.name, fields), 2)}
 
@@ -44,7 +44,7 @@ ${indent(built, 6)};
 `;
 }
 exports.renderClass = renderClass;
-function getFields(widget) {
+function getClassFields(widget) {
     if (widget.params) {
         return widget.params
             .filter(p => p.type == 'expression')
@@ -54,12 +54,12 @@ function getFields(widget) {
         return [];
     }
 }
-function renderImports(imports) {
+function renderClassImports(imports) {
     if (!imports)
         return '';
     return imports.map(_import => `import '${_import}';`).join('\n');
 }
-function renderFields(fields) {
+function renderClassFields(fields) {
     return fields
         .map(field => {
         if (field.value && field.value != 'true') {
@@ -96,33 +96,37 @@ function renderParams(widget, options) {
             params.push(indent(renderParam(param, options)));
         }
     }
-    return params.join(',\n');
-}
-function pugRef(param, options) {
-    if (options.lineNumbers) {
-        return `/*@pug(${param.line})*/`;
-    }
-    else {
-        return '';
-    }
+    return params.join('\n');
 }
 function renderParam(param, options) {
     const name = unquote(param.name);
     switch (param.type) {
         case 'literal': {
-            return `${name}: ${param.value} ${pugRef(param, options)}`;
+            return `${name}: ${param.value}, ${pugRef(param, options)}`;
         }
         case 'expression': {
-            return `${name}: ${unquote(param.value.toString())} ${pugRef(param, options)}`;
+            return `${name}: ${unquote(param.value.toString())}, ${pugRef(param, options)}`;
         }
         case 'widget': {
-            return `${name}: ${renderWidget(param.value, options)} ${pugRef(param, options)}`;
+            return `${name}: ${renderWidget(param.value, options)}, ${pugRef(param, options)}`;
         }
         case 'widgets': {
-            break;
+            const widgets = param.value;
+            const values = widgets.map(widget => `${renderWidget(widget, options)}, ${pugRef(param, options)}`);
+            return `${name}: [
+${indent(values.join('\n'), 2)}
+]`;
         }
     }
-    return `${param.name}`;
+    throw `unknown parameter type ${param.type}`;
+}
+function pugRef(param, options) {
+    if (options.lineNumbers && param.line) {
+        return `/*@pug(${param.line})*/`;
+    }
+    else {
+        return '';
+    }
 }
 function unquote(text) {
     if (text.startsWith('"') && text.endsWith('"')) {
