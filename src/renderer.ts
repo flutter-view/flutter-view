@@ -4,8 +4,7 @@ import * as indent from 'indent-string'
 
 export interface RenderOptions {
 	imports?: string[]
-	lineNumbers?: boolean,
-	indentation: number
+	indentation?: number
 }
 
 const defaultRenderOptions: RenderOptions = {
@@ -15,8 +14,7 @@ const defaultRenderOptions: RenderOptions = {
 		'package:flutter_platform_widgets/flutter_platform_widgets.dart',
 		'package:scoped_model/scoped_model.dart'
 	],
-	lineNumbers: false,
-	indentation: 4
+	indentation: 2
 }
 
 function findParam(widget: Widget, name: string) : Param | null {
@@ -26,7 +24,7 @@ function findParam(widget: Widget, name: string) : Param | null {
 
 export function renderClass(widget: Widget, options?: RenderOptions) : string | null {
 	const opts = options ? Object.assign(defaultRenderOptions, options) : defaultRenderOptions
-	const flutterParam = findParam(widget, 'flutter-widget')
+	const flutterParam = findParam(widget, 'flutterWidget')
 	if(!flutterParam) return null
 	const fields = getClassFields(widget)
 	const child = findParam(widget, 'child').value as Widget
@@ -58,7 +56,7 @@ function getClassFields(widget: Widget) {
 	if(widget.params) {
 		return widget.params
 			.filter(p=>p.type=='expression')
-			.map(p=>({ name: p.name, value: p.value.toString() }))
+			.map(p=>({ name: p.name, value: p.value ? p.value.toString() : null }))
 	} else {
 		return []
 	}
@@ -113,17 +111,17 @@ function renderParam(param: Param, options: RenderOptions) : string {
 	const name = unquote(param.name)
 	switch(param.type) {
 		case 'literal': {
-			return `${name}: ${param.value}${pugRef(param, options)}`
+			return `${name}: ${param.value}`
 		}
 		case 'expression': {
-			return `${name}: ${unquote(param.value.toString())}${pugRef(param, options)}`
+			return `${name}: ${param.value ? unquote(param.value.toString()) : ''}`
 		}
 		case 'widget': {
-			return `${name}: ${renderWidget(param.value as Widget, options)}${pugRef(param, options)}`
+			return `${name}: ${renderWidget(param.value as Widget, options)}`
 		}
 		case 'widgets': {
 			const widgets = param.value as Widget[]
-			const values = widgets.map(widget=>`${renderWidget(widget, options)}${pugRef(param, options)}`)
+			const values = widgets.map(widget=>`${renderWidget(widget, options)}`)
 			return multiline(
 				`${name}: [`,
 				indent(values.join(',\n'), options.indentation),
@@ -134,15 +132,8 @@ function renderParam(param: Param, options: RenderOptions) : string {
 	throw `unknown parameter type ${param.type}`
 }
 
-function pugRef(param: Param, options: RenderOptions) : string {
-	if(options.lineNumbers && param.line) {
-		return `/*@pug(${param.line})*/`
-	} else {
-		return ''
-	}
-}
-
 function unquote(text: string) : string {
+	if(!text) return ''
 	if(text.startsWith('"') && text.endsWith('"')) {
 		return text.substring(1, text.length-1)
 	}

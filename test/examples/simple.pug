@@ -1,12 +1,12 @@
-SimplePage(flutter-widget :page)
-	PlatformScaffold
-		PlatformAppBar(slot='appBar')
+simple-page(flutter-widget :page)
+	platform-scaffold
+		platform-app-bar(slot='appBar')
 			#title(slot='title' :height='page.titleHeight') 
 				| ${page.title}
 		#body(slot='body')
-			Column
+			column
 				| Welcome ${page.firstName}!
 				#greeting Hello
 				#actions.a.b
-					BoxDecoration(slot='decoration' :border='Border.all(width: 1.0)')
-					PlatformButton(:onPressed='page.tapped') Click me!
+					box-decoration(slot='decoration' :border='Border.all(width: 1.0)')
+					platform-button(:on-pressed='page.tapped') Click me!

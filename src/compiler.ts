@@ -1,6 +1,8 @@
-import { CompileOptions } from './compiler';
-import { Widget, Param } from './flutter-model';
-import { Block, Tag, Attribute, Text } from './pug-model'
+import { CompileOptions } from './compiler'
+import { Widget, Param } from './flutter-model'
+import { Element, Tag, Text } from './html-model'
+import { camelCase, upperCaseFirst } from 'change-case'
+import * as styleparser from 'style-parser'
 
 export interface CompileOptions {
 	imports?: string[]
@@ -19,71 +21,69 @@ const defaultCompileOptions: CompileOptions = {
  * @param {Block} pug parsed pug code block
  * @returns {Widget} generated Dart widget tree
  */
-export function compile(pug: Block, options?: CompileOptions): Widget {
+export function compile(html: Element[], options?: CompileOptions): Widget {
 	const opts = options ? Object.assign(defaultCompileOptions, options) : defaultCompileOptions
-	if(pug.type != 'Block') throw 'Pug code should start with a block, is this parsed pug code?'
-	if(pug.nodes.length === 0) return null
-	if(pug.nodes.length > 1) throw 'Pug flutter code should start with a single top level tag'
-	return compileTag(pug.nodes[0] as Tag, opts);
-}
-
-function findAttribute(tag: Tag, name: string) : Attribute | null {
-	if(!tag.attrs) return null
-	return tag.attrs.find(attr => attr.name==name)
+	if(html.length === 0) return null
+	if(html.length > 1) throw 'template code should start with a single top level tag'
+	return compileTag(html[0] as Tag, opts)
 }
 
 function compileTag(tag: Tag, options: CompileOptions) : Widget {
-	console.log(tag.name)
-	if(tag.name == 'div') tag.name = options.divClass
+	if(tag.name == 'div') {
+		tag.name = options.divClass
+	}
 	// if(tag.name == 'text') tag.name = options.textClass
 
 	let params: Param[] = []
-	if(tag.attrs) {
-		for(var attr of tag.attrs) {
-			if(attr.name != 'slot') {
-				const expression = attr.name.startsWith(':')
+	if(tag.attribs) {
+		if(tag.attribs['style']) {
+			const styleRules = styleparser(tag.attribs['style'])
+			console.log('rules', styleRules)
+			for(attr in styleRules) {
+				tag.attribs[attr] = styleRules[attr]
+			}
+		}
+		for(var attr in tag.attribs) {
+			if(attr != 'slot' && attr != 'id' && attr != 'class' && attr != 'style') {
+				const expression = attr.startsWith(':')
+				const name = expression ? attr.substring(1) : attr
+				const value = tag.attribs[attr]
 				params.push({
 					type: expression ? 'expression' : 'literal',
-					name: expression ? attr.name.substring(1) : attr.name,
-					value: attr.val,
-					line: tag.line,
-					column: tag.column
+					name: camelCase(name),
+					value: attr!=value ? value : null // pug renders empty attributes as key==value
 				})
 			}
 		}
 	}
-	if(tag.block && tag.block.nodes) {
-		let children: Widget[] = []
+	if(tag.children) {
 		// find all children and slot properties in the tag block
-		for(var node of tag.block.nodes) {
-			switch(node.type) {
-				case 'Tag': {
-					let subTag = node as Tag
+		let children: Widget[] = []
+		for(var child of tag.children) {
+			switch(child.type) {
+				case 'tag': {
+					let subTag = child as Tag
 					let widget = compileTag(subTag, options)
-					let slot = findAttribute(subTag, 'slot')
+					let slot = subTag.attribs ? subTag.attribs['slot'] : null
 					// if a subtag is a slot, it is actually a widget as a property
 					if(slot) {
 						params.push({
 							type: 'widget',
-							name: slot.val,
-							value: widget,
-							line: subTag.line,
-							column: subTag.column
+							name: camelCase(slot),
+							value: widget
 						})
 					} else {
 						children.push(widget)
 					}
 					break
 				}
-				case 'Text': {
-					const text = node as Text
-					const value = text.val.trim()
+				case 'text': {
+					const text = child as Text
+					const value = text.data.trim()
 					if(value.length !== 0) {
 						children.push({
 							name: options.textClass,
-							value: value,
-							line: text.line,
-							column: text.column
+							value: value
 						})
 					}
 				}
@@ -94,9 +94,7 @@ function compileTag(tag: Tag, options: CompileOptions) : Widget {
 			params.push({
 				type: 'widget',
 				name: 'child',
-				value: children[0],
-				line: tag.line,
-				column: tag.column
+				value: children[0]
 			})
 		} else if(children.length > 1) {
 			params.push({
@@ -107,7 +105,7 @@ function compileTag(tag: Tag, options: CompileOptions) : Widget {
 		}
 	}
 	return {
-		name: tag.name,
+		name: upperCaseFirst(camelCase(tag.name)),
 		params: params
 	}
 }
