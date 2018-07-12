@@ -43,7 +43,7 @@ export function renderClass(widget: Widget, options?: RenderOptions) : string | 
 				`Widget build(BuildContext context) {`,
 				indent(multiline(
 					`return`,
-					indent(built+';', opts.indentation)
+					built+';',
 				), opts.indentation),
 				`}`
 			)
@@ -84,46 +84,50 @@ function renderConstructor(name: string, fields: { name: string, value: string }
 }
 
 function renderWidget(widget: Widget, options: RenderOptions) : string {
-	if(widget.value) {
-		return `${widget.name}('''${widget.value}''')`
-	} else {
-		switch(widget.name) {
-			default: return multiline(
-				`${widget.name}(`,
-				`${indent(renderParams(widget, options), options.indentation)}`,
-				`)`
-			)
-		}
-	}
+	const value = findParam(widget, 'value')
+	const renderedValue = value ? renderParamValue(value, options) + ',' : null
+	const renderedParams = renderParams(widget, options)
+	return multiline(
+		`${widget.name}(`,
+		indent(
+			multiline(
+				renderedValue,
+				renderedParams
+			), 
+			options.indentation
+		),
+		`)`
+	)
 }
 
 function renderParams(widget: Widget, options: RenderOptions) : string {
-	const params : string[] = []
-	if(widget.params) {
-		for(var param of widget.params) {
-			params.push(renderParam(param, options))
+	const renderedParams : string[] = []
+	const paramsToRender = widget.params ? widget.params.filter(param=>param.name!='value') : null
+	if(paramsToRender) {
+		for(var param of paramsToRender) {
+			const name = unquote(param.name)
+			renderedParams.push(`${name}: ${renderParamValue(param, options)}`)
 		}
 	}
-	return params.join(',\n')
+	return renderedParams.join(',\n')
 }
 
-function renderParam(param: Param, options: RenderOptions) : string {
-	const name = unquote(param.name)
+function renderParamValue(param: Param, options: RenderOptions) : string {
 	switch(param.type) {
 		case 'literal': {
-			return `${name}: ${param.value}`
+			return `'${param.value}'`
 		}
 		case 'expression': {
-			return `${name}: ${param.value ? unquote(param.value.toString()) : ''}`
+			return `${param.value ? param.value.toString() : ''}`
 		}
 		case 'widget': {
-			return `${name}: ${renderWidget(param.value as Widget, options)}`
+			return `${renderWidget(param.value as Widget, options)}`
 		}
 		case 'widgets': {
 			const widgets = param.value as Widget[]
 			const values = widgets.map(widget=>`${renderWidget(widget, options)}`)
 			return multiline(
-				`${name}: [`,
+				`[`,
 				indent(values.join(',\n'), options.indentation),
 				`]`
 			)
@@ -144,5 +148,5 @@ function unquote(text: string) : string {
 }
 
 function multiline(...lines: string[]) : string {
-	return lines.join('\n')
+	return lines.filter(line=>!!line).join('\n')
 }

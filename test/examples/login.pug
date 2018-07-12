@@ -1,0 +1,39 @@
+login-page(flutter-widget :model)
+	platform-scaffold
+		platform-app-bar(as='appBar')
+			#title(as='title') Login
+
+		list-view(as='body')
+
+			center
+				container
+					box-decoration(as='decoration')
+						decoration-image(as='image' :fit='BoxFit.contain')
+							asset-image(as='image' value='images/icon.img')
+
+			scoped-model(:type='EngageAppState') //- :model='model'
+				material(:color='Colors.white')
+					padding(:padding='const EdgeInsets.only(top: 120.0)')
+						column
+							row
+								expanded
+									text-field(
+										:controller='model.loginUserName'
+										:autocorrect='false')
+										input-decoration(
+											as='decoration'
+											:border='InputBorder.none'
+											hint-text='Username')
+							row
+								expanded
+									text-field(
+										:controller='model.loginPassword'
+										:autocorrect='false'
+										:obscure-text='true')
+										input-decoration(
+											as='decoration'
+											:border='InputBorder.none'
+											hint-text='Password')
+							platform-button(:on-pressed='model.login')
+							platform-text(:value='model.loginErrorMessage')
+								text-style(as='style' :color='Colors.redAccent')

@@ -7,22 +7,39 @@ import * as styleparser from 'style-parser'
 export interface CompileOptions {
 	imports?: string[]
 	textClass?: string
-	divClass?: string
+	divClass?: string,
+	multiChildClasses?: string[]
 	lineNumbers?: boolean
 }
 
 const defaultCompileOptions: CompileOptions = {
 	textClass: 'Text',
-	divClass: 'Container'
+	divClass: 'Container',
+	multiChildClasses: []
 }
 
+const knownMultiChildClasses = [
+	'Row',
+	'Column',
+	'Stack',
+	'IndexedStack',
+	'GridView',
+	'Flow',
+	'Table',
+	'Wrap',
+	'ListBody',
+	'ListView',
+	'CustomMultiChildLayout'
+]
+
 /**
- * Compiles a parsed pug tree into Flutter Dart code
- * @param {Block} pug parsed pug code block
+ * Compiles a parsed html tree into Flutter Dart code
+ * @param {Element[]} html parsed html elements
  * @returns {Widget} generated Dart widget tree
  */
 export function compile(html: Element[], options?: CompileOptions): Widget {
 	const opts = options ? Object.assign(defaultCompileOptions, options) : defaultCompileOptions
+	opts.multiChildClasses = knownMultiChildClasses.concat(opts.multiChildClasses)
 	if(html.length === 0) return null
 	if(html.length > 1) throw 'template code should start with a single top level tag'
 	return compileTag(html[0] as Tag, opts)
@@ -32,7 +49,7 @@ function compileTag(tag: Tag, options: CompileOptions) : Widget {
 	if(tag.name == 'div') {
 		tag.name = options.divClass
 	}
-	// if(tag.name == 'text') tag.name = options.textClass
+	const widgetClass = upperCaseFirst(camelCase(tag.name))
 
 	let params: Param[] = []
 	if(tag.attribs) {
@@ -44,7 +61,7 @@ function compileTag(tag: Tag, options: CompileOptions) : Widget {
 			}
 		}
 		for(var attr in tag.attribs) {
-			if(attr != 'slot' && attr != 'id' && attr != 'class' && attr != 'style') {
+			if(attr != 'as' && attr != 'id' && attr != 'class' && attr != 'style') {
 				const expression = attr.startsWith(':')
 				const name = expression ? attr.substring(1) : attr
 				const value = tag.attribs[attr]
@@ -64,7 +81,7 @@ function compileTag(tag: Tag, options: CompileOptions) : Widget {
 				case 'tag': {
 					let subTag = child as Tag
 					let widget = compileTag(subTag, options)
-					let slot = subTag.attribs ? subTag.attribs['slot'] : null
+					let slot = subTag.attribs ? subTag.attribs['as'] : null
 					// if a subtag is a slot, it is actually a widget as a property
 					if(slot) {
 						params.push({
@@ -80,7 +97,7 @@ function compileTag(tag: Tag, options: CompileOptions) : Widget {
 				case 'text': {
 					const text = child as Text
 					const value = text.data.trim()
-					if(value.length !== 0) {
+					if(value.length !== 0 && !value.startsWith('//')) {
 						children.push({
 							name: options.textClass,
 							value: value
@@ -90,22 +107,23 @@ function compileTag(tag: Tag, options: CompileOptions) : Widget {
 			}
 		}
 		// add the child or children parameter to the widget
-		if(children.length == 1) {
-			params.push({
-				type: 'widget',
-				name: 'child',
-				value: children[0]
-			})
-		} else if(children.length > 1) {
+		const isMultiChildClass = !!options.multiChildClasses.find(cls=>cls==widgetClass)
+		if(isMultiChildClass || children.length > 1) {
 			params.push({
 				type: 'widgets',
 				name: 'children',
 				value: children
 			})
+		} else if(children.length == 1) {
+			params.push({
+				type: 'widget',
+				name: 'child',
+				value: children[0]
+			})
 		}
 	}
 	return {
-		name: upperCaseFirst(camelCase(tag.name)),
+		name: widgetClass,
 		params: params
 	}
 }

@@ -9,11 +9,11 @@ import { renderClass } from './renderer'
 import * as htmlparser from 'htmlparser'
 import { Element } from './html-model'
 
-const html = renderFile('test/examples/simple.pug')
+const html = renderFile('test/examples/login.pug')
 console.log('html:', html, '\n')
 
 const cssResult = renderSync({
-	file: 'test/examples/simple.sass',
+	file: 'test/examples/login.sass',
 	outputStyle: 'expanded',
 	indentedSyntax: true
 })
@@ -46,7 +46,8 @@ async function renderCode(html) {
 
 	})
 	console.log(code, '\n')
+
+	fs.writeFileSync('test/examples/login.dart', code)
 }
 
 renderCode(mergedHtml)
-
