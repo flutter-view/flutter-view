@@ -7,6 +7,6 @@ SimplePage(flutter-widget :page)
 			Column
 				| Welcome ${page.firstName}!
 				#greeting Hello
-				#actions
+				#actions.a.b
 					BoxDecoration(slot='decoration' :border='Border.all(width: 1.0)')
 					PlatformButton(:onPressed='page.tapped') Click me!

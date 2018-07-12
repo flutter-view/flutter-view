@@ -9,7 +9,9 @@
   "dependencies": {
     "@types/handlebars": "^4.0.38",
     "handlebars": "^4.0.11",
+    "htmlparser": "^1.7.7",
     "indent-string": "^3.2.0",
+    "juice": "^4.3.1",
     "mz": "^2.7.0",
     "pug": "^2.0.3",
     "pug-lexer": "^4.0.0",
@@ -17,10 +19,13 @@
     "request": "^2.87.0"
   },
   "devDependencies": {
-    "gulp": "^3.9.1",
     "@types/mz": "0.0.32",
+    "@types/node-sass": "^3.10.32",
     "@types/pug": "^2.0.4",
-    "@types/request": "^2.47.1"
+    "@types/request": "^2.47.1",
+    "css-tree": "^1.0.0-alpha.29",
+    "gulp": "^3.9.1",
+    "node-sass": "^4.9.2"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
