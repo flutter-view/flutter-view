@@ -32,6 +32,13 @@ const knownMultiChildClasses = [
 	'CustomMultiChildLayout'
 ]
 
+const reservedAttributes = [
+	'as',
+	'id',
+	'style',
+	'class'
+]
+
 /**
  * Compiles a parsed html tree into Flutter Dart code
  * @param {Element[]} html parsed html elements
@@ -42,6 +49,8 @@ export function compile(html: Element[], options?: CompileOptions): Widget {
 	opts.multiChildClasses = knownMultiChildClasses.concat(opts.multiChildClasses)
 	if(html.length === 0) return null
 	if(html.length > 1) throw 'template code should start with a single top level tag'
+	const root = html[0] as Tag
+	root.attribs['style'] = undefined
 	return compileTag(html[0] as Tag, opts)
 }
 
@@ -55,7 +64,6 @@ function compileTag(tag: Tag, options: CompileOptions) : Widget {
 	if(tag.attribs) {
 		if(tag.attribs['style']) {
 			const styleRules = styleparser(tag.attribs['style'])
-			console.log('rules', styleRules)
 			for(attr in styleRules) {
 				tag.attribs[attr] = styleRules[attr]
 			}
@@ -66,8 +74,9 @@ function compileTag(tag: Tag, options: CompileOptions) : Widget {
 				const name = expression ? attr.substring(1) : attr
 				const value = tag.attribs[attr]
 				params.push({
+					class: 'param',
 					type: expression ? 'expression' : 'literal',
-					name: camelCase(name),
+					name: (name=='value') ? undefined : camelCase(name),
 					value: attr!=value ? value : null // pug renders empty attributes as key==value
 				})
 			}
@@ -85,6 +94,7 @@ function compileTag(tag: Tag, options: CompileOptions) : Widget {
 					// if a subtag is a slot, it is actually a widget as a property
 					if(slot) {
 						params.push({
+							class: 'param',
 							type: 'widget',
 							name: camelCase(slot),
 							value: widget
@@ -99,8 +109,15 @@ function compileTag(tag: Tag, options: CompileOptions) : Widget {
 					const value = text.data.trim()
 					if(value.length !== 0 && !value.startsWith('//')) {
 						children.push({
+							class: 'widget',
 							name: options.textClass,
-							value: value
+							params: [
+								{
+									class: 'param',
+									type: 'literal',
+									value: value
+								}
+							]
 						})
 					}
 				}
@@ -110,12 +127,14 @@ function compileTag(tag: Tag, options: CompileOptions) : Widget {
 		const isMultiChildClass = !!options.multiChildClasses.find(cls=>cls==widgetClass)
 		if(isMultiChildClass || children.length > 1) {
 			params.push({
+				class: 'param',
 				type: 'widgets',
 				name: 'children',
 				value: children
 			})
 		} else if(children.length == 1) {
 			params.push({
+				class: 'param',
 				type: 'widget',
 				name: 'child',
 				value: children[0]
@@ -123,6 +142,7 @@ function compileTag(tag: Tag, options: CompileOptions) : Widget {
 		}
 	}
 	return {
+		class: 'widget',
 		name: widgetClass,
 		params: params
 	}

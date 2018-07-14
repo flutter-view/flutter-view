@@ -9,11 +9,11 @@ import { renderClass } from './renderer'
 import * as htmlparser from 'htmlparser'
 import { Element } from './html-model'
 
-const html = renderFile('test/examples/login.pug')
+const html = renderFile('test/examples/simple.pug')
 console.log('html:', html, '\n')
 
 const cssResult = renderSync({
-	file: 'test/examples/login.sass',
+	file: 'test/examples/simple.sass',
 	outputStyle: 'expanded',
 	indentedSyntax: true
 })

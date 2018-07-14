@@ -1,26 +1,24 @@
 export interface Widget {
+	class: 'widget'
 	name: string
 	value?: string
 	params?: Param[]
-
-	line?: number
-	column?: number
 }
 
 export interface Param {
+	class: 'param',
 	type: 'literal' | 'expression' | 'widget' | 'widgets'
-	name: string
+	name?: string
 	value: string | Widget | Widget[]
-
-	line?: number
-	column?: number
 }
 
 export interface Reference {
+	class: 'ref',
 	type: 'method'
 	name: string
 }
 
 export interface MethodReference extends Reference {
+	class: 'ref',
 	type: 'method'
 }

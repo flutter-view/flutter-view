@@ -24,8 +24,6 @@ function findParam(widget: Widget, name: string) : Param | null {
 
 export function renderClass(widget: Widget, options?: RenderOptions) : string | null {
 	const opts = options ? Object.assign(defaultRenderOptions, options) : defaultRenderOptions
-	const flutterParam = findParam(widget, 'flutterWidget')
-	if(!flutterParam) return null
 	const fields = getClassFields(widget)
 	const child = findParam(widget, 'child').value as Widget
 	const built = renderWidget(child, opts)
@@ -84,18 +82,10 @@ function renderConstructor(name: string, fields: { name: string, value: string }
 }
 
 function renderWidget(widget: Widget, options: RenderOptions) : string {
-	const value = findParam(widget, 'value')
-	const renderedValue = value ? renderParamValue(value, options) + ',' : null
 	const renderedParams = renderParams(widget, options)
 	return multiline(
 		`${widget.name}(`,
-		indent(
-			multiline(
-				renderedValue,
-				renderedParams
-			), 
-			options.indentation
-		),
+		indent(renderedParams, options.indentation),
 		`)`
 	)
 }
@@ -105,8 +95,12 @@ function renderParams(widget: Widget, options: RenderOptions) : string {
 	const paramsToRender = widget.params ? widget.params.filter(param=>param.name!='value') : null
 	if(paramsToRender) {
 		for(var param of paramsToRender) {
-			const name = unquote(param.name)
-			renderedParams.push(`${name}: ${renderParamValue(param, options)}`)
+			if(param.name) {
+				const name = unquote(param.name)
+				renderedParams.push(`${name}: ${renderParamValue(param, options)}`)
+			} else {
+				renderedParams.push(renderParamValue(param, options))
+			}
 		}
 	}
 	return renderedParams.join(',\n')

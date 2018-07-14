@@ -11,7 +11,7 @@ login-page(flutter-widget :model)
 						decoration-image(as='image' :fit='BoxFit.contain')
 							asset-image(as='image' value='images/icon.img')
 
-			scoped-model(:type='EngageAppState') //- :model='model'
+			scoped-model(:model='model') //- :model='model'
 				material(:color='Colors.white')
 					padding(:padding='const EdgeInsets.only(top: 120.0)')
 						column
@@ -35,5 +35,5 @@ login-page(flutter-widget :model)
 											:border='InputBorder.none'
 											hint-text='Password')
 							platform-button(:on-pressed='model.login')
-							platform-text(:value='model.loginErrorMessage')
+							platform-text(value='model.loginErrorMessage')
 								text-style(as='style' :color='Colors.redAccent')

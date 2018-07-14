@@ -12,6 +12,7 @@ class LoginPage extends StatelessWidget {
       appBar: PlatformAppBar(
         title: Container(
           child: Text(
+            'Login'
           )
         )
       ),
@@ -23,14 +24,14 @@ class LoginPage extends StatelessWidget {
                 image: DecorationImage(
                   fit: BoxFit.contain,
                   image: AssetImage(
-                    'images/icon.img',
+                    'images/icon.img'
                   )
                 )
               )
             )
           ),
           ScopedModel(
-            type: EngageAppState,
+            model: model,
             child: Material(
               color: Colors.white,
               child: Padding(
@@ -70,7 +71,7 @@ class LoginPage extends StatelessWidget {
                       onPressed: model.login
                     ),
                     PlatformText(
-                      model.loginErrorMessage,
+                      'model.loginErrorMessage',
                       style: TextStyle(
                         color: Colors.redAccent
                       )
