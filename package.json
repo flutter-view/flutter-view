@@ -2,7 +2,10 @@
   "name": "flutter-template",
   "version": "1.0.0",
   "description": "Create flutter widgets using pug templates",
-  "main": "dest/watcher.js",
+  "main": "cli.js",
+  "bin": {
+    "flutter-views": "./cli.js"
+  },
   "directories": {
     "test": "test"
   },
