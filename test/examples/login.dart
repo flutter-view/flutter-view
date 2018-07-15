@@ -9,21 +9,21 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return
     PlatformScaffold(
-      appBar: PlatformAppBar(
-        title: Container(
-          child: Text(
+      appBar: const PlatformAppBar(
+        title: const Container(
+          child: const Text(
             'Login'
           )
         )
       ),
-      body: ListView(
+      body: const ListView(
         children: [
           Center(
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
+            child: const Container(
+              decoration: const BoxDecoration(
+                image: const DecorationImage(
                   fit: BoxFit.contain,
-                  image: AssetImage(
+                  image: const AssetImage(
                     'images/icon.img'
                   )
                 )
@@ -32,19 +32,19 @@ class LoginPage extends StatelessWidget {
           ),
           ScopedModel(
             model: model,
-            child: Material(
+            child: const Material(
               color: Colors.white,
-              child: Padding(
+              child: const Padding(
                 padding: const EdgeInsets.only(top: 120.0),
-                child: Column(
+                child: const Column(
                   children: [
                     Row(
                       children: [
                         Expanded(
-                          child: TextField(
+                          child: const TextField(
                             controller: model.loginUserName,
                             autocorrect: false,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               border: InputBorder.none,
                               hintText: 'Username'
                             )
@@ -55,11 +55,11 @@ class LoginPage extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: TextField(
+                          child: const TextField(
                             controller: model.loginPassword,
                             autocorrect: false,
                             obscureText: true,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               border: InputBorder.none,
                               hintText: 'Password'
                             )
@@ -72,7 +72,7 @@ class LoginPage extends StatelessWidget {
                     ),
                     PlatformText(
                       'model.loginErrorMessage',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.redAccent
                       )
                     )

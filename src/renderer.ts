@@ -115,7 +115,10 @@ function renderParamValue(param: Param, options: RenderOptions) : string {
 			return `${param.value ? param.value.toString() : ''}`
 		}
 		case 'widget': {
-			return `${renderWidget(param.value as Widget, options)}`
+			const value = param.value as Widget
+			// const _const = value.params ? 'const ' : ''
+			const _const = ''
+			return `${_const}${renderWidget(param.value as Widget, options)}`
 		}
 		case 'widgets': {
 			const widgets = param.value as Widget[]
