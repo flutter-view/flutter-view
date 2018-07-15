@@ -14,7 +14,7 @@ export interface CompileOptions {
 }
 
 const defaultCompileOptions: CompileOptions = {
-	textClass: 'Text',
+	textClass: 'PlatformText',
 	divClass: 'Container',
 	multiChildClasses: [
 		'Row',

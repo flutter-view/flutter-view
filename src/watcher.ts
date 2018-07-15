@@ -20,7 +20,8 @@ export interface RenderPlugin {
 export interface Config {
 	exclude?: string[]
 	compile?: CompileOptions,
-	render?: RenderOptions
+	render?: RenderOptions,
+	propagateDelete: boolean
 }
 
 export function startWatching(dirs: string[], config: Config, plugins: RenderPlugin[], watch: boolean) {
@@ -58,7 +59,15 @@ export function startWatching(dirs: string[], config: Config, plugins: RenderPlu
 				.then(dartFile=>console.log('updated', relative(process.cwd(), dartFile)))
 				.catch(error=>reportError(sourceFile, error))
 		})
-		watcher.on('deleted', deleted => {
+		watcher.on('deleted', sourceFile => {
+			if(config.propagateDelete) {
+				const p = parseFileName(sourceFile)
+				const dartFile = `${p.dir}/${p.name}.dart`
+				if(fs.existsSync(dartFile)) {
+					fs.unlinkSync(dartFile)
+					console.log('deleted', relative(process.cwd(), dartFile))
+				}
+			}
 		})
 	
 	})

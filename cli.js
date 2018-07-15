@@ -20,7 +20,8 @@ let config = {
 	exclude: [],
 	compile: {},
 	render: {},
-	plugins: []
+	plugins: [],
+	propagateDelete: true
 }
 const configFileName = program.config
 if(fs.existsSync(configFileName)) {
