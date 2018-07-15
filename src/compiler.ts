@@ -3,6 +3,7 @@ import { Widget, Param } from './flutter-model'
 import { Element, Tag, Text } from './html-model'
 import { camelCase, upperCaseFirst } from 'change-case'
 import * as styleparser from 'style-parser'
+import { merge } from 'lodash'
 
 export interface CompileOptions {
 	imports?: string[]
@@ -15,22 +16,20 @@ export interface CompileOptions {
 const defaultCompileOptions: CompileOptions = {
 	textClass: 'Text',
 	divClass: 'Container',
-	multiChildClasses: []
+	multiChildClasses: [
+		'Row',
+		'Column',
+		'Stack',
+		'IndexedStack',
+		'GridView',
+		'Flow',
+		'Table',
+		'Wrap',
+		'ListBody',
+		'ListView',
+		'CustomMultiChildLayout'
+	]
 }
-
-const knownMultiChildClasses = [
-	'Row',
-	'Column',
-	'Stack',
-	'IndexedStack',
-	'GridView',
-	'Flow',
-	'Table',
-	'Wrap',
-	'ListBody',
-	'ListView',
-	'CustomMultiChildLayout'
-]
 
 const reservedAttributes = [
 	'as',
@@ -44,14 +43,14 @@ const reservedAttributes = [
  * @param {Element[]} html parsed html elements
  * @returns {Widget} generated Dart widget tree
  */
-export function compile(html: Element[], options?: CompileOptions): Widget {
-	const opts = options ? Object.assign(defaultCompileOptions, options) : defaultCompileOptions
-	opts.multiChildClasses = knownMultiChildClasses.concat(opts.multiChildClasses)
+export function compile(html: Element[], options: CompileOptions): Widget {
+	options = merge(defaultCompileOptions, options)
+	// console.log('compile options:', options)
 	if(html.length === 0) return null
 	if(html.length > 1) throw 'template code should start with a single top level tag'
 	const root = html[0] as Tag
 	root.attribs['style'] = undefined
-	return compileTag(html[0] as Tag, opts)
+	return compileTag(html[0] as Tag, options)
 }
 
 function compileTag(tag: Tag, options: CompileOptions) : Widget {

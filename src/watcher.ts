@@ -11,14 +11,19 @@ import { renderFile } from 'pug';
 import { compile, CompileOptions } from './compiler';
 import { Element, Tag } from './html-model';
 import { renderClass, RenderOptions } from './renderer';
+import { Widget } from './flutter-model';
 
-interface Config {
+export interface RenderPlugin {
+	transformWidget(widget: Widget) : Widget
+}
+
+export interface Config {
 	exclude?: string[]
 	compile?: CompileOptions,
 	render?: RenderOptions
 }
 
-export function startWatching(dirs: string[], config: Config, watch: boolean) {
+export function startWatching(dirs: string[], config: Config, plugins: RenderPlugin[], watch: boolean) {
 	
 	const gazePatterns = dirs.map(dir=>`${dir}/**/*.+(pug|html)`)
 	
@@ -29,9 +34,10 @@ export function startWatching(dirs: string[], config: Config, watch: boolean) {
 		// console.log('watching:', dirs)
 		for(var dir of Object.keys(dirs)) {
 			for(var file of dirs[dir]) {
-				processFile(file)
+				const sourceFile = file
+				processFile(sourceFile)
 					.then(dartFile=>console.log('updated', relative(process.cwd(), dartFile)))
-					.catch(error=>reportError(file, error))
+					.catch(error=>reportError(sourceFile, error))
 			}
 		}
 	
@@ -42,15 +48,15 @@ export function startWatching(dirs: string[], config: Config, watch: boolean) {
 		}
 	
 		// watch for changes
-		watcher.on('added', added => {
-			processFile(file)
+		watcher.on('added', sourceFile => {
+			processFile(sourceFile)
 				.then(dartFile=>console.log('added', relative(process.cwd(), dartFile)))
-				.catch(error=>reportError(file, error))
+				.catch(error=>reportError(sourceFile, error))
 		})
-		watcher.on('changed', changed => {
-			processFile(file)
+		watcher.on('changed', sourceFile => {
+			processFile(sourceFile)
 				.then(dartFile=>console.log('updated', relative(process.cwd(), dartFile)))
-				.catch(error=>reportError(file, error))
+				.catch(error=>reportError(sourceFile, error))
 		})
 		watcher.on('deleted', deleted => {
 		})
@@ -131,14 +137,14 @@ export function startWatching(dirs: string[], config: Config, watch: boolean) {
 		// console.log('rendering', JSON.stringify(ast, null, 3))
 		const widget = compile(ast, config.compile)
 		// console.log('widget', JSON.stringify(widget, null, 3), '\n')
-		const code = renderClass(widget, config.render)
+		const code = renderClass(widget, plugins, config.render)
 		// console.log('code', code)
 		return code
 	}
 
 	function reportError(file: string, error: Error) {
-		console.error('Error on processing ', relative(process.cwd(), file))
-		console.log(error.message)
+		console.error('Error on processing ', relative(process.cwd(), file), ':')
+		console.error(error.message, '\n')
 	}
 
 }

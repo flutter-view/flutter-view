@@ -1,5 +1,8 @@
 {
 	"exclude": [
 		"node_modules"
+	],
+	"plugins": [
+		"./dest/plugins/plugin-convert-divs"
 	]
 }

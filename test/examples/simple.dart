@@ -9,32 +9,32 @@ class SimplePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return
     PlatformScaffold(
-      appBar: const PlatformAppBar(
-        title: const Container(
+      appBar: PlatformAppBar(
+        title: Container(
           height: page.titleHeight,
-          child: const Text(
+          child: Text(
             '${page.title}'
           )
         )
       ),
-      body: const Container(
-        child: const Column(
+      body: Container(
+        child: Column(
           children: [
             Text(
               'Welcome ${page.firstName}!'
             ),
             Container(
-              child: const Text(
+              child: Text(
                 'Hello'
               )
             ),
             Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border.all(width: 1.0)
               ),
-              child: const PlatformButton(
+              child: PlatformButton(
                 onPressed: page.tapped,
-                child: const Text(
+                child: Text(
                   'Click me!!!'
                 )
               )
