@@ -27,7 +27,7 @@ function findParam(widget: Widget, name: string) : Param | null {
 export function renderClass(widget: Widget, plugins: RenderPlugin[], options: RenderOptions) : string | null {
 	options = merge(defaultRenderOptions, options)
 	// console.log('render options:', options)
-
+	const indentation = indent('', options.indentation)
 	const fields = getClassFields(widget)
 	const child = findParam(widget, 'child').value as Widget
 	const built = renderWidget(child)
@@ -50,7 +50,8 @@ export function renderClass(widget: Widget, plugins: RenderPlugin[], options: Re
 					built+';',
 				), options.indentation),
 				`}`
-			)
+			),
+			''
 		), options.indentation),
 		'}'
 	)
@@ -153,5 +154,5 @@ function unquote(text: string) : string {
 }
 
 function multiline(...lines: string[]) : string {
-	return lines.filter(line=>!!line).join('\n')
+	return lines.join('\n')
 }

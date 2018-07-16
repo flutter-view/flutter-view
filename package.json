@@ -1,7 +1,7 @@
 {
-  "name": "flutter-template",
+  "name": "flutter-view",
   "version": "1.0.0",
-  "description": "Create flutter widgets using pug templates",
+  "description": "Create flutter view widgets using pug and sass",
   "main": "cli.js",
   "bin": {
     "flutter-views": "./cli.js"
@@ -10,7 +10,6 @@
     "test": "test"
   },
   "dependencies": {
-    "@types/lodash": "^4.14.112",
     "change-case": "^3.0.2",
     "commander": "^2.16.0",
     "css-tree": "^1.0.0-alpha.29",
@@ -29,6 +28,7 @@
     "style-parser": "^1.1.1"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.112",
     "@types/mz": "0.0.32",
     "@types/node-sass": "^3.10.32",
     "@types/pug": "^2.0.4",

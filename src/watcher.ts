@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import * as gaze from 'gaze';
 import * as htmlparser from 'htmlparser';
 import * as juice from 'juice';
@@ -26,7 +26,7 @@ export interface Config {
 
 export function startWatching(dirs: string[], config: Config, plugins: RenderPlugin[], watch: boolean) {
 	
-	const gazePatterns = dirs.map(dir=>`${dir}/**/*.+(pug|html)`)
+	const gazePatterns = dirs.map(dir=>`${dir}/**/*.+(pug|htm|html|sass|css)`)
 	
 	gaze(gazePatterns, (err, watcher) => {
 		
@@ -36,8 +36,8 @@ export function startWatching(dirs: string[], config: Config, plugins: RenderPlu
 		for(var dir of Object.keys(dirs)) {
 			for(var file of dirs[dir]) {
 				const sourceFile = file
-				processFile(sourceFile)
-					.then(dartFile=>console.log('updated', relative(process.cwd(), dartFile)))
+				processFile(sourceFile, false)
+					.then(dartFile=>{if(dartFile) console.log('updated', relative(process.cwd(), dartFile))})
 					.catch(error=>reportError(sourceFile, error))
 			}
 		}
@@ -50,13 +50,13 @@ export function startWatching(dirs: string[], config: Config, plugins: RenderPlu
 	
 		// watch for changes
 		watcher.on('added', sourceFile => {
-			processFile(sourceFile)
-				.then(dartFile=>console.log('added', relative(process.cwd(), dartFile)))
+			processFile(sourceFile, true)
+				.then(dartFile=>{if(dartFile) console.log('added', relative(process.cwd(), dartFile))})
 				.catch(error=>reportError(sourceFile, error))
 		})
 		watcher.on('changed', sourceFile => {
-			processFile(sourceFile)
-				.then(dartFile=>console.log('updated', relative(process.cwd(), dartFile)))
+			processFile(sourceFile, true)
+				.then(dartFile=>{if(dartFile) console.log('updated', relative(process.cwd(), dartFile))})
 				.catch(error=>reportError(sourceFile, error))
 		})
 		watcher.on('deleted', sourceFile => {
@@ -72,7 +72,7 @@ export function startWatching(dirs: string[], config: Config, plugins: RenderPlu
 	
 	})
 	
-	async function processFile(file: string) : Promise<string> {
+	async function processFile(file: string, isUpdate: boolean) : Promise<string> {
 		let html
 		switch(extname(file)) {
 			case '.pug': {
@@ -81,6 +81,20 @@ export function startWatching(dirs: string[], config: Config, plugins: RenderPlu
 			}
 			case '.htm': case '.html': {
 				html = readFileSync(file).toString()
+				break
+			}
+			case '.css': case '.sass': {
+				if(isUpdate) {
+					const p = parseFileName(file)
+					const pugFile = `${p.dir}/${p.name}.pug`
+					const htmlFile = `${p.dir}/${p.name}.html`
+					if(existsSync(pugFile)) {
+						return await processFile(pugFile, isUpdate)
+					} else if(existsSync(htmlFile)) {
+						return await processFile(htmlFile, isUpdate)
+					}
+					throw `no pug or html template found for ${relative(process.cwd(), file)}`
+				} else return null
 			}
 		}
 		if(!html) throw `no html found in file ${file}`
@@ -99,37 +113,28 @@ export function startWatching(dirs: string[], config: Config, plugins: RenderPlu
 	
 		// there must be a root element and it must be a widget
 		const root = ast[0] as Tag
-		if(!root || !root.attribs || !root.attribs['flutter-widget']) return Promise.reject('no root or flutter-widget found')
+		if(!root || !root.attribs || !root.attribs['flutter-view']) return Promise.reject('no root or flutter-widget found')
 	
-		// if the widget has a style attribute, merge the css
-		if(root.attribs && root.attribs['style']) {
-			// calculate the absolute path of the file
-			const style = root.attribs['style']
-			const styleFile = resolve(dirname(file), style)
-			// preprocess sass if necessary
-			let css
-			switch (extname(styleFile)) {
-				case '.sass': {
-					const cssResult = renderSync({
-						file: styleFile,
-						outputStyle: 'expanded',
-						indentedSyntax: true
-					})
-					css = cssResult.css.toLocaleString()
-				}
-				case '.css': {
-					css = fs.readFileSync(styleFile).toString()
-				}
-			}
-			// console.log('css:', css, '\n')
-			// merge the css styles into the html
-			const mergedHtml = juice.inlineContent(html, css, {
-				xmlMode: false
+		// try to find a matching css or sass file
+		const p = parseFileName(file)
+		let css
+		const sassFile = `${p.dir}/${p.name}.sass`
+		const cssFile = `${p.dir}/${p.name}.css`
+		if(existsSync(sassFile)) {
+			const cssResult = renderSync({
+				file: sassFile,
+				outputStyle: 'expanded',
+				indentedSyntax: true
 			})
-			// console.log('merged: ', mergedHtml, '\n')
-			ast = await parse(mergedHtml)
+			css = cssResult.css.toLocaleString()
+		} else if(existsSync(cssFile)) {
+			css = fs.readFileSync(cssFile).toString()
 		}
-		return ast
+		// merge the css styles into the html
+		const mergedHtml = juice.inlineContent(html, css, {
+			xmlMode: false
+		})
+		return await parse(mergedHtml)
 	}
 	
 	async function parse(htm: string): Promise<Element[]>{
@@ -153,7 +158,7 @@ export function startWatching(dirs: string[], config: Config, plugins: RenderPlu
 
 	function reportError(file: string, error: Error) {
 		console.error('Error on processing ', relative(process.cwd(), file), ':')
-		console.error(error.message, '\n')
+		console.error(error)
 	}
 
 }

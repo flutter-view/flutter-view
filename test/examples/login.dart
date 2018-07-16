@@ -1,17 +1,22 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:scoped_model/scoped_model.dart';
+
 class LoginPage extends StatelessWidget {
+
   final model;
+
   LoginPage(this.model);
+
   @override
   Widget build(BuildContext context) {
     return
     PlatformScaffold(
       appBar: PlatformAppBar(
         title: Container(
-          child: Text(
+          child: PlatformText(
             'Login'
           )
         )
@@ -85,4 +90,5 @@ class LoginPage extends StatelessWidget {
       )
     );
   }
+
 }
