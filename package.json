@@ -31,8 +31,7 @@
     "@types/lodash": "^4.14.112",
     "@types/mz": "0.0.32",
     "@types/node-sass": "^3.10.32",
-    "@types/pug": "^2.0.4",
-    "@types/request": "^2.47.1"
+    "@types/pug": "^2.0.4"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
