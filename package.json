@@ -9,6 +9,10 @@
   "directories": {
     "test": "test"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blueneogeo/flutter-view"
+  },
   "dependencies": {
     "change-case": "^3.0.2",
     "commander": "^2.16.0",
@@ -32,8 +36,7 @@
     "@types/mz": "0.0.32",
     "@types/node-sass": "^3.10.32",
     "@types/pug": "^2.0.4",
-    "@types/request": "^2.47.1",
-    "gulp": "^3.9.1"
+    "@types/request": "^2.47.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
