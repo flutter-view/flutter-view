@@ -28,12 +28,32 @@ export function renderDartFile(widgets: Widget[], imports: string[], plugins: Re
 		'',
 		widgets
 			.map(widget=>renderClass(widget, plugins, options))
-			.join('\r\n')
+			.join('\r\n'),
+		'',
+		renderHelpers()
 	)
 
 	function renderClassImports(imports: string[]) : string {
 		if(!imports) return ''
 		return imports.map(_import => `import '${_import}';`).join('\r\n')
+	}
+
+	function renderHelpers() : string {
+		return multiline(
+			'List<Widget> __flatten(List list) {',
+			indent(
+				multiline(
+					'return List<Widget>.from(list.expand((item) {',
+					indent(
+						'return item is Iterable ? item : [item as Widget];',
+						options.indentation
+					),
+					'}));'
+				),
+				options.indentation
+			),
+			'}'
+		)
 	}
 
 }
@@ -92,24 +112,6 @@ export function renderClass(widget: Widget, plugins: RenderPlugin[], options: Re
 	
 	function renderWidget(widget: Widget) : string {
 
-		/**
-		 * this.controller.items.map((item) {
-          return PlatformButton(
-            onPressed: controller.pressed,
-            child: PlatformText(
-              'Press me ${item.message}!'
-            )
-          );
-        })
-		*/
-
-		function parseVForExpression(expression: string) {
-			const regexp = /(\w+) in ([\w.]+)/g
-			const match = regexp.exec(expression)
-			if(match) return { param: match[1], list: match[2] }
-			else return null
-		}
-
 		// if this widget has v-for, repeatedly render it
 		const vForParam = findParam(widget, 'vFor')
 		if(vForParam) {
@@ -125,13 +127,21 @@ export function renderClass(widget: Widget, plugins: RenderPlugin[], options: Re
 			)
 		}
 
-
 		const renderedParams = renderParams()
+
+		// render the widget class with the parameters
 		return multiline(
 			`${widget.constant?'const ':''}${widget.name}(`,
 			indent(renderedParams, options.indentation),
 			`)`
 		)
+
+		function parseVForExpression(expression: string) {
+			const regexp = /(\w+) in ([\w.]+)/g
+			const match = regexp.exec(expression)
+			if(match) return { param: match[1], list: match[2] }
+			else throw `Invalid v-for expression: "${expression}"`
+		}
 
 		function renderParams() : string {
 			const renderedParams : string[] = []
@@ -166,9 +176,9 @@ export function renderClass(widget: Widget, plugins: RenderPlugin[], options: Re
 						const widgets = param.value as Widget[]
 						const values = widgets.map(widget=>`${renderWidget(widget)}`)
 						return multiline(
-							`[`,
+							`__flatten([`,
 							indent(values.join(',\n'), options.indentation),
-							`]`
+							`])`
 						)
 					}
 				}
