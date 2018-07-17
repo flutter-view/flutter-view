@@ -24,10 +24,8 @@
     "lodash": "^4.17.10",
     "mz": "^2.7.0",
     "node-sass": "^4.9.2",
-    "node-watch": "^0.5.8",
     "path": "^0.12.7",
     "pug": "^2.0.3",
-    "relative": "^3.0.2",
     "request": "^2.87.0",
     "style-parser": "^1.1.1"
   },
