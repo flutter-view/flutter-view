@@ -1,5 +1,5 @@
 import * as indent from 'indent-string';
-import { merge, union } from 'lodash';
+import { merge, union, pull } from 'lodash';
 import { Param, Widget } from './flutter-model';
 import { RenderOptions } from './renderer';
 import { multiline, unquote } from './tools';
@@ -91,6 +91,41 @@ export function renderClass(widget: Widget, plugins: RenderPlugin[], options: Re
 	}
 	
 	function renderWidget(widget: Widget) : string {
+
+		/**
+		 * this.controller.items.map((item) {
+          return PlatformButton(
+            onPressed: controller.pressed,
+            child: PlatformText(
+              'Press me ${item.message}!'
+            )
+          );
+        })
+		*/
+
+		function parseVForExpression(expression: string) {
+			const regexp = /(\w+) in ([\w.]+)/g
+			const match = regexp.exec(expression)
+			if(match) return { param: match[1], list: match[2] }
+			else return null
+		}
+
+		// if this widget has v-for, repeatedly render it
+		const vForParam = findParam(widget, 'vFor')
+		if(vForParam) {
+			const result = parseVForExpression(vForParam.value as string)
+			pull(widget.params, vForParam)
+			return multiline(
+				`this.${result.list}.map((${result.param}) {`,
+				indent(multiline(
+					`return`,
+					renderWidget(widget)+';'
+				), options.indentation),
+				`})`,
+			)
+		}
+
+
 		const renderedParams = renderParams()
 		return multiline(
 			`${widget.constant?'const ':''}${widget.name}(`,

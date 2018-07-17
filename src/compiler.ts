@@ -122,7 +122,7 @@ function compileTag(tag: Tag, options: CompileOptions) : Widget {
 						children.push({
 							class: 'widget',
 							name: options.textClass,
-							constant: true,
+							constant: false,
 							params: [
 								{
 									class: 'param',

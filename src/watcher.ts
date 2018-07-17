@@ -36,13 +36,13 @@ export function startWatching(dirs: string[], config: Config, plugins: RenderPlu
 		
 		// process all watched files once
 		const dirs = watcher.watched()
-		// console.log('watching:', dirs)
 		for(var dir of Object.keys(dirs)) {
-			for(var file of dirs[dir]) {
-				const sourceFile = file
-				processFile(sourceFile, false)
-					.then(dartFile=>{if(dartFile) console.log('updated', relative(process.cwd(), dartFile))})
-					.catch(error=>reportError(sourceFile, error))
+			for(var sourceFile of dirs[dir]) {
+				if(extname(sourceFile).length > 0) {
+					processFile(sourceFile, false)
+						.then(dartFile=>{if(dartFile) console.log('updated', relative(process.cwd(), dartFile))})
+						.catch(error=>reportError(sourceFile, error))
+				}
 			}
 		}
 	
@@ -140,11 +140,15 @@ export function startWatching(dirs: string[], config: Config, plugins: RenderPlu
 		} else if(fs.existsSync(cssFile)) {
 			css = fs.readFileSync(cssFile).toString()
 		}
-		// merge the css styles into the html
-		const mergedHtml = juice.inlineContent(html, css, {
-			xmlMode: false
-		})
-		return await parse(mergedHtml)
+		if(css) {
+			// merge the css styles into the html
+			const mergedHtml = juice.inlineContent(html, css, {
+				xmlMode: false
+			})
+			return await parse(mergedHtml)
+		} else {
+			return await parse(html)
+		}
 
 		async function parse(htm: string): Promise<Element[]>{
 			return await new Promise(function(resolve, reject) {

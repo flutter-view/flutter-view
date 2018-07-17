@@ -8,8 +8,9 @@ class SimplePage extends StatelessWidget {
 
   final page;
   final user;
+  final members;
 
-  SimplePage(this.page, this.user);
+  SimplePage(this.page, this.user, this.members);
 
   @override
   Widget build(BuildContext context) {
@@ -20,38 +21,46 @@ class SimplePage extends StatelessWidget {
       appBar: PlatformAppBar(
         title: Container(
           height: page.titleHeight,
-          child: const PlatformText(
+          child: PlatformText(
             '${page.title}'
           )
         )
       ),
       body: Container(
         cols: 50,
-        child: const Column(
+        child: Column(
           title: 'Hello there!',
           children: [
-            const PlatformText(
+            PlatformText(
               'Welcome ${page.firstName}!'
             ),
             Container(
-              child: const PlatformText(
+              child: PlatformText(
                 'Hello'
               )
             ),
             Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: 'Border.all(width: 1.0)'
               ),
-              child: const PlatformButton(
+              child: PlatformButton(
                 onPressed: page.tapped,
-                child: const PlatformText(
+                child: PlatformText(
                   'Click me!!!'
                 )
               )
             ),
             Container(
               child: user
-            )
+            ),
+            this.members.map((member) {
+              return
+              Container(
+                child: PlatformText(
+                  'Hello my name is ${member.name}'
+                )
+              );
+            })
           ]
         )
       )

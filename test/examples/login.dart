@@ -15,7 +15,7 @@ class LoginPage extends StatelessWidget {
     PlatformScaffold(
       appBar: PlatformAppBar(
         title: Container(
-          child: const PlatformText(
+          child: PlatformText(
             'Login'
           )
         )

@@ -16,7 +16,7 @@ class TestPage extends StatelessWidget {
     PlatformScaffold(
       appBar: PlatformAppBar(
         title: Container(
-          child: const PlatformText(
+          child: PlatformText(
             'Login'
           )
         ),
@@ -33,7 +33,7 @@ class TestPage extends StatelessWidget {
                   )
                 ),
                 Container(
-                  child: const PlatformText(
+                  child: PlatformText(
                     'Hello world!'
                   )
                 )

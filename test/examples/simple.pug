@@ -1,16 +1,17 @@
 import(package='testerdertest')
 
-simple-page(flutter-view :page :user)
+simple-page(flutter-view :page :user :members)
 	platform-scaffold
 		platform-app-bar(as='appBar')
 			#title(as='title' :height='page.titleHeight') 
 				| ${page.title}
 		#body(as='body')
-			column(const)
+			column
 				| Welcome ${page.firstName}!
 				#greeting Hello
 				#actions.a.b
-					box-decoration(const as='decoration')
-					platform-button(const :on-pressed='page.tapped') Click me!!!
+					box-decoration(as='decoration')
+					platform-button(:on-pressed='page.tapped') Click me!!!
 				#user(:child='user')
-
+				.member(v-for='member in members')
+					| Hello my name is ${member.name}

@@ -4,7 +4,7 @@
   "description": "Create flutter view widgets using pug and sass",
   "main": "cli.js",
   "bin": {
-    "flutter-views": "./cli.js"
+    "flutter-view": "./cli.js"
   },
   "directories": {
     "test": "test"
