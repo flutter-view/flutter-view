@@ -112,6 +112,14 @@ export function renderClass(widget: Widget, plugins: RenderPlugin[], options: Re
 	
 	function renderWidget(widget: Widget) : string {
 
+		// if this widget has v-if, write code that either renders the widget,
+		// or that replaces it with an empty container.
+		const vIfParam = findParam(widget, 'vIf')
+		if(vIfParam) {
+			pull(widget.params, vIfParam)
+			return `${vIfParam.value} ? ${renderWidget(widget)} : Container()`
+		}
+
 		// if this widget has v-for, repeatedly render it
 		const vForParam = findParam(widget, 'vFor')
 		if(vForParam) {
