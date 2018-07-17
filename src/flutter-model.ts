@@ -2,6 +2,7 @@ export interface Widget {
 	class: 'widget'
 	name: string
 	value?: string
+	constant: boolean
 	params?: Param[]
 }
 

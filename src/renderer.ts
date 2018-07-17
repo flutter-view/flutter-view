@@ -1,8 +1,9 @@
-import { RenderPlugin } from './watcher'
-import { RenderOptions } from './renderer'
-import { Widget, Param } from './flutter-model'
-import * as indent from 'indent-string'
-import { merge} from 'lodash'
+import * as indent from 'indent-string';
+import { merge, union } from 'lodash';
+import { Param, Widget } from './flutter-model';
+import { RenderOptions } from './renderer';
+import { multiline, unquote } from './tools';
+import { RenderPlugin } from './watcher';
 
 export interface RenderOptions {
 	imports?: string[]
@@ -19,22 +20,29 @@ const defaultRenderOptions: RenderOptions = {
 	indentation: 2
 }
 
-function findParam(widget: Widget, name: string) : Param | null {
-	if(!widget.params) return null
-	return widget.params.find(param => param.name==name)
+export function renderDartFile(widgets: Widget[], imports: string[], plugins: RenderPlugin[], options: RenderOptions) : string {
+	options = merge(defaultRenderOptions, options)
+	const allImports = union(options.imports, imports)
+	return multiline(
+		renderClassImports(allImports),
+		'',
+		widgets
+			.map(widget=>renderClass(widget, plugins, options))
+			.join('\r\n')
+	)
+
+	function renderClassImports(imports: string[]) : string {
+		if(!imports) return ''
+		return imports.map(_import => `import '${_import}';`).join('\r\n')
+	}
+
 }
 
 export function renderClass(widget: Widget, plugins: RenderPlugin[], options: RenderOptions) : string | null {
-	options = merge(defaultRenderOptions, options)
-	// console.log('render options:', options)
-	const indentation = indent('', options.indentation)
 	const fields = getClassFields(widget)
 	const child = findParam(widget, 'child').value as Widget
 	const built = renderWidget(child)
 	return multiline(
-		'',
-		renderClassImports(options.imports),
-		'',
 		`class ${widget.name} extends StatelessWidget {`,
 		indent(multiline(
 			'',
@@ -66,11 +74,6 @@ export function renderClass(widget: Widget, plugins: RenderPlugin[], options: Re
 		}
 	}
 	
-	function renderClassImports(imports: string[]) : string {
-		if(!imports) return ''
-		return imports.map(_import => `import '${_import}';`).join('\n')
-	}
-	
 	function renderClassFields(fields: { name: string, value: string }[]) : string {
 		return fields
 			.map(field=> {
@@ -90,14 +93,14 @@ export function renderClass(widget: Widget, plugins: RenderPlugin[], options: Re
 	function renderWidget(widget: Widget) : string {
 		const renderedParams = renderParams()
 		return multiline(
-			`${widget.name}(`,
+			`${widget.constant?'const ':''}${widget.name}(`,
 			indent(renderedParams, options.indentation),
 			`)`
 		)
 
 		function renderParams() : string {
 			const renderedParams : string[] = []
-			const paramsToRender = widget.params ? widget.params.filter(param=>param.name!='value') : null
+			const paramsToRender = widget.params ? widget.params.filter(param=>param.name!='value'&&param.name!='const') : null
 			if(paramsToRender) {
 				for(var param of paramsToRender) {
 					if(param.name) {
@@ -138,21 +141,11 @@ export function renderClass(widget: Widget, plugins: RenderPlugin[], options: Re
 			}
 		}
 	}
-	
 
-}
-
-function unquote(text: string) : string {
-	if(!text) return ''
-	if(text.startsWith('"') && text.endsWith('"')) {
-		return text.substring(1, text.length-1)
+	function findParam(widget: Widget, name: string) : Param | null {
+		if(!widget.params) return null
+		return widget.params.find(param => param.name==name)
 	}
-	if(text.startsWith("'") && text.endsWith("'")) {
-		return text.substring(1, text.length-1)
-	}
-	return text
+		
 }
 
-function multiline(...lines: string[]) : string {
-	return lines.join('\n')
-}

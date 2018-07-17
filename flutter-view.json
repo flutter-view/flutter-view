@@ -4,5 +4,10 @@
 	],
 	"plugins": [
 		"./dest/plugins/plugin-convert-divs"
-	]
+	],
+	"debug": {
+		"logAST": false,
+		"logHTML": false,
+		"logCode": false
+	}
 }

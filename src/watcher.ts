@@ -1,17 +1,18 @@
 #!/usr/bin/env node
 
-import { readFileSync, existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import * as gaze from 'gaze';
 import * as htmlparser from 'htmlparser';
 import * as juice from 'juice';
+import { merge, cloneDeep } from 'lodash';
 import * as fs from 'mz/fs';
 import { renderSync } from 'node-sass';
-import { dirname, extname, parse as parseFileName, resolve, relative } from 'path';
+import { extname, parse as parseFileName, relative } from 'path';
 import { renderFile } from 'pug';
-import { compile, CompileOptions } from './compiler';
-import { Element, Tag } from './html-model';
-import { renderClass, RenderOptions } from './renderer';
+import { compile, CompileOptions, extractImports } from './compiler';
 import { Widget } from './flutter-model';
+import { Element } from './html-model';
+import { renderDartFile, RenderOptions } from './renderer';
 
 export interface RenderPlugin {
 	transformWidget(widget: Widget) : Widget
@@ -21,7 +22,12 @@ export interface Config {
 	exclude?: string[]
 	compile?: CompileOptions,
 	render?: RenderOptions,
-	propagateDelete: boolean
+	propagateDelete?: boolean,
+	debug?: {
+		logHTML?: boolean,
+		logAST?: boolean,
+		logCode?: boolean
+	}
 }
 
 export function startWatching(dirs: string[], config: Config, plugins: RenderPlugin[], watch: boolean) {
@@ -73,6 +79,7 @@ export function startWatching(dirs: string[], config: Config, plugins: RenderPlu
 	})
 	
 	async function processFile(file: string, isUpdate: boolean) : Promise<string> {
+		// extract the html from the file, depending on the type
 		let html
 		switch(extname(file)) {
 			case '.pug': {
@@ -98,22 +105,27 @@ export function startWatching(dirs: string[], config: Config, plugins: RenderPlu
 			}
 		}
 		if(!html) throw `no html found in file ${file}`
+		if(config.debug && config.debug.logHTML) console.debug(file, 'HTML:' + html)
+
+		// convert the html into an abstract syntax tree, merging any css in the process
 		const ast = await processHtml(file, html)
 		if(!ast) throw `no ast found in html of file ${file}`
+		if(config.debug && config.debug.logAST) console.debug(file, 'AST:\n' + JSON.stringify(ast, null, 3))
+
+		// convert the ast into code
 		const code = await renderCode(ast)
+		if(config.debug && config.debug.logCode) console.debug(file, 'Code:\n' + code)
+
+		// save the code
 		const p = parseFileName(file)
 		const dartFile = `${p.dir}/${p.name}.dart`
 		fs.writeFileSync(dartFile, code)
-		// console.log('updated', dartFile)
 		return dartFile
 	}
 	
 	async function processHtml(file: string, html: string): Promise<Element[]> {
+		// transform the html into an abstract syntax tree
 		let ast = await parse(html)
-	
-		// there must be a root element and it must be a widget
-		const root = ast[0] as Tag
-		if(!root || !root.attribs || !root.attribs['flutter-view']) return Promise.reject('no root or flutter-widget found')
 	
 		// try to find a matching css or sass file
 		const p = parseFileName(file)
@@ -135,29 +147,26 @@ export function startWatching(dirs: string[], config: Config, plugins: RenderPlu
 			xmlMode: false
 		})
 		return await parse(mergedHtml)
-	}
-	
-	async function parse(htm: string): Promise<Element[]>{
-		return await new Promise(function(resolve, reject) {
-			const handler = new htmlparser.DefaultHandler(function (error, dom) {
-				if (error) reject(error)
-				else resolve(dom)
-			}, { verbose: false, ignoreWhitespace: true })
-			new htmlparser.Parser(handler).parseComplete(htm)
-		}) as Element[]
+
+		async function parse(htm: string): Promise<Element[]>{
+			return await new Promise(function(resolve, reject) {
+				const handler = new htmlparser.DefaultHandler(function (error, dom) {
+					if (error) reject(error)
+					else resolve(dom)
+				}, { verbose: false, ignoreWhitespace: true })
+				new htmlparser.Parser(handler).parseComplete(htm)
+			}) as Element[]
+		}
 	}
 	
 	function renderCode(ast: Element[]) : string {
-		// console.log('rendering', JSON.stringify(ast, null, 3))
-		const widget = compile(ast, config.compile)
-		// console.log('widget', JSON.stringify(widget, null, 3), '\n')
-		const code = renderClass(widget, plugins, config.render)
-		// console.log('code', code)
-		return code
+		const widgets = compile(ast, config.compile)
+		const imports = extractImports(ast)
+		return renderDartFile(widgets, imports, plugins, config.render)
 	}
 
 	function reportError(file: string, error: Error) {
-		console.error('Error on processing ', relative(process.cwd(), file), ':')
+		console.error('Error on processing', relative(process.cwd(), file) + ':')
 		console.error(error)
 	}
 

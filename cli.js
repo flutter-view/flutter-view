@@ -7,13 +7,13 @@ const _ = require('lodash')
 program
 	.version('1.0.0')
 	.usage('[options] <directory ...>')
-	.description('Converts html and pug templates into Flutter widget code.')
+	.description('Converts html and css templates into Flutter view widget code.')
 	.option('-w, --watch', 'Watch for changes')
-	.option('-c, --config <file>', 'Optional config file to use', 'watcher.json')
+	.option('-c, --config <file>', 'Optional config file to use', 'flutter-view.json')
 	.parse(process.argv)
 
 // extract the parameters
-const watch = program.watch
+program.watch
 const dirs = program.args.length > 0 ? program.args : ['.']
 // get the configuration
 let config = {
@@ -21,7 +21,12 @@ let config = {
 	compile: {},
 	render: {},
 	plugins: [],
-	propagateDelete: true
+	propagateDelete: true,
+	debug: {
+		logHTML: false,
+		logAST: false,
+		logCode: false
+	}
 }
 const configFileName = program.config
 if(fs.existsSync(configFileName)) {
@@ -29,9 +34,7 @@ if(fs.existsSync(configFileName)) {
 	config = _.merge(config, loadedConfig)
 }
 // load any plugins
-plugins = [
-
-]
+let plugins = []
 if(config.plugins) {
 	for(let plugin of config.plugins) {
 		pluginFn = require(plugin)

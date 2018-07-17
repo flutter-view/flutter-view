@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
@@ -6,9 +5,9 @@ import 'package:scoped_model/scoped_model.dart';
 
 class LoginPage extends StatelessWidget {
 
-  final model;
 
-  LoginPage(this.model);
+
+  LoginPage();
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +15,7 @@ class LoginPage extends StatelessWidget {
     PlatformScaffold(
       appBar: PlatformAppBar(
         title: Container(
-          child: PlatformText(
+          child: const PlatformText(
             'Login'
           )
         )
@@ -35,54 +34,52 @@ class LoginPage extends StatelessWidget {
               )
             )
           ),
-          ScopedModel(
-            model: model,
-            child: Material(
-              color: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 120.0),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: model.loginUserName,
-                            autocorrect: false,
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: 'Username'
-                            )
+          Material(
+            color: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 120.0),
+              child: Column(
+                vModel: 'model',
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: model.loginUserName,
+                          autocorrect: false,
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: 'Username'
                           )
                         )
-                      ]
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: model.loginPassword,
-                            autocorrect: false,
-                            obscureText: true,
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: 'Password'
-                            )
-                          )
-                        )
-                      ]
-                    ),
-                    PlatformButton(
-                      onPressed: model.login
-                    ),
-                    PlatformText(
-                      'model.loginErrorMessage',
-                      style: TextStyle(
-                        color: Colors.redAccent
                       )
+                    ]
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: model.loginPassword,
+                          autocorrect: false,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: 'Password'
+                          )
+                        )
+                      )
+                    ]
+                  ),
+                  PlatformButton(
+                    onPressed: model.login
+                  ),
+                  PlatformText(
+                    'model.loginErrorMessage',
+                    style: TextStyle(
+                      color: Colors.redAccent
                     )
-                  ]
-                )
+                  )
+                ]
               )
             )
           )
