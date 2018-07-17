@@ -1,10 +1,8 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync } from 'fs';
 import * as gaze from 'gaze';
 import * as htmlparser from 'htmlparser';
 import * as juice from 'juice';
-import { merge, cloneDeep } from 'lodash';
 import * as fs from 'mz/fs';
 import { renderSync } from 'node-sass';
 import { extname, parse as parseFileName, relative } from 'path';
@@ -87,7 +85,7 @@ export function startWatching(dirs: string[], config: Config, plugins: RenderPlu
 				break
 			}
 			case '.htm': case '.html': {
-				html = readFileSync(file).toString()
+				html = fs.readFileSync(file).toString()
 				break
 			}
 			case '.css': case '.sass': {
@@ -95,9 +93,9 @@ export function startWatching(dirs: string[], config: Config, plugins: RenderPlu
 					const p = parseFileName(file)
 					const pugFile = `${p.dir}/${p.name}.pug`
 					const htmlFile = `${p.dir}/${p.name}.html`
-					if(existsSync(pugFile)) {
+					if(fs.existsSync(pugFile)) {
 						return await processFile(pugFile, isUpdate)
-					} else if(existsSync(htmlFile)) {
+					} else if(fs.existsSync(htmlFile)) {
 						return await processFile(htmlFile, isUpdate)
 					}
 					throw `no pug or html template found for ${relative(process.cwd(), file)}`
@@ -132,14 +130,14 @@ export function startWatching(dirs: string[], config: Config, plugins: RenderPlu
 		let css
 		const sassFile = `${p.dir}/${p.name}.sass`
 		const cssFile = `${p.dir}/${p.name}.css`
-		if(existsSync(sassFile)) {
+		if(fs.existsSync(sassFile)) {
 			const cssResult = renderSync({
 				file: sassFile,
 				outputStyle: 'expanded',
 				indentedSyntax: true
 			})
 			css = cssResult.css.toLocaleString()
-		} else if(existsSync(cssFile)) {
+		} else if(fs.existsSync(cssFile)) {
 			css = fs.readFileSync(cssFile).toString()
 		}
 		// merge the css styles into the html

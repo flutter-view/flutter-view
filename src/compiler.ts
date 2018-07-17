@@ -1,10 +1,9 @@
 import { camelCase, upperCaseFirst } from 'change-case';
-import { merge } from 'lodash';
+import { merge, pull } from 'lodash';
 import * as styleparser from 'style-parser';
 import { CompileOptions } from './compiler';
 import { Param, Widget } from './flutter-model';
 import { Element, Tag, Text } from './html-model';
-import { pull } from 'lodash'
 
 export interface CompileOptions {
 	imports?: string[]
