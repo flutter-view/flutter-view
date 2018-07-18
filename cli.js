@@ -32,8 +32,8 @@ if(fs.existsSync(configFileName)) {
 let plugins = []
 if(config.plugins) {
 	for(let plugin of config.plugins) {
-		pluginFn = require(plugin)
-		console.log('loading plugin', plugin)
+		const pluginFn = require(plugin)
+		console.log('loaded plugin', plugin)
 		plugins.push(pluginFn)
 	}
 }

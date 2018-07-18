@@ -14,7 +14,7 @@ import { Element } from './html-model';
 import { renderDartFile } from './renderer';
 
 export interface RenderPlugin {
-	transformWidget(widget: Widget) : Widget
+	transformWidget(widget: Widget, options: Options) : Widget
 }
 
 export interface Options {
@@ -193,9 +193,9 @@ export function startWatching(dirs: string[], options: Options, plugins: RenderP
 	}
 	
 	function renderCode(ast: Element[]) : string {
-		const widgets = compile(ast, options)
+		const widgets = compile(ast, plugins, options)
 		const imports = extractImports(ast)
-		return renderDartFile(widgets, imports, plugins, options)
+		return renderDartFile(widgets, imports, options)
 	}
 
 	function reportError(file: string, error: Error) {

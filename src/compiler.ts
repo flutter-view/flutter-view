@@ -1,19 +1,21 @@
 import { camelCase, upperCaseFirst } from 'change-case';
 import { merge, pull } from 'lodash';
 import * as styleparser from 'style-parser';
-import { Options } from './watcher';
+import { Options, RenderPlugin } from './watcher';
 import { Param, Widget } from './flutter-model';
 import { Element, Tag, Text } from './html-model';
+import { tail } from 'lodash'
 
 /**
  * Extracts from the html any import elements, and returns those elements as imports
- * @param html the html elements, which get modified
+ * @param {Element[]} html the html elements, which get modified
+ * @returns a list of import urls
  */
 export function extractImports(html: Element[]) : string[] {
-	let imports: Tag[] = []
-	for(let el of html) {
+	const imports: Tag[] = []
+	for(const el of html) {
 		if(el.type == 'tag') {
-			let tag = el as Tag
+			const tag = el as Tag
 			if(tag.name == 'import') {
 				imports.push(tag)
 				pull(html, tag)
@@ -29,30 +31,36 @@ export function extractImports(html: Element[]) : string[] {
 /**
  * Compiles a parsed html tree into Flutter Dart code
  * @param {Element[]} html parsed html elements
+ * @param {Options} options compilation options
  * @returns {Widget} generated Dart widget tree
  */
-export function compile(html: Element[], options: Options): Widget[] {
+export function compile(html: Element[], plugins: RenderPlugin[], options: Options): Widget[] {
 	return html
 		.filter(el=>isFlutterView(el))
-		.map(el=>compileTag(el as Tag, options))
-
+		.map(el=>compileTag(el as Tag, plugins, options))
 }
 
-function compileTag(tag: Tag, options: Options) : Widget {
+/**
+ * Converts a tag and all of its children into a flutter dart tree
+ * @param {Tag} tag the tag and children to convert
+ * @param {Options} options compilation options
+ * @returns {Widget} widget descriptor with tree of connected children widgets
+ */
+function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widget {
 	if(tag.name == 'div') {
 		tag.name = options.tagClasses['div']
 	}
 	const widgetClass = upperCaseFirst(camelCase(tag.name))
 
-	let params: Param[] = []
+	const params: Param[] = []
 	if(tag.attribs) {
 		if(tag.attribs['style']) {
 			const styleRules = styleparser(tag.attribs['style'])
-			for(let attr in styleRules) {
+			for(const attr in styleRules) {
 				tag.attribs[':' + attr] = styleRules[attr]
 			}
 		}
-		for(let attr in tag.attribs) {
+		for(const attr in tag.attribs) {
 			if(attr != 'as' && attr != 'id' && attr != 'class' && attr != 'style') {
 				const expression = attr.startsWith(':')
 				const name = expression ? attr.substring(1) : attr
@@ -68,13 +76,13 @@ function compileTag(tag: Tag, options: Options) : Widget {
 	}
 	if(tag.children) {
 		// find all children and slot properties in the tag block
-		let children: Widget[] = []
-		for(let child of tag.children) {
+		const children: Widget[] = []
+		for(const child of tag.children) {
 			switch(child.type) {
 				case 'tag': {
-					let subTag = child as Tag
-					let widget = compileTag(subTag, options)
-					let slot = subTag.attribs ? subTag.attribs['as'] : null
+					const subTag = child as Tag
+					const widget = compileTag(subTag, plugins, options)
+					const slot = subTag.attribs ? subTag.attribs['as'] : null
 					// if a subtag is a slot, it is actually a widget as a property
 					if(slot) {
 						params.push({
@@ -92,7 +100,7 @@ function compileTag(tag: Tag, options: Options) : Widget {
 					const text = child as Text
 					const value = text.data.trim()
 					if(value.length !== 0 && !value.startsWith('//')) {
-						children.push({
+						const widget: Widget = {
 							class: 'widget',
 							name: options.tagClasses['text'],
 							constant: false,
@@ -103,7 +111,9 @@ function compileTag(tag: Tag, options: Options) : Widget {
 									value: value
 								}
 							]
-						})
+						}
+						const processed = applyPlugins(widget, plugins, options)
+						children.push(processed)
 					}
 				}
 			}
@@ -127,16 +137,34 @@ function compileTag(tag: Tag, options: Options) : Widget {
 		}
 	}
 	const isConstant = tag.attribs && (tag.attribs['const'] || tag.attribs['const'] == '')
-	return {
+	const widget: Widget = {
 		class: 'widget',
 		constant: isConstant,
 		name: widgetClass,
 		params: params
 	}
+	return applyPlugins(widget, plugins, options)
 }
 
-function isFlutterView(element: Element) {
+/**
+ * Checks if the element contains the flutter-view attribute
+ * @param {Element} element the root element to check
+ * @returns true if the element is a flutter-view root element
+ */
+function isFlutterView(element: Element) : boolean {
 	if(element.type != 'tag') return false
 	const tag = element as Tag
 	return tag.attribs && (tag.attribs['flutter-view'] || tag.attribs['flutter-view'] == '')
+}
+
+/**
+ * Recursively apply all plugins to the widget, either modifying or creating a new widget tree
+ * @param widget the widget to apply all passed plugins on
+ * @param plugins the plugins to apply
+ */
+function applyPlugins(widget: Widget, plugins: RenderPlugin[], options: Options) : Widget {
+	if(!plugins || plugins.length == 0) return widget
+	const plugin = plugins[0]
+	const newWidget = plugin.transformWidget(widget, options)
+	return applyPlugins(newWidget, tail(plugins), options)
 }

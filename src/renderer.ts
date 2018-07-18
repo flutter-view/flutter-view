@@ -1,17 +1,16 @@
 import * as indent from 'indent-string';
 import { merge, union, pull, fromPairs } from 'lodash';
 import { Param, Widget } from './flutter-model';
-import { multiline, unquote } from './tools';
-import { RenderPlugin } from './watcher';
+import { multiline, unquote, findParam } from './tools';
 import { Options } from './watcher';
 
-export function renderDartFile(widgets: Widget[], imports: string[], plugins: RenderPlugin[], options: Options) : string {
+export function renderDartFile(widgets: Widget[], imports: string[], options: Options) : string {
 	const allImports = union(options.imports, imports)
 	return multiline(
 		renderClassImports(options.imports),
 		'',
 		widgets
-			.map(widget=>renderClass(widget, plugins, options))
+			.map(widget=>renderClass(widget, options))
 			.join('\r\n'),
 		'',
 		renderHelpers()
@@ -42,7 +41,7 @@ export function renderDartFile(widgets: Widget[], imports: string[], plugins: Re
 
 }
 
-export function renderClass(widget: Widget, plugins: RenderPlugin[], options: Options) : string | null {
+export function renderClass(widget: Widget, options: Options) : string | null {
 	const fields = getClassFields(widget)
 	const vModelTypeParam = findParam(widget, 'vModelType')
 	const vModelType = vModelTypeParam ? vModelTypeParam.value : null
@@ -156,16 +155,14 @@ export function renderClass(widget: Widget, plugins: RenderPlugin[], options: Op
 			)
 		}
 
-		const renderedParams = renderParams()
-
 		// render the widget class with the parameters
 		return multiline(
 			`${widget.constant?'const ':''}${widget.name}(`,
-			indent(renderedParams, options.indentation),
+			indent(renderParams(), options.indentation),
 			`)`
 		)
 
-		function parseVForExpression(expression: string) {
+		function parseVForExpression(expression: string) : { param: string, list: string } {
 			const regexp = /(\w+) in ([\w.]+)/g
 			const match = regexp.exec(expression)
 			if(match) return { param: match[1], list: match[2] }
@@ -214,11 +211,6 @@ export function renderClass(widget: Widget, plugins: RenderPlugin[], options: Op
 				throw `unknown parameter type ${param.type}`
 			}
 		}
-	}
-
-	function findParam(widget: Widget, name: string) : Param | null {
-		if(!widget.params) return null
-		return widget.params.find(param => param.name==name)
 	}
 		
 }
