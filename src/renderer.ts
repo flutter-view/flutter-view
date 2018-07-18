@@ -46,8 +46,6 @@ export function renderClass(widget: Widget, plugins: RenderPlugin[], options: Op
 	const fields = getClassFields(widget)
 	const vModelTypeParam = findParam(widget, 'vModelType')
 	const vModelType = vModelTypeParam ? vModelTypeParam.value : null
-	console.log(vModelType)
-
 	const child = findParam(widget, 'child').value as Widget
 	const built = renderWidget(child)
 	return multiline(
@@ -117,9 +115,14 @@ export function renderClass(widget: Widget, plugins: RenderPlugin[], options: Op
 		const vModelParam = findParam(widget, 'vModel')
 		if(vModelParam) {
 			pull(widget.params, vModelParam)
-			if(vModelType) {
+			// check if there is a v-model-type on the widget as well
+			const vModelTypeParam = findParam(widget, 'vModelType')
+			if(vModelTypeParam) pull(widget.params, vModelTypeParam)
+			const localVModelType = vModelTypeParam ? vModelTypeParam.value : vModelType
+			// if we have a type, create the wrapper
+			if(localVModelType) {
 				return multiline(
-					`ScopedModelDescendant<${vModelType}>(`,
+					`ScopedModelDescendant<${localVModelType}>(`,
 					indent(multiline(
 						`builder: (context, widget, ${vModelParam.value}) {`,
 						indent(`return ${renderWidget(widget)};`, options.indentation),
@@ -144,7 +147,7 @@ export function renderClass(widget: Widget, plugins: RenderPlugin[], options: Op
 			const result = parseVForExpression(vForParam.value as string)
 			pull(widget.params, vForParam)
 			return multiline(
-				`this.${result.list}.map((${result.param}) {`,
+				`${result.list}.map((${result.param}) {`,
 				indent(multiline(
 					`return`,
 					renderWidget(widget)+';'
