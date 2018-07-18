@@ -23,22 +23,10 @@ if(!dirs) {
 	return
 }
 // get the configuration
-let config = {
-	exclude: [],
-	compile: {},
-	render: {},
-	plugins: [],
-	propagateDelete: true,
-	debug: {
-		logHTML: false,
-		logAST: false,
-		logCode: false
-	}
-}
 const configFileName = program.config
+let config = {}
 if(fs.existsSync(configFileName)) {
-	const loadedConfig = JSON.parse(fs.readFileSync(configFileName).toString())
-	config = _.merge(config, loadedConfig)
+	config = JSON.parse(fs.readFileSync(configFileName).toString())
 }
 // load any plugins
 let plugins = []

@@ -1,25 +1,28 @@
 #!/usr/bin/env node
 
 import * as gaze from 'gaze';
+import { merge } from './tools'
 import * as htmlparser from 'htmlparser';
 import * as juice from 'juice';
 import * as fs from 'mz/fs';
 import { renderSync } from 'node-sass';
 import { extname, parse as parseFileName, relative } from 'path';
 import { renderFile } from 'pug';
-import { compile, CompileOptions, extractImports } from './compiler';
+import { compile, extractImports } from './compiler';
 import { Widget } from './flutter-model';
 import { Element } from './html-model';
-import { renderDartFile, RenderOptions } from './renderer';
+import { renderDartFile } from './renderer';
 
 export interface RenderPlugin {
 	transformWidget(widget: Widget) : Widget
 }
 
-export interface Config {
+export interface Options {
+	indentation: 2,
 	exclude?: string[]
-	compile?: CompileOptions,
-	render?: RenderOptions,
+	imports: string[],
+	tagClasses: object,
+	multiChildClasses: string[],
 	propagateDelete?: boolean,
 	debug?: {
 		logHTML?: boolean,
@@ -28,7 +31,35 @@ export interface Config {
 	}
 }
 
-export function startWatching(dirs: string[], config: Config, plugins: RenderPlugin[], watch: boolean) {
+const defaultOptions: Options = {
+	indentation: 2,
+	imports: [
+		'package:flutter/material.dart',
+		'package:flutter/cupertino.dart',
+		'package:flutter_platform_widgets/flutter_platform_widgets.dart',
+	],
+	tagClasses: {
+		text: 'PlatformText',
+		div: 'Container'
+	},
+	multiChildClasses: [
+		'Row',
+		'Column',
+		'Stack',
+		'IndexedStack',
+		'GridView',
+		'Flow',
+		'Table',
+		'Wrap',
+		'ListBody',
+		'ListView',
+		'CustomMultiChildLayout'
+	],
+	propagateDelete: true
+}
+
+export function startWatching(dirs: string[], options: Options, plugins: RenderPlugin[], watch: boolean) {
+	merge(options, defaultOptions)
 	
 	const gazePatterns = dirs.map(dir=>`${dir}/**/*.+(pug|htm|html|sass|css)`)
 	
@@ -64,7 +95,7 @@ export function startWatching(dirs: string[], config: Config, plugins: RenderPlu
 				.catch(error=>reportError(sourceFile, error))
 		})
 		watcher.on('deleted', sourceFile => {
-			if(config.propagateDelete) {
+			if(options.propagateDelete) {
 				const p = parseFileName(sourceFile)
 				const dartFile = `${p.dir}/${p.name}.dart`
 				if(fs.existsSync(dartFile)) {
@@ -103,16 +134,16 @@ export function startWatching(dirs: string[], config: Config, plugins: RenderPlu
 			}
 		}
 		if(!html) throw `no html found in file ${file}`
-		if(config.debug && config.debug.logHTML) console.debug(file, 'HTML:' + html)
+		if(options.debug && options.debug.logHTML) console.debug(file, 'HTML:' + html)
 
 		// convert the html into an abstract syntax tree, merging any css in the process
 		const ast = await processHtml(file, html)
 		if(!ast) throw `no ast found in html of file ${file}`
-		if(config.debug && config.debug.logAST) console.debug(file, 'AST:\n' + JSON.stringify(ast, null, 3))
+		if(options.debug && options.debug.logAST) console.debug(file, 'AST:\n' + JSON.stringify(ast, null, 3))
 
 		// convert the ast into code
 		const code = await renderCode(ast)
-		if(config.debug && config.debug.logCode) console.debug(file, 'Code:\n' + code)
+		if(options.debug && options.debug.logCode) console.debug(file, 'Code:\n' + code)
 
 		// save the code
 		const p = parseFileName(file)
@@ -162,9 +193,9 @@ export function startWatching(dirs: string[], config: Config, plugins: RenderPlu
 	}
 	
 	function renderCode(ast: Element[]) : string {
-		const widgets = compile(ast, config.compile)
+		const widgets = compile(ast, options)
 		const imports = extractImports(ast)
-		return renderDartFile(widgets, imports, plugins, config.render)
+		return renderDartFile(widgets, imports, plugins, options)
 	}
 
 	function reportError(file: string, error: Error) {

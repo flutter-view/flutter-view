@@ -1,35 +1,9 @@
 import { camelCase, upperCaseFirst } from 'change-case';
 import { merge, pull } from 'lodash';
 import * as styleparser from 'style-parser';
-import { CompileOptions } from './compiler';
+import { Options } from './watcher';
 import { Param, Widget } from './flutter-model';
 import { Element, Tag, Text } from './html-model';
-
-export interface CompileOptions {
-	imports?: string[]
-	textClass?: string
-	divClass?: string,
-	multiChildClasses?: string[]
-	lineNumbers?: boolean
-}
-
-const defaultCompileOptions: CompileOptions = {
-	textClass: 'PlatformText',
-	divClass: 'Container',
-	multiChildClasses: [
-		'Row',
-		'Column',
-		'Stack',
-		'IndexedStack',
-		'GridView',
-		'Flow',
-		'Table',
-		'Wrap',
-		'ListBody',
-		'ListView',
-		'CustomMultiChildLayout'
-	]
-}
 
 /**
  * Extracts from the html any import elements, and returns those elements as imports
@@ -57,17 +31,16 @@ export function extractImports(html: Element[]) : string[] {
  * @param {Element[]} html parsed html elements
  * @returns {Widget} generated Dart widget tree
  */
-export function compile(html: Element[], options: CompileOptions): Widget[] {
-	options = merge(defaultCompileOptions, options)
+export function compile(html: Element[], options: Options): Widget[] {
 	return html
 		.filter(el=>isFlutterView(el))
 		.map(el=>compileTag(el as Tag, options))
 
 }
 
-function compileTag(tag: Tag, options: CompileOptions) : Widget {
+function compileTag(tag: Tag, options: Options) : Widget {
 	if(tag.name == 'div') {
-		tag.name = options.divClass
+		tag.name = options.tagClasses['div']
 	}
 	const widgetClass = upperCaseFirst(camelCase(tag.name))
 
@@ -121,7 +94,7 @@ function compileTag(tag: Tag, options: CompileOptions) : Widget {
 					if(value.length !== 0 && !value.startsWith('//')) {
 						children.push({
 							class: 'widget',
-							name: options.textClass,
+							name: options.tagClasses['text'],
 							constant: false,
 							params: [
 								{

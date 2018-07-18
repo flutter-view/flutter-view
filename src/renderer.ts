@@ -1,30 +1,14 @@
 import * as indent from 'indent-string';
-import { merge, union, pull } from 'lodash';
+import { merge, union, pull, fromPairs } from 'lodash';
 import { Param, Widget } from './flutter-model';
-import { RenderOptions } from './renderer';
 import { multiline, unquote } from './tools';
 import { RenderPlugin } from './watcher';
+import { Options } from './watcher';
 
-export interface RenderOptions {
-	imports?: string[]
-	indentation?: number
-}
-
-const defaultRenderOptions: RenderOptions = {
-	imports: [
-		'package:flutter/material.dart',
-		'package:flutter/cupertino.dart',
-		'package:flutter_platform_widgets/flutter_platform_widgets.dart',
-		'package:scoped_model/scoped_model.dart'
-	],
-	indentation: 2
-}
-
-export function renderDartFile(widgets: Widget[], imports: string[], plugins: RenderPlugin[], options: RenderOptions) : string {
-	options = merge(defaultRenderOptions, options)
+export function renderDartFile(widgets: Widget[], imports: string[], plugins: RenderPlugin[], options: Options) : string {
 	const allImports = union(options.imports, imports)
 	return multiline(
-		renderClassImports(allImports),
+		renderClassImports(options.imports),
 		'',
 		widgets
 			.map(widget=>renderClass(widget, plugins, options))
@@ -58,14 +42,19 @@ export function renderDartFile(widgets: Widget[], imports: string[], plugins: Re
 
 }
 
-export function renderClass(widget: Widget, plugins: RenderPlugin[], options: RenderOptions) : string | null {
+export function renderClass(widget: Widget, plugins: RenderPlugin[], options: Options) : string | null {
 	const fields = getClassFields(widget)
+	const vModelTypeParam = findParam(widget, 'vModelType')
+	const vModelType = vModelTypeParam ? vModelTypeParam.value : null
+	console.log(vModelType)
+
 	const child = findParam(widget, 'child').value as Widget
 	const built = renderWidget(child)
 	return multiline(
 		`class ${widget.name} extends StatelessWidget {`,
 		indent(multiline(
 			'',
+			vModelType ? `final ${vModelType} __scopedModel;` : null,
 			renderClassFields(fields),
 			'',
 			renderConstructor(widget.name, fields),
@@ -73,10 +62,18 @@ export function renderClass(widget: Widget, plugins: RenderPlugin[], options: Re
 			multiline(
 				`@override`,
 				`Widget build(BuildContext context) {`,
-				indent(multiline(
-					`return`,
-					built+';',
-				), options.indentation),
+				(
+					vModelType ?
+						indent(multiline(
+							`final widget = ${built};`,
+							`return (__scopedModel != null) ?`,
+							indent(multiline(
+								`ScopedModel<${vModelType}>(model: __scopedModel, child: widget) `,
+								`: widget;`
+							), options.indentation)
+						), options.indentation)
+						: indent(`return ${built};`, options.indentation)
+				),
 				`}`
 			),
 			''
@@ -88,7 +85,7 @@ export function renderClass(widget: Widget, plugins: RenderPlugin[], options: Re
 		if(widget.params) {
 			return widget.params
 				.filter(p=>p.type=='expression')
-				.map(p=>({ name: p.name, value: p.value ? p.value.toString() : null }))
+				.map(p=>({ name: p.name, value: (p.value ? p.value.toString() : null) }))
 		} else {
 			return []
 		}
@@ -107,10 +104,31 @@ export function renderClass(widget: Widget, plugins: RenderPlugin[], options: Re
 	}
 	
 	function renderConstructor(name: string, fields: { name: string, value: string }[]) : string {
-		return `${name}(${fields.map(f=>`this.${f.name}`).join(', ')});`
+		if(vModelType) {
+			return `${name}({ ${vModelType} model, ${fields.map(f=>`this.${f.name}`).join(', ')} })  : __scopedModel = model;`
+		} else {
+			return `${name}({ ${fields.map(f=>`this.${f.name}`).join(', ')} });`
+		}
 	}
 	
 	function renderWidget(widget: Widget) : string {
+
+		// if this widget has v-model, wrap it with a ScopedModelDescendant
+		const vModelParam = findParam(widget, 'vModel')
+		if(vModelParam) {
+			pull(widget.params, vModelParam)
+			if(vModelType) {
+				return multiline(
+					`ScopedModelDescendant<${vModelType}>(`,
+					indent(multiline(
+						`builder: (context, widget, ${vModelParam.value}) {`,
+						indent(`return ${renderWidget(widget)};`, options.indentation),
+						`}`
+					), options.indentation),
+					`)`
+				)
+			}
+		}
 
 		// if this widget has v-if, write code that either renders the widget,
 		// or that replaces it with an empty container.
