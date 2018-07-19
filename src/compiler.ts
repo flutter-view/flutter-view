@@ -93,7 +93,7 @@ function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widge
 						if(subTag.name=='slot') {
 							params.push({
 								class: 'param',
-								type: 'widgets',
+								type: 'array',
 								name: camelCase(slot),
 								value: subTag.children
 									.map(subTagChild=>compileTag(subTagChild as Tag, plugins, options))

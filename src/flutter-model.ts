@@ -8,7 +8,7 @@ export interface Widget {
 
 export interface Param {
 	class: 'param',
-	type: 'literal' | 'expression' | 'widget' | 'widgets'
+	type: 'literal' | 'expression' | 'widget' | 'widgets' | 'array'
 	name?: string
 	value: string | Widget | Widget[]
 }

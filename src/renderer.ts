@@ -198,6 +198,15 @@ export function renderClass(widget: Widget, options: Options) : string | null {
 						const _const = ''
 						return `${_const}${renderWidget(param.value as Widget)}`
 					}
+					case 'array': {
+						const widgets = param.value as Widget[]
+						const values = widgets.map(widget=>`${renderWidget(widget)}`)
+						return multiline(
+							`[`,
+							indent(values.join(',\n'), options.indentation),
+							`]`
+						)
+					}
 					case 'widgets': {
 						const widgets = param.value as Widget[]
 						const values = widgets.map(widget=>`${renderWidget(widget)}`)
