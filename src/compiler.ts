@@ -5,6 +5,7 @@ import { Options, RenderPlugin } from './watcher';
 import { Param, Widget } from './flutter-model';
 import { Element, Tag, Text } from './html-model';
 import { tail } from 'lodash'
+import * as decode from 'decode-html'
 
 /**
  * Extracts from the html any import elements, and returns those elements as imports
@@ -72,7 +73,7 @@ function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widge
 					class: 'param',
 					type: expression ? 'expression' : 'literal',
 					name: (name=='value') ? undefined : camelCase(name),
-					value: attr!=value ? value : null // pug renders empty attributes as key==value
+					value: attr!=value ? decode(value) : null // pug renders empty attributes as key==value
 				})
 			}
 		}
@@ -86,17 +87,28 @@ function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widge
 			switch(child.type) {
 				case 'tag': {
 					const subTag = child as Tag
-					const widget = compileTag(subTag, plugins, options)
 					// if a subtag is a slot, it is actually a widget as a property
 					const slot = subTag.attribs ? subTag.attribs['as'] : null
 					if(slot) {
-						params.push({
-							class: 'param',
-							type: 'widget',
-							name: camelCase(slot),
-							value: widget
-						})
+						if(subTag.name=='slot') {
+							params.push({
+								class: 'param',
+								type: 'widgets',
+								name: camelCase(slot),
+								value: subTag.children
+									.map(subTagChild=>compileTag(subTagChild as Tag, plugins, options))
+							})
+						} else {
+							const widget = compileTag(subTag, plugins, options)
+							params.push({
+								class: 'param',
+								type: 'widget',
+								name: camelCase(slot),
+								value: widget
+							})
+						}
 					} else {
+						const widget = compileTag(subTag, plugins, options)
 						children.push(widget)
 					}
 					break
@@ -114,7 +126,7 @@ function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widge
 									{
 										class: 'param',
 										type: 'literal',
-										value: value
+										value: decode(value)
 									}
 								]
 							}

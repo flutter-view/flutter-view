@@ -23,7 +23,7 @@ export function renderDartFile(widgets: Widget[], imports: string[], options: Op
 
 	function renderHelpers() : string {
 		return multiline(
-			'List<Widget> __flatten(List list) {',
+			'__flatten(List list) {',
 			indent(
 				multiline(
 					'return List<Widget>.from(list.expand((item) {',
