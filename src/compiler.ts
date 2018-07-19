@@ -47,11 +47,14 @@ export function compile(html: Element[], plugins: RenderPlugin[], options: Optio
  * @returns {Widget} widget descriptor with tree of connected children widgets
  */
 function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widget {
-	if(tag.name == 'div') {
-		tag.name = options.tagClasses['div']
+	// use the configured class name if we set it in the tagClasses option
+	for(let tagName of Object.keys(options.tagClasses)) {
+		if(tag.name == tagName) tag.name = options.tagClasses[tagName]
 	}
+
 	const widgetClass = upperCaseFirst(camelCase(tag.name))
 
+	// apply styles as properties
 	const params: Param[] = []
 	if(tag.attribs) {
 		if(tag.attribs['style']) {
@@ -74,6 +77,8 @@ function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widge
 			}
 		}
 	}
+
+	// calculate the tag constructor parameters
 	if(tag.children) {
 		// find all children and slot properties in the tag block
 		const children: Widget[] = []
@@ -82,8 +87,8 @@ function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widge
 				case 'tag': {
 					const subTag = child as Tag
 					const widget = compileTag(subTag, plugins, options)
-					const slot = subTag.attribs ? subTag.attribs['as'] : null
 					// if a subtag is a slot, it is actually a widget as a property
+					const slot = subTag.attribs ? subTag.attribs['as'] : null
 					if(slot) {
 						params.push({
 							class: 'param',
@@ -98,44 +103,72 @@ function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widge
 				}
 				case 'text': {
 					const text = child as Text
-					const value = text.data.trim()
-					if(value.length !== 0 && !value.startsWith('//')) {
-						const widget: Widget = {
-							class: 'widget',
-							name: options.tagClasses['text'],
-							constant: false,
-							params: [
-								{
-									class: 'param',
-									type: 'literal',
-									value: value
-								}
-							]
+					const values = text.data.split('\n').map(line=>line.trim())
+					for(let value of values) {
+						if(value.length !== 0 && !value.startsWith('//')) {
+							const widget: Widget = {
+								class: 'widget',
+								name: options.tagClasses['text'],
+								constant: false,
+								params: [
+									{
+										class: 'param',
+										type: 'literal',
+										value: value
+									}
+								]
+							}
+							const processed = applyPlugins(widget, plugins, options)
+							children.push(processed)
 						}
-						const processed = applyPlugins(widget, plugins, options)
-						children.push(processed)
 					}
 				}
 			}
 		}
-		// add the child or children parameter to the widget
+		// add the child or children parameter to the widget params
 		const isMultiChildClass = !!options.multiChildClasses.find(cls=>cls==widgetClass)
-		if(isMultiChildClass || children.length > 1) {
-			params.push({
-				class: 'param',
-				type: 'widgets',
-				name: 'children',
-				value: children
-			})
-		} else if(children.length == 1) {
-			params.push({
-				class: 'param',
-				type: 'widget',
-				name: 'child',
-				value: children[0]
-			})
+		if(children.length > 0) {
+			if(isMultiChildClass) {
+				params.push({
+					class: 'param',
+					type: 'widgets',
+					name: 'children',
+					value: children
+				})
+			} else {
+				if(children.length == 1 || !options.autowrapChildren) {
+					params.push({
+						class: 'param',
+						type: 'widget',
+						name: 'child',
+						value: children[0]
+					})
+				} else {
+					params.push({
+						class: 'param',
+						type: 'widget',
+						name: 'child',
+						value: {
+							class: 'widget',
+							constant: false,
+							name: options.autowrapChildrenClass,
+							params: [
+								{
+									class: 'param',
+									type: 'widgets',
+									name: 'children',
+									value: children
+								}
+							]
+						}
+					})
+				}	
+			} 
+
 		}
 	}
+
+	// create the widget for the tag
 	const isConstant = tag.attribs && (tag.attribs['const'] || tag.attribs['const'] == '')
 	const widget: Widget = {
 		class: 'widget',

@@ -18,16 +18,22 @@ export interface RenderPlugin {
 }
 
 export interface Options {
-	indentation: 2,
-	exclude?: string[]
-	imports: string[],
-	tagClasses: object,
-	multiChildClasses: string[],
-	propagateDelete?: boolean,
-	debug?: {
-		logHTML?: boolean,
-		logAST?: boolean,
-		logCode?: boolean
+	indentation: 2, // the indentation of the code to generate
+	imports: string[], // a list of imports to put in every generated file
+	tagClasses: { // a map of tags with their asociated classes
+		div: string, // the class to represent a div in dart code
+		text: string // the class to represent text in dart code
+		span: string // the class to represent a span element in dart code
+	}, 
+	multiChildClasses: string[], // a list of classes that have a children constructor parameter
+	autowrapChildren?: true, // use a wrapper child if a tag without a children parameter has multiple children in the template
+	autowrapChildrenClass?: string, // the class to use as the child wrapper
+	propagateDelete?: boolean, // should genenerated dart file be deleted if the pug/html file with the same name is deleted?
+	debug?: { // some debugging settings
+		logHTML?: boolean, // log the generated merged style html
+		logHtmlAST?: boolean, // log the generated AST from the parsed html
+		logDartAST?: boolean, // log the generated AST from compiling the html AST
+		logCode?: boolean // log the generated code
 	}
 }
 
@@ -40,7 +46,8 @@ const defaultOptions: Options = {
 	],
 	tagClasses: {
 		text: 'PlatformText',
-		div: 'Container'
+		div: 'Container',
+		span: 'Wrap'
 	},
 	multiChildClasses: [
 		'Row',
@@ -55,6 +62,8 @@ const defaultOptions: Options = {
 		'ListView',
 		'CustomMultiChildLayout'
 	],
+	autowrapChildren: true,
+	autowrapChildrenClass: 'Column',
 	propagateDelete: true
 }
 
@@ -108,6 +117,7 @@ export function startWatching(dirs: string[], options: Options, plugins: RenderP
 	})
 	
 	async function processFile(file: string, isUpdate: boolean) : Promise<string> {
+		const relativeFile = relative(process.cwd(), file)
 		// extract the html from the file, depending on the type
 		let html
 		switch(extname(file)) {
@@ -129,21 +139,28 @@ export function startWatching(dirs: string[], options: Options, plugins: RenderP
 					} else if(fs.existsSync(htmlFile)) {
 						return await processFile(htmlFile, isUpdate)
 					}
-					throw `no pug or html template found for ${relative(process.cwd(), file)}`
+					throw `no pug or html template found for ${relativeFile}`
 				} else return null
 			}
 		}
 		if(!html) throw `no html found in file ${file}`
-		if(options.debug && options.debug.logHTML) console.debug(file, 'HTML:' + html)
+		if(options.debug && options.debug.logHTML) console.debug(relativeFile, 'HTML:\n' + html)
 
 		// convert the html into an abstract syntax tree, merging any css in the process
 		const ast = await processHtml(file, html)
 		if(!ast) throw `no ast found in html of file ${file}`
-		if(options.debug && options.debug.logAST) console.debug(file, 'AST:\n' + JSON.stringify(ast, null, 3))
+		if(options.debug && options.debug.logHtmlAST) console.debug(relativeFile, 'HTML AST:\n' + JSON.stringify(ast, null, 3))
 
-		// convert the ast into code
-		const code = await renderCode(ast)
-		if(options.debug && options.debug.logCode) console.debug(file, 'Code:\n' + code)
+		// convert the html ast into a dart widget tree to render
+		const widgets = compile(ast, plugins, options)
+		if(options.debug && options.debug.logDartAST) console.debug(relativeFile, 'Dart AST:\n' + JSON.stringify(widgets, null, 3))
+
+		// extract the imports to use from the ast
+		const imports = extractImports(ast)
+
+		// convert the widget tree with imports into dart source code
+		const code = renderDartFile(widgets, imports, options)
+		if(options.debug && options.debug.logCode) console.debug(relativeFile, 'Code:\n' + code)
 
 		// save the code
 		const p = parseFileName(file)
@@ -190,12 +207,6 @@ export function startWatching(dirs: string[], options: Options, plugins: RenderP
 				new htmlparser.Parser(handler).parseComplete(htm)
 			}) as Element[]
 		}
-	}
-	
-	function renderCode(ast: Element[]) : string {
-		const widgets = compile(ast, plugins, options)
-		const imports = extractImports(ast)
-		return renderDartFile(widgets, imports, options)
 	}
 
 	function reportError(file: string, error: Error) {

@@ -146,12 +146,12 @@ export function renderClass(widget: Widget, options: Options) : string | null {
 			const result = parseVForExpression(vForParam.value as string)
 			pull(widget.params, vForParam)
 			return multiline(
-				`${result.list}.map((${result.param}) {`,
+				`${result.list}.map<Widget>((${result.param}) {`,
 				indent(multiline(
 					`return`,
 					renderWidget(widget)+';'
 				), options.indentation),
-				`})`,
+				`}).toList()`,
 			)
 		}
 
