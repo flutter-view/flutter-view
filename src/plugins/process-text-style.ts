@@ -13,20 +13,30 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 	const textDecorationParam = findParam(widget, 'textDecoration')
 	const textDecorationColorParam = findParam(widget, 'textDecorationColor')
 	const textDecorationStyleParam = findParam(widget, 'textDecorationStyle')
-	const backgroundColorParam = findParam(widget, 'backgroundColor')
+	const wordSpacingParam = findParam(widget, 'wordSpacing')
+	const textAlignParam = findParam(widget, 'textAlign')
+	const textOverflowParam = findParam(widget, 'textOverflow')
+	const wordWrapParam = findParam(widget, 'wordWrap')
+	const softWrapParam = findParam(widget, 'softWrap')
+	const maxLinesParam = findParam(widget, 'maxLines')
 
-	if(
-		!fontSizeParam && 
-		!fontColorParam && 
-		!fontFamilyParam && 
-		!fontWeightParam &&
-		!fontStyleParam &&
-		!lineHeightParam &&
-		!textDecorationParam &&
-		!textDecorationColorParam &&
-		!textDecorationStyleParam &&
-		!backgroundColorParam
-	) return widget
+	const update =
+		fontSizeParam ||
+		fontColorParam || 
+		fontFamilyParam || 
+		fontWeightParam ||
+		fontStyleParam ||
+		lineHeightParam ||
+		textDecorationParam ||
+		textDecorationColorParam ||
+		textDecorationStyleParam ||
+		wordSpacingParam ||
+		textAlignParam ||
+		textOverflowParam ||
+		wordWrapParam ||
+		softWrapParam ||
+		maxLinesParam
+	if(!update) return widget
 
 	const textStyleParams: Param[] = []
 
@@ -120,28 +130,19 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		})
 	}
 
-	if(backgroundColorParam) {
-		pull(widget.params, backgroundColorParam)
+	if(wordSpacingParam) {
+		pull(widget.params, wordSpacingParam)
 		textStyleParams.push({
 			class: 'param',
-			name: 'background',
+			name: 'wordSpacing',
 			type: 'expression',
-			value: unquote(backgroundColorParam.value.toString())
+			value: wordSpacingParam.value.toString()
 		})
 	}
 
+	// create the DefaultTextStyle wrapper
+
 	const params: Param[] = [
-		{
-			class: 'param',
-			name: 'style',
-			type: 'widget',
-			value: {
-				constant: false,
-				class: 'widget',
-				name: 'TextStyle',
-				params: textStyleParams
-			}
-		},
 		{
 			class: 'param',
 			name: 'child',
@@ -149,6 +150,77 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			value: widget
 		}
 	]
+
+	if(textStyleParams.length > 0) params.push({
+		class: 'param',
+		name: 'style',
+		type: 'widget',
+		value: {
+			constant: false,
+			class: 'widget',
+			name: 'TextStyle',
+			params: textStyleParams
+		}
+	})
+
+	if(textAlignParam) {
+		pull(widget.params, textAlignParam)
+		params.push({
+			class: 'param',
+			name: 'textAlign',
+			type: 'expression',
+			value: `TextAlign.${unquote(textAlignParam.value.toString())}`
+		})
+	}
+
+	if(textOverflowParam) {
+		pull(widget.params, textOverflowParam)
+		params.push({
+			class: 'param',
+			name: 'overflow',
+			type: 'expression',
+			value: `TextOverflow.${unquote(textOverflowParam.value.toString())}`
+		})
+	}
+
+	if(wordWrapParam || softWrapParam) {
+		pull(widget.params, wordWrapParam)
+		pull(widget.params, softWrapParam)
+		let wordWrap : string
+		if(softWrapParam) {
+			wordWrap = softWrapParam.value.toString()
+		} else {
+			switch(unquote(wordWrapParam.value.toString())) {
+				case 'normal': case 'true': {
+					wordWrap = 'true'
+					break
+				}
+				case 'break-word': case 'false': {
+					wordWrap = 'false'
+					break
+				}
+				default: {
+					console.log('no valid word-wrap style set, expecting one of [true, false, normal, break-word].')
+				}
+			}
+		}
+		params.push({
+			class: 'param',
+			name: 'softWrap',
+			type: 'expression',
+			value: wordWrap
+		})
+	}
+
+	if(maxLinesParam) {
+		pull(widget.params, maxLinesParam)
+		params.push({
+			class: 'param',
+			name: 'maxLines',
+			type: 'expression',
+			value: unquote(maxLinesParam.value.toString())
+		})
+	}
 
 	// if the widget uses vFor, move that vFor to the textstyle instead
 	const vForParam = findParam(widget, 'vFor')
