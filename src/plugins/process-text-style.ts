@@ -1,13 +1,32 @@
-import { Options } from './../watcher';
+import { Options } from './../watcher'
 import { Widget, Param } from '../flutter-model'
-import * as parse from 'style-parser'
 import { pull} from 'lodash'
-import { multiline, unquote, findParam } from '../tools';
+import { multiline, unquote, findParam } from '../tools'
 
 export function transformWidget(widget: Widget, options: Options): Widget {
 	const fontSizeParam = findParam(widget, 'fontSize')
 	const fontColorParam = findParam(widget, 'color')
-	if(!fontSizeParam && !fontColorParam) return widget;
+	const fontFamilyParam = findParam(widget, 'fontFamily')
+	const fontWeightParam = findParam(widget, 'fontWeight')
+	const fontStyleParam = findParam(widget, 'fontStyle')
+	const lineHeightParam = findParam(widget, 'lineHeight')
+	const textDecorationParam = findParam(widget, 'textDecoration')
+	const textDecorationColorParam = findParam(widget, 'textDecorationColor')
+	const textDecorationStyleParam = findParam(widget, 'textDecorationStyle')
+	const backgroundColorParam = findParam(widget, 'backgroundColor')
+
+	if(
+		!fontSizeParam && 
+		!fontColorParam && 
+		!fontFamilyParam && 
+		!fontWeightParam &&
+		!fontStyleParam &&
+		!lineHeightParam &&
+		!textDecorationParam &&
+		!textDecorationColorParam &&
+		!textDecorationStyleParam &&
+		!backgroundColorParam
+	) return widget
 
 	const textStyleParams: Param[] = []
 
@@ -31,24 +50,85 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		})
 	}
 
-	// let child : Widget
-	// if(vForParam) {
-	// 	child = {
-	// 		class: 'widget',
-	// 		constant: false,
-	// 		name: options.autowrapChildrenClass,
-	// 		params: [
-	// 			{
-	// 				class: 'param',
-	// 				type: 'widget',
-	// 				name: 'children',
-	// 				value: widget
-	// 			}
-	// 		]
-	// 	}
-	// } else {
-	// 	child = widget
-	// }
+	if(fontFamilyParam) {
+		pull(widget.params, fontFamilyParam)
+		textStyleParams.push({
+			class: 'param',
+			name: 'fontFamily',
+			type: 'expression',
+			value: fontFamilyParam.value.toString()
+		})
+	}
+
+	if(fontWeightParam) {
+		pull(widget.params, fontWeightParam)
+		textStyleParams.push({
+			class: 'param',
+			name: 'fontWeight',
+			type: 'expression',
+			value: `FontWeight.${unquote(fontWeightParam.value.toString())}`
+		})
+	}
+
+	if(fontStyleParam) {
+		pull(widget.params, fontStyleParam)
+		textStyleParams.push({
+			class: 'param',
+			name: 'fontStyle',
+			type: 'expression',
+			value: `FontStyle.${unquote(fontStyleParam.value.toString())}`
+		})
+	}
+
+	if(lineHeightParam) {
+		pull(widget.params, lineHeightParam)
+		textStyleParams.push({
+			class: 'param',
+			name: 'height',
+			type: 'expression',
+			value: lineHeightParam.value.toString()
+		})
+	}
+
+	if(textDecorationParam) {
+		pull(widget.params, textDecorationParam)
+		textStyleParams.push({
+			class: 'param',
+			name: 'decoration',
+			type: 'expression',
+			value: `TextDecoration.${unquote(textDecorationParam.value.toString())}`
+		})
+	}
+
+	if(textDecorationColorParam) {
+		pull(widget.params, textDecorationColorParam)
+		textStyleParams.push({
+			class: 'param',
+			name: 'decorationColor',
+			type: 'expression',
+			value: unquote(textDecorationColorParam.value.toString())
+		})
+	}
+
+	if(textDecorationStyleParam) {
+		pull(widget.params, textDecorationStyleParam)
+		textStyleParams.push({
+			class: 'param',
+			name: 'decorationStyle',
+			type: 'expression',
+			value: `TextDecorationStyle.${unquote(textDecorationStyleParam.value.toString())}`
+		})
+	}
+
+	if(backgroundColorParam) {
+		pull(widget.params, backgroundColorParam)
+		textStyleParams.push({
+			class: 'param',
+			name: 'background',
+			type: 'expression',
+			value: unquote(backgroundColorParam.value.toString())
+		})
+	}
 
 	const params: Param[] = [
 		{

@@ -28,7 +28,10 @@ if(fs.existsSync(configFileName)) {
 	config = JSON.parse(fs.readFileSync(configFileName).toString())
 }
 // load any plugins
-let plugins = []
+let plugins = [
+	// './dest/plugins/process-text-style'
+]
+console.log('plugins: ', config.plugins)
 if(config.plugins) {
 	for(let plugin of config.plugins) {
 		const pluginFn = require(plugin)

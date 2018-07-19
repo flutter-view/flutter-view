@@ -19,6 +19,7 @@ export interface RenderPlugin {
 
 export interface Options {
 	indentation: 2, // the indentation of the code to generate
+	plugins?: string[],
 	imports: string[], // a list of imports to put in every generated file
 	tagClasses: { // a map of tags with their asociated classes
 		div: string, // the class to represent a div in dart code
