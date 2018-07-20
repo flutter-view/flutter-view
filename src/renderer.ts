@@ -18,11 +18,12 @@ export function renderDartFile(widgets: Widget[], imports: string[], options: Op
 
 	function renderClassImports(imports: string[]) : string {
 		if(!imports) return ''
-		return imports.map(_import => `import '${_import}';`).join('\r\n')
+		return imports.map(_import => `// ignore: unused_import\nimport '${_import}';`).join('\r\n')
 	}
 
 	function renderHelpers() : string {
 		return multiline(
+			'// ignore: unused_element',
 			'__flatten(List list) {',
 			indent(
 				multiline(
@@ -47,36 +48,29 @@ export function renderClass(widget: Widget, options: Options) : string | null {
 	const vModelType = vModelTypeParam ? vModelTypeParam.value : null
 	const child = findParam(widget, 'child').value as Widget
 	const built = renderWidget(child)
-	return multiline(
-		`class ${widget.name} extends StatelessWidget {`,
-		indent(multiline(
-			'',
-			vModelType ? `final ${vModelType} __scopedModel;` : null,
-			renderClassFields(fields),
-			'',
-			renderConstructor(widget.name, fields),
-			'',
-			multiline(
-				`@override`,
-				`Widget build(BuildContext context) {`,
-				(
-					vModelType ?
-						indent(multiline(
-							`final widget = ${built};`,
-							`return (__scopedModel != null) ?`,
-							indent(multiline(
-								`ScopedModel<${vModelType}>(model: __scopedModel, child: widget) `,
-								`: widget;`
-							), options.indentation)
-						), options.indentation)
-						: indent(`return ${built};`, options.indentation)
-				),
-				`}`
-			),
-			''
-		), options.indentation),
-		'}'
-	)
+	const returnType = child.name
+	if(vModelType) {
+		return multiline(
+			'// ignore: non_constant_identifier_names',
+			`ScopedModel<${vModelType}> ${renderConstructor(widget.name, fields)} {`,
+			indent(multiline(
+				`final widget = ${built};`,
+				`return (model != null) ?`,
+				indent(multiline(
+					`ScopedModel<${vModelType}>(model: model, child: widget) `,
+					`: widget;`
+				), options.indentation)
+			), options.indentation),
+			`}`
+		)
+	} else {
+		return multiline(
+			'// ignore: non_constant_identifier_names',
+			`${returnType} ${renderConstructor(widget.name, fields)} {`,
+			indent(`return ${built};`, options.indentation),
+			`}`
+		)
+	}
 
 	function getClassFields(widget: Widget) {
 		if(widget.params) {
@@ -88,23 +82,13 @@ export function renderClass(widget: Widget, options: Options) : string | null {
 		}
 	}
 	
-	function renderClassFields(fields: { name: string, value: string }[]) : string {
-		return fields
-			.map(field=> {
-				if(field.value && field.value != 'true') {
-					return `final ${field.name} = ${field.value};`
-				} else {
-					return `final ${field.name};`
-				}
-			})
-			.join('\n')
-	}
-	
 	function renderConstructor(name: string, fields: { name: string, value: string }[]) : string {
 		if(vModelType) {
-			return `${name}({ ${vModelType} model, ${fields.map(f=>`this.${f.name}`).join(', ')} })  : __scopedModel = model;`
+			return `${name}({ ${vModelType} model, ${fields.map(f=>`@required ${f.name}`).join(', ')} })`
+		} else if(fields.length > 0) {
+			return `${name}({ ${fields.map(f=>`@required ${f.name}`).join(', ')} })`
 		} else {
-			return `${name}({ ${fields.map(f=>`this.${f.name}`).join(', ')} });`
+			return `${name}()`
 		}
 	}
 	

@@ -41,7 +41,7 @@ export function findAndRemoveStyleParam(widget: Widget, name: string) : Param | 
 export function parseStyleColor(color: string) : string {
 	if(!color) return ''
 	if(color.length == 7 && color.startsWith('#') && color) {
-		return `Color(0xFF${color.substring(1, 7)})` // Color(0xFFB74093)
+		return `Color(0xFF${color.substring(1, 7).toUpperCase()})` // Color(0xFFB74093)
 	}
 	if(color.indexOf('.') < 0 && color.indexOf('(') < 0) {
 		return `Colors.${color}`
