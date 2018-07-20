@@ -1,5 +1,5 @@
 import { Param, Widget } from '../flutter-model';
-import { findAndRemoveStyleParam, findParam, unquote } from '../tools';
+import { findAndRemoveStyleParam, parseStyleColor, findParam, unquote } from '../tools';
 import { Options } from '../watcher';
 import { pull} from 'lodash';
 
@@ -36,10 +36,9 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'param',
 			name: 'color',
 			type: 'expression',
-			value: unquote(backgroundColorParam.value.toString()),
+			value: parseStyleColor(unquote(backgroundColorParam.value.toString())),
 			resolved: true
 		})
-		console.log(widget)
 	}
 
 	return widget

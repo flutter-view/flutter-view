@@ -1,5 +1,5 @@
 import { Param, Widget } from '../flutter-model';
-import { findAndRemoveStyleParam, findParam, unquote } from '../tools';
+import { findAndRemoveStyleParam, findParam, unquote, parseStyleColor, parseStyleDoubleValue } from '../tools';
 import { Options } from './../watcher';
 import { pull} from 'lodash';
 
@@ -45,7 +45,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'param',
 			name: 'fontSize',
 			type: 'expression',
-			value: fontSizeParam.value.toString(),
+			value: parseStyleDoubleValue(fontSizeParam.value.toString()),
 			resolved: true
 		})
 	}
@@ -55,7 +55,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'param',
 			name: 'color',
 			type: 'expression',
-			value: unquote(fontColorParam.value.toString()),
+			value: parseStyleColor(unquote(fontColorParam.value.toString())),
 			resolved: true
 		})
 	}
@@ -95,7 +95,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'param',
 			name: 'height',
 			type: 'expression',
-			value: lineHeightParam.value.toString(),
+			value: parseStyleDoubleValue(lineHeightParam.value.toString()),
 			resolved: true
 		})
 	}
@@ -115,7 +115,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'param',
 			name: 'decorationColor',
 			type: 'expression',
-			value: unquote(textDecorationColorParam.value.toString()),
+			value: parseStyleColor(unquote(textDecorationColorParam.value.toString())),
 			resolved: true
 		})
 	}
@@ -135,7 +135,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'param',
 			name: 'wordSpacing',
 			type: 'expression',
-			value: wordSpacingParam.value.toString(),
+			value: parseStyleDoubleValue(wordSpacingParam.value.toString()),
 			resolved: true
 		})
 	}
