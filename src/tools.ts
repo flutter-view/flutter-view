@@ -1,5 +1,6 @@
 import { isArray, mergeWith } from 'lodash';
 import { Widget, Param } from './flutter-model';
+import { pull} from 'lodash';
 
 export function unquote(text: string): string {
 	if (!text) return ''
@@ -28,4 +29,11 @@ export function merge(object, other) {
 export function findParam(widget: Widget, name: string) : Param | null {
 	if(!widget.params) return null
 	return widget.params.find(param => param.name==name)
+}
+
+export function findAndRemoveStyleParam(widget: Widget, name: string) : Param | null {
+	if(!widget.params) return null
+	const param = widget.params.find(param => param.name==name && !param.resolved)
+	if(param) pull(widget.params, param)
+	return param
 }

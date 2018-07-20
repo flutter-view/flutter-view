@@ -1,24 +1,24 @@
-import { Options } from './../watcher'
-import { Widget, Param } from '../flutter-model'
-import { pull} from 'lodash'
-import { multiline, unquote, findParam } from '../tools'
+import { Param, Widget } from '../flutter-model';
+import { findAndRemoveStyleParam, findParam, unquote } from '../tools';
+import { Options } from './../watcher';
+import { pull} from 'lodash';
 
 export function transformWidget(widget: Widget, options: Options): Widget {
-	const fontSizeParam = findParam(widget, 'fontSize')
-	const fontColorParam = findParam(widget, 'color')
-	const fontFamilyParam = findParam(widget, 'fontFamily')
-	const fontWeightParam = findParam(widget, 'fontWeight')
-	const fontStyleParam = findParam(widget, 'fontStyle')
-	const lineHeightParam = findParam(widget, 'lineHeight')
-	const textDecorationParam = findParam(widget, 'textDecoration')
-	const textDecorationColorParam = findParam(widget, 'textDecorationColor')
-	const textDecorationStyleParam = findParam(widget, 'textDecorationStyle')
-	const wordSpacingParam = findParam(widget, 'wordSpacing')
-	const textAlignParam = findParam(widget, 'textAlign')
-	const textOverflowParam = findParam(widget, 'textOverflow')
-	const wordWrapParam = findParam(widget, 'wordWrap')
-	const softWrapParam = findParam(widget, 'softWrap')
-	const maxLinesParam = findParam(widget, 'maxLines')
+	const fontSizeParam = findAndRemoveStyleParam(widget, 'fontSize')
+	const fontColorParam = findAndRemoveStyleParam(widget, 'color')
+	const fontFamilyParam = findAndRemoveStyleParam(widget, 'fontFamily')
+	const fontWeightParam = findAndRemoveStyleParam(widget, 'fontWeight')
+	const fontStyleParam = findAndRemoveStyleParam(widget, 'fontStyle')
+	const lineHeightParam = findAndRemoveStyleParam(widget, 'lineHeight')
+	const textDecorationParam = findAndRemoveStyleParam(widget, 'textDecoration')
+	const textDecorationColorParam = findAndRemoveStyleParam(widget, 'textDecorationColor')
+	const textDecorationStyleParam = findAndRemoveStyleParam(widget, 'textDecorationStyle')
+	const wordSpacingParam = findAndRemoveStyleParam(widget, 'wordSpacing')
+	const textAlignParam = findAndRemoveStyleParam(widget, 'textAlign')
+	const textOverflowParam = findAndRemoveStyleParam(widget, 'textOverflow')
+	const wordWrapParam = findAndRemoveStyleParam(widget, 'wordWrap')
+	const softWrapParam = findAndRemoveStyleParam(widget, 'softWrap')
+	const maxLinesParam = findAndRemoveStyleParam(widget, 'maxLines')
 
 	const update =
 		fontSizeParam ||
@@ -41,102 +41,102 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 	const textStyleParams: Param[] = []
 
 	if(fontSizeParam) {
-		pull(widget.params, fontSizeParam)
 		textStyleParams.push({
 			class: 'param',
 			name: 'fontSize',
 			type: 'expression',
-			value: fontSizeParam.value.toString()
+			value: fontSizeParam.value.toString(),
+			resolved: true
 		})
 	}
 
 	if(fontColorParam) {
-		pull(widget.params, fontColorParam)
 		textStyleParams.push({
 			class: 'param',
 			name: 'color',
 			type: 'expression',
-			value: unquote(fontColorParam.value.toString())
+			value: unquote(fontColorParam.value.toString()),
+			resolved: true
 		})
 	}
 
 	if(fontFamilyParam) {
-		pull(widget.params, fontFamilyParam)
 		textStyleParams.push({
 			class: 'param',
 			name: 'fontFamily',
 			type: 'expression',
-			value: fontFamilyParam.value.toString()
+			value: fontFamilyParam.value.toString(),
+			resolved: true
 		})
 	}
 
 	if(fontWeightParam) {
-		pull(widget.params, fontWeightParam)
 		textStyleParams.push({
 			class: 'param',
 			name: 'fontWeight',
 			type: 'expression',
-			value: `FontWeight.${unquote(fontWeightParam.value.toString())}`
+			value: `FontWeight.${unquote(fontWeightParam.value.toString())}`,
+			resolved: true
 		})
 	}
 
 	if(fontStyleParam) {
-		pull(widget.params, fontStyleParam)
 		textStyleParams.push({
 			class: 'param',
 			name: 'fontStyle',
 			type: 'expression',
-			value: `FontStyle.${unquote(fontStyleParam.value.toString())}`
+			value: `FontStyle.${unquote(fontStyleParam.value.toString())}`,
+			resolved: true
 		})
 	}
 
 	if(lineHeightParam) {
-		pull(widget.params, lineHeightParam)
 		textStyleParams.push({
 			class: 'param',
 			name: 'height',
 			type: 'expression',
-			value: lineHeightParam.value.toString()
+			value: lineHeightParam.value.toString(),
+			resolved: true
 		})
 	}
 
 	if(textDecorationParam) {
-		pull(widget.params, textDecorationParam)
 		textStyleParams.push({
 			class: 'param',
 			name: 'decoration',
 			type: 'expression',
-			value: `TextDecoration.${unquote(textDecorationParam.value.toString())}`
+			value: `TextDecoration.${unquote(textDecorationParam.value.toString())}`,
+			resolved: true
 		})
 	}
 
 	if(textDecorationColorParam) {
-		pull(widget.params, textDecorationColorParam)
 		textStyleParams.push({
 			class: 'param',
 			name: 'decorationColor',
 			type: 'expression',
-			value: unquote(textDecorationColorParam.value.toString())
+			value: unquote(textDecorationColorParam.value.toString()),
+			resolved: true
 		})
 	}
 
 	if(textDecorationStyleParam) {
-		pull(widget.params, textDecorationStyleParam)
 		textStyleParams.push({
 			class: 'param',
 			name: 'decorationStyle',
 			type: 'expression',
-			value: `TextDecorationStyle.${unquote(textDecorationStyleParam.value.toString())}`
+			value: `TextDecorationStyle.${unquote(textDecorationStyleParam.value.toString())}`,
+			resolved: true
 		})
 	}
 
 	if(wordSpacingParam) {
-		pull(widget.params, wordSpacingParam)
 		textStyleParams.push({
 			class: 'param',
 			name: 'wordSpacing',
 			type: 'expression',
-			value: wordSpacingParam.value.toString()
+			value: wordSpacingParam.value.toString(),
+			resolved: true
 		})
 	}
 
@@ -147,7 +147,8 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'param',
 			name: 'child',
 			type: 'widget',
-			value: widget
+			value: widget,
+			resolved: true
 		}
 	]
 
@@ -160,32 +161,31 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'widget',
 			name: 'TextStyle',
 			params: textStyleParams
-		}
+		},
+		resolved: true
 	})
 
 	if(textAlignParam) {
-		pull(widget.params, textAlignParam)
 		params.push({
 			class: 'param',
 			name: 'textAlign',
 			type: 'expression',
-			value: `TextAlign.${unquote(textAlignParam.value.toString())}`
+			value: `TextAlign.${unquote(textAlignParam.value.toString())}`,
+			resolved: true
 		})
 	}
 
 	if(textOverflowParam) {
-		pull(widget.params, textOverflowParam)
 		params.push({
 			class: 'param',
 			name: 'overflow',
 			type: 'expression',
-			value: `TextOverflow.${unquote(textOverflowParam.value.toString())}`
+			value: `TextOverflow.${unquote(textOverflowParam.value.toString())}`,
+			resolved: true
 		})
 	}
 
 	if(wordWrapParam || softWrapParam) {
-		pull(widget.params, wordWrapParam)
-		pull(widget.params, softWrapParam)
 		let wordWrap : string
 		if(softWrapParam) {
 			wordWrap = softWrapParam.value.toString()
@@ -208,17 +208,18 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'param',
 			name: 'softWrap',
 			type: 'expression',
-			value: wordWrap
+			value: wordWrap,
+			resolved: true
 		})
 	}
 
 	if(maxLinesParam) {
-		pull(widget.params, maxLinesParam)
 		params.push({
 			class: 'param',
 			name: 'maxLines',
 			type: 'expression',
-			value: unquote(maxLinesParam.value.toString())
+			value: unquote(maxLinesParam.value.toString()),
+			resolved: true
 		})
 	}
 

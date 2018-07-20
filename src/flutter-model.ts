@@ -11,6 +11,7 @@ export interface Param {
 	type: 'literal' | 'expression' | 'widget' | 'widgets' | 'array'
 	name?: string
 	value: string | Widget | Widget[]
+	resolved: boolean
 }
 
 export interface Reference {

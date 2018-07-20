@@ -73,7 +73,8 @@ function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widge
 					class: 'param',
 					type: expression ? 'expression' : 'literal',
 					name: (name=='value') ? undefined : camelCase(name),
-					value: attr!=value ? decode(value) : null // pug renders empty attributes as key==value
+					value: attr!=value ? decode(value) : null, // pug renders empty attributes as key==value
+					resolved: false
 				})
 			}
 		}
@@ -96,7 +97,8 @@ function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widge
 								type: 'array',
 								name: camelCase(slot),
 								value: subTag.children
-									.map(subTagChild=>compileTag(subTagChild as Tag, plugins, options))
+									.map(subTagChild=>compileTag(subTagChild as Tag, plugins, options)),
+								resolved: true
 							})
 						} else {
 							const widget = compileTag(subTag, plugins, options)
@@ -104,7 +106,8 @@ function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widge
 								class: 'param',
 								type: 'widget',
 								name: camelCase(slot),
-								value: widget
+								value: widget,
+								resolved: true
 							})
 						}
 					} else {
@@ -126,7 +129,8 @@ function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widge
 									{
 										class: 'param',
 										type: 'literal',
-										value: decode(value)
+										value: decode(value),
+										resolved: true
 									}
 								]
 							}
@@ -145,7 +149,8 @@ function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widge
 					class: 'param',
 					type: 'widgets',
 					name: 'children',
-					value: children
+					value: children,
+					resolved: true
 				})
 			} else {
 				if(children.length == 1 || !options.autowrapChildren) {
@@ -153,7 +158,8 @@ function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widge
 						class: 'param',
 						type: 'widget',
 						name: 'child',
-						value: children[0]
+						value: children[0],
+						resolved: true
 					})
 				} else {
 					params.push({
@@ -169,10 +175,12 @@ function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widge
 									class: 'param',
 									type: 'widgets',
 									name: 'children',
-									value: children
+									value: children,
+									resolved: true
 								}
 							]
-						}
+						},
+						resolved: true
 					})
 				}	
 			} 
