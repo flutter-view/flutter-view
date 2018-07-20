@@ -1,11 +1,11 @@
 import { camelCase, upperCaseFirst } from 'change-case';
-import { merge, pull } from 'lodash';
+import * as decode from 'decode-html';
+import { pull } from 'lodash';
 import * as styleparser from 'style-parser';
-import { Options, RenderPlugin } from './watcher';
 import { Param, Widget } from './flutter-model';
 import { Element, Tag, Text } from './html-model';
-import { tail } from 'lodash'
-import * as decode from 'decode-html'
+import { applyPlugins } from './tools';
+import { Options, RenderPlugin } from './watcher';
 
 /**
  * Extracts from the html any import elements, and returns those elements as imports
@@ -208,16 +208,4 @@ function isFlutterView(element: Element) : boolean {
 	if(element.type != 'tag') return false
 	const tag = element as Tag
 	return tag.attribs && (tag.attribs['flutter-view'] || tag.attribs['flutter-view'] == '')
-}
-
-/**
- * Recursively apply all plugins to the widget, either modifying or creating a new widget tree
- * @param widget the widget to apply all passed plugins on
- * @param plugins the plugins to apply
- */
-function applyPlugins(widget: Widget, plugins: RenderPlugin[], options: Options) : Widget {
-	if(!plugins || plugins.length == 0) return widget
-	const plugin = plugins[0]
-	const newWidget = plugin.transformWidget(widget, options)
-	return applyPlugins(newWidget, tail(plugins), options)
 }

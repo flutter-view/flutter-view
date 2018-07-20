@@ -1,9 +1,9 @@
 import { Param, Widget } from '../flutter-model';
 import { findAndRemoveStyleParam, parseStyleColor, findParam, unquote } from '../tools';
-import { Options } from '../watcher';
+import { Options, RenderPlugin } from '../watcher';
 import { pull} from 'lodash';
 
-export function transformWidget(widget: Widget, options: Options): Widget {
+export function transformWidget(widget: Widget, plugins: RenderPlugin[], options: Options): Widget {
 
 	// if(widget.name!='Container') {
 	// 	console.warn('cannot apply layout styles to widget', widget.name + ', must be a container')

@@ -1,9 +1,9 @@
 import { Param, Widget } from '../flutter-model';
-import { findAndRemoveStyleParam, findParam, unquote, parseStyleColor, parseStyleDoubleValue } from '../tools';
-import { Options } from './../watcher';
+import { findAndRemoveStyleParam, findParam, unquote, parseStyleColor, parseStyleDoubleValue, applyPlugins } from '../tools';
+import { Options, RenderPlugin } from './../watcher';
 import { pull} from 'lodash';
 
-export function transformWidget(widget: Widget, options: Options): Widget {
+export function transformWidget(widget: Widget, plugins: RenderPlugin[], options: Options): Widget {
 	const fontSizeParam = findAndRemoveStyleParam(widget, 'fontSize')
 	const fontColorParam = findAndRemoveStyleParam(widget, 'color')
 	const fontFamilyParam = findAndRemoveStyleParam(widget, 'fontFamily')
@@ -147,7 +147,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'param',
 			name: 'child',
 			type: 'widget',
-			value: widget,
+			value: applyPlugins(widget, plugins, options),
 			resolved: true
 		}
 	]

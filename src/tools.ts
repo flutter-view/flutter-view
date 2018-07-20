@@ -1,6 +1,6 @@
-import { isArray, mergeWith } from 'lodash';
-import { Widget, Param } from './flutter-model';
-import { pull} from 'lodash';
+import { isArray, mergeWith, pull, tail } from 'lodash';
+import { Param, Widget } from './flutter-model';
+import { Options, RenderPlugin } from './watcher';
 
 export function unquote(text: string): string {
 	if (!text) return ''
@@ -54,4 +54,16 @@ export function parseStyleDoubleValue(value: string) : string {
 	const isNumber = parseFloat(value)
 	if(isNumber && value.indexOf('.') < 0) return `${value}.0`
 	return value
+}
+
+/**
+ * Recursively apply all plugins to the widget, either modifying or creating a new widget tree
+ * @param widget the widget to apply all passed plugins on
+ * @param plugins the plugins to apply
+ */
+export function applyPlugins(widget: Widget, plugins: RenderPlugin[], options: Options) : Widget {
+	if(!plugins || plugins.length == 0) return widget
+	const plugin = plugins[0]
+	const newWidget = plugin.transformWidget(widget, plugins, options)
+	return applyPlugins(newWidget, tail(plugins), options)
 }

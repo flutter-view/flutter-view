@@ -14,7 +14,7 @@ import { Element } from './html-model';
 import { renderDartFile } from './renderer';
 
 export interface RenderPlugin {
-	transformWidget(widget: Widget, options: Options) : Widget
+	transformWidget(widget: Widget, plugins: RenderPlugin[], options: Options) : Widget
 }
 
 export interface Options {
