@@ -5,8 +5,6 @@ import { Options } from '../watcher';
 
 export function transformWidget(widget: Widget, options: Options): Widget {
 
-	console.log('transforming widget', widget)
-
 	const fontSizeParam = findAndRemoveParam(widget, 'fontSize')
 	const fontColorParam = findAndRemoveParam(widget, 'color')
 	const fontFamilyParam = findAndRemoveParam(widget, 'fontFamily')
@@ -245,8 +243,6 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 	}
 
 	applyOnDescendants(newRootWidget, descendant=>transformWidget(descendant, options))
-
-	console.log('new root:', JSON.stringify(newRootWidget, null, 2))
 
 	return newRootWidget
 }

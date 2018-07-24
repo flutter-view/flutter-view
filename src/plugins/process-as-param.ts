@@ -6,39 +6,44 @@ import { Options } from '../watcher';
 
 
 export function transformWidget(widget: Widget, options: Options): Widget {
+
+	const childrenParam = findParam(widget, 'children')
+	if(childrenParam) {
+		const params: { name: string, value: Widget }[] = []
+		const children = childrenParam.value as Widget[]
+		// we cannot remove while iterating the children, so we do this in two steps:
+		// 1) find all the children to be moved, and what prop to put them 
+		for(let child of children) {
+			const asParam = findAndRemoveParam(child, 'as')
+			if(asParam) {
+				params.push({ 
+					name: asParam.value.toString(), 
+					value: child 
+				})
+			}
+		}
+		// 2) remove each param's widget from the children param widget, and push it as a new named parameter
+		for(let param of params) {
+			pull(children, param.value)
+			widget.params.push({
+				class: 'param',
+				type: 'widget',
+				name: camelCase(param.name),
+				value: param.value,
+				resolved: false
+			})
+		}
+		// now we can 
+	} 
+
 	const childParam = findParam(widget, 'child')
 	if(childParam) {
 		const child = childParam.value as Widget
 		const asParam = findAndRemoveParam(child, 'as')
 		if(asParam) {
-			pull(widget.params, childParam)
-			widget.params.push({
-				class: 'param',
-				type: 'widget',
-				name: camelCase(asParam.value.toString()),
-				value: child,
-				resolved: true
-			})
+			childParam.name = camelCase(asParam.value.toString())
 		}
 	}
-
-	const childrenParam = findParam(widget, 'children')
-	if(childrenParam) {
-		const children = childrenParam.value as Widget[]
-		for(let child of children) {
-			const asParam = findAndRemoveParam(child, 'as')
-			if(asParam) {
-				pull(children, child)
-				widget.params.push({
-					class: 'param',
-					type: 'widget',
-					name: camelCase(asParam.value.toString()),
-					value: child,
-					resolved: true
-				})
-			}
-		}
-	} 
 
 	applyOnDescendants(widget, descendant=>transformWidget(descendant, options))
 

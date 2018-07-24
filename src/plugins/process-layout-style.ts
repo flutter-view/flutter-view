@@ -1,5 +1,5 @@
 import { Widget } from '../flutter-model';
-import { findAndRemoveParam, getWidgetDescendants, parseStyleColor, unquote } from '../tools';
+import { findAndRemoveParam, parseStyleColor, unquote, applyOnDescendants } from '../tools';
 import { Options } from '../watcher';
 
 export function transformWidget(widget: Widget, options: Options): Widget {
@@ -9,11 +9,8 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 	// 	return widget
 	// }
 
+	
 	const backgroundColorParam = findAndRemoveParam(widget, 'backgroundColor')
-
-	const update =
-		backgroundColorParam
-	if(!update) return widget
 
 	//   const textStyleParams: Param[] = []
 
@@ -41,9 +38,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 	}
 
 	// also apply the plugin to the rest of the widget tree of this widget
-	for(let descendant of getWidgetDescendants(widget)) {
-		transformWidget(descendant, options)
-	}
+	applyOnDescendants(widget, descendant=>transformWidget(descendant, options))
 
 	return widget
 }

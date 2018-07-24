@@ -46,7 +46,26 @@ export function renderClass(widget: Widget, options: Options) : string | null {
 	const fields = getClassFields(widget)
 	const vModelTypeParam = findParam(widget, 'vModelType')
 	const vModelType = vModelTypeParam ? vModelTypeParam.value : null
-	const child = findParam(widget, 'child').value as Widget
+
+	// find the single child to render
+	const childParam = findParam(widget, 'child')
+	const childrenParam = findParam(widget, 'child')
+	let child: Widget
+	if(childParam) {
+		child = childParam.value as Widget
+	} else if(childrenParam) {
+		const children = childParam.value as Widget[]
+		if(children.length == 0) {
+			child = childrenParam.value[0] as Widget
+		} else {
+			child = null
+		}
+	} else {
+		child = null
+	}
+
+	if(!child) return ''
+
 	const built = renderWidget(child)
 	const returnType = child.name
 	if(vModelType) {
@@ -93,6 +112,7 @@ export function renderClass(widget: Widget, options: Options) : string | null {
 	}
 	
 	function renderWidget(widget: Widget) : string {
+		if(!widget) return '\n'
 
 		// if this widget has v-model, wrap it with a ScopedModelDescendant
 		const vModelParam = findParam(widget, 'vModel')

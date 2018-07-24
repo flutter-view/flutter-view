@@ -4,12 +4,11 @@ import { pull } from 'lodash';
 import * as styleparser from 'style-parser';
 import { Param, Widget } from './flutter-model';
 import { Element, Tag, Text } from './html-model';
-import { applyPlugins } from './tools';
-import { Options, RenderPlugin } from './watcher';
+import { Options } from './watcher';
 
 /**
  * Extracts from the html any import elements, and returns those elements as imports
- * @param {Element[]} html the html elements, which get modified
+ * @param html the html elements, which get modified
  * @returns a list of import urls
  */
 export function extractImports(html: Element[]) : string[] {
@@ -31,9 +30,9 @@ export function extractImports(html: Element[]) : string[] {
 
 /**
  * Compiles a parsed html tree into Flutter Dart code
- * @param {Element[]} html parsed html elements
- * @param {Options} options compilation options
- * @returns {Widget} generated Dart widget tree
+ * @param html parsed html elements
+ * @param options compilation options
+ * @returns generated Dart widget tree
  */
 export function compile(html: Element[], options: Options): Widget[] {
 	return html
@@ -43,9 +42,9 @@ export function compile(html: Element[], options: Options): Widget[] {
 
 /**
  * Converts a tag and all of its children into a flutter dart tree
- * @param {Tag} tag the tag and children to convert
- * @param {Options} options compilation options
- * @returns {Widget} widget descriptor with tree of connected children widgets
+ * @param tag the tag and children to convert
+ * @param options compilation options
+ * @returns widget descriptor with tree of connected children widgets
  */
 function compileTag(tag: Tag, options: Options) : Widget {
 	// use the configured class name if we set it in the tagClasses option
@@ -53,11 +52,13 @@ function compileTag(tag: Tag, options: Options) : Widget {
 		if(tag.name == tagName) tag.name = options.tagClasses[tagName]
 	}
 
+	// start building a widget with params
 	const widgetClass = upperCaseFirst(camelCase(tag.name))
-
-	// apply styles as properties
 	const params: Param[] = []
+
+	// process the tag attributes, transforming them into widget params
 	if(tag.attribs) {
+		// apply styles as properties
 		if(tag.attribs['style']) {
 			const styleRules = styleparser(tag.attribs['style'])
 			for(const attr in styleRules) {
@@ -80,40 +81,15 @@ function compileTag(tag: Tag, options: Options) : Widget {
 		}
 	}
 
-	// calculate the tag constructor parameters
+	// process the tag children, transforming them into a widget param named 'children'
 	if(tag.children) {
-		// find all children and slot properties in the tag block
+
 		const children: Widget[] = []
+
 		for(const child of tag.children) {
 			switch(child.type) {
 				case 'tag': {
 					const subTag = child as Tag
-					// if a subtag is a slot, it is actually a widget as a property
-					// const slot = subTag.attribs ? subTag.attribs['as'] : null
-					// if(slot) {
-					// 	if(subTag.name=='slot') {
-					// 		params.push({
-					// 			class: 'param',
-					// 			type: 'array',
-					// 			name: camelCase(slot),
-					// 			value: subTag.children
-					// 				.map(subTagChild=>compileTag(subTagChild as Tag, options)),
-					// 			resolved: true
-					// 		})
-					// 	} else {
-					// 		const widget = compileTag(subTag, options)
-					// 		params.push({
-					// 			class: 'param',
-					// 			type: 'widget',
-					// 			name: camelCase(slot),
-					// 			value: widget,
-					// 			resolved: true
-					// 		})
-					// 	}
-					// } else {
-					// const widget = compileTag(subTag, options)
-					// children.push(widget)
-					// }
 					const widget = compileTag(subTag, options)
 					children.push(widget)
 					break
@@ -142,54 +118,19 @@ function compileTag(tag: Tag, options: Options) : Widget {
 				}
 			}
 		}
-		// add the child or children parameter to the widget params
-		const isMultiChildClass = !!options.multiChildClasses.find(cls=>cls==widgetClass)
+		// always add children as the children property
 		if(children.length > 0) {
-			if(isMultiChildClass) {
-				params.push({
-					class: 'param',
-					type: 'widgets',
-					name: 'children',
-					value: children,
-					resolved: true
-				})
-			} else {
-				if(children.length == 1 || !options.autowrapChildren) {
-					params.push({
-						class: 'param',
-						type: 'widget',
-						name: 'child',
-						value: children[0],
-						resolved: true
-					})
-				} else {
-					params.push({
-						class: 'param',
-						type: 'widget',
-						name: 'child',
-						value: {
-							class: 'widget',
-							constant: false,
-							name: options.autowrapChildrenClass,
-							params: [
-								{
-									class: 'param',
-									type: 'widgets',
-									name: 'children',
-									value: children,
-									resolved: true
-								}
-							]
-						},
-						resolved: true
-					})
-				}	
-			} 
-
+			params.push({
+				class: 'param',
+				type: 'widgets',
+				name: 'children',
+				value: children,
+				resolved: true
+			})
 		}
 	}
 
-	// create the widget for the tag
+	// create the widget for the tag using the name and parameters
 	const isConstant = tag.attribs && (tag.attribs['const'] || tag.attribs['const'] == '')
 	return {
 		class: 'widget',
@@ -201,7 +142,7 @@ function compileTag(tag: Tag, options: Options) : Widget {
 
 /**
  * Checks if the element contains the flutter-view attribute
- * @param {Element} element the root element to check
+ * @param element the root element to check
  * @returns true if the element is a flutter-view root element
  */
 function isFlutterView(element: Element) : boolean {
