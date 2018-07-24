@@ -1,13 +1,13 @@
 import * as indent from 'indent-string';
-import { merge, union, pull, fromPairs } from 'lodash';
-import { Param, Widget } from './flutter-model';
-import { multiline, unquote, findParam } from './tools';
+import { pull, union } from 'lodash';
+import { Widget } from './flutter-model';
+import { findParam, multiline, unquote } from './tools';
 import { Options } from './watcher';
 
 export function renderDartFile(widgets: Widget[], imports: string[], options: Options) : string {
 	const allImports = union(options.imports, imports)
 	return multiline(
-		renderClassImports(options.imports),
+		renderClassImports(allImports),
 		'',
 		widgets
 			.map(widget=>renderClass(widget, options))
@@ -52,7 +52,7 @@ export function renderClass(widget: Widget, options: Options) : string | null {
 	if(vModelType) {
 		return multiline(
 			'// ignore: non_constant_identifier_names',
-			`ScopedModel<${vModelType}> ${renderConstructor(widget.name, fields)} {`,
+			`${renderConstructor(widget.name, fields)} {`,
 			indent(multiline(
 				`final widget = ${built};`,
 				`return (model != null) ?`,
@@ -178,8 +178,7 @@ export function renderClass(widget: Widget, options: Options) : string | null {
 					}
 					case 'widget': {
 						const value = param.value as Widget
-						// const _const = value.params ? 'const ' : ''
-						const _const = ''
+						const _const = findParam(value, 'const') ? 'const ' : ''
 						return `${_const}${renderWidget(param.value as Widget)}`
 					}
 					case 'array': {
@@ -194,6 +193,8 @@ export function renderClass(widget: Widget, options: Options) : string | null {
 					case 'widgets': {
 						const widgets = param.value as Widget[]
 						const values = widgets.map(widget=>`${renderWidget(widget)}`)
+						// in v-for loops we generate arrays. these arrays may already be in an array,
+						// so we will want to flatten these arrays of arrays before adding them
 						return multiline(
 							`__flatten([`,
 							indent(values.join(',\n'), options.indentation),

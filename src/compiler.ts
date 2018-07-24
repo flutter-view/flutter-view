@@ -35,10 +35,10 @@ export function extractImports(html: Element[]) : string[] {
  * @param {Options} options compilation options
  * @returns {Widget} generated Dart widget tree
  */
-export function compile(html: Element[], plugins: RenderPlugin[], options: Options): Widget[] {
+export function compile(html: Element[], options: Options): Widget[] {
 	return html
 		.filter(el=>isFlutterView(el))
-		.map(el=>compileTag(el as Tag, plugins, options))
+		.map(el=>compileTag(el as Tag, options))
 }
 
 /**
@@ -47,7 +47,7 @@ export function compile(html: Element[], plugins: RenderPlugin[], options: Optio
  * @param {Options} options compilation options
  * @returns {Widget} widget descriptor with tree of connected children widgets
  */
-function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widget {
+function compileTag(tag: Tag, options: Options) : Widget {
 	// use the configured class name if we set it in the tagClasses option
 	for(let tagName of Object.keys(options.tagClasses)) {
 		if(tag.name == tagName) tag.name = options.tagClasses[tagName]
@@ -65,7 +65,7 @@ function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widge
 			}
 		}
 		for(const attr in tag.attribs) {
-			if(attr != 'as' && attr != 'id' && attr != 'class' && attr != 'style') {
+			if(attr != 'id' && attr != 'class' && attr != 'style') {
 				const expression = attr.startsWith(':')
 				const name = expression ? attr.substring(1) : attr
 				const value = tag.attribs[attr]
@@ -89,31 +89,33 @@ function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widge
 				case 'tag': {
 					const subTag = child as Tag
 					// if a subtag is a slot, it is actually a widget as a property
-					const slot = subTag.attribs ? subTag.attribs['as'] : null
-					if(slot) {
-						if(subTag.name=='slot') {
-							params.push({
-								class: 'param',
-								type: 'array',
-								name: camelCase(slot),
-								value: subTag.children
-									.map(subTagChild=>compileTag(subTagChild as Tag, plugins, options)),
-								resolved: true
-							})
-						} else {
-							const widget = compileTag(subTag, plugins, options)
-							params.push({
-								class: 'param',
-								type: 'widget',
-								name: camelCase(slot),
-								value: widget,
-								resolved: true
-							})
-						}
-					} else {
-						const widget = compileTag(subTag, plugins, options)
-						children.push(widget)
-					}
+					// const slot = subTag.attribs ? subTag.attribs['as'] : null
+					// if(slot) {
+					// 	if(subTag.name=='slot') {
+					// 		params.push({
+					// 			class: 'param',
+					// 			type: 'array',
+					// 			name: camelCase(slot),
+					// 			value: subTag.children
+					// 				.map(subTagChild=>compileTag(subTagChild as Tag, options)),
+					// 			resolved: true
+					// 		})
+					// 	} else {
+					// 		const widget = compileTag(subTag, options)
+					// 		params.push({
+					// 			class: 'param',
+					// 			type: 'widget',
+					// 			name: camelCase(slot),
+					// 			value: widget,
+					// 			resolved: true
+					// 		})
+					// 	}
+					// } else {
+					// const widget = compileTag(subTag, options)
+					// children.push(widget)
+					// }
+					const widget = compileTag(subTag, options)
+					children.push(widget)
 					break
 				}
 				case 'text': {
@@ -134,8 +136,7 @@ function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widge
 									}
 								]
 							}
-							const processed = applyPlugins(widget, plugins, options)
-							children.push(processed)
+							children.push(widget)
 						}
 					}
 				}
@@ -190,13 +191,12 @@ function compileTag(tag: Tag, plugins: RenderPlugin[], options: Options) : Widge
 
 	// create the widget for the tag
 	const isConstant = tag.attribs && (tag.attribs['const'] || tag.attribs['const'] == '')
-	const widget: Widget = {
+	return {
 		class: 'widget',
 		constant: isConstant,
 		name: widgetClass,
 		params: params
 	}
-	return applyPlugins(widget, plugins, options)
 }
 
 /**

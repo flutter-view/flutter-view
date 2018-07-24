@@ -1,24 +1,27 @@
+import { pull } from 'lodash';
 import { Param, Widget } from '../flutter-model';
-import { findAndRemoveStyleParam, findParam, unquote, parseStyleColor, parseStyleDoubleValue, applyPlugins } from '../tools';
-import { Options, RenderPlugin } from './../watcher';
-import { pull} from 'lodash';
+import { applyOnDescendants, findAndRemoveParam, findParam, parseStyleColor, parseStyleDoubleValue, unquote } from '../tools';
+import { Options } from '../watcher';
 
-export function transformWidget(widget: Widget, plugins: RenderPlugin[], options: Options): Widget {
-	const fontSizeParam = findAndRemoveStyleParam(widget, 'fontSize')
-	const fontColorParam = findAndRemoveStyleParam(widget, 'color')
-	const fontFamilyParam = findAndRemoveStyleParam(widget, 'fontFamily')
-	const fontWeightParam = findAndRemoveStyleParam(widget, 'fontWeight')
-	const fontStyleParam = findAndRemoveStyleParam(widget, 'fontStyle')
-	const lineHeightParam = findAndRemoveStyleParam(widget, 'lineHeight')
-	const textDecorationParam = findAndRemoveStyleParam(widget, 'textDecoration')
-	const textDecorationColorParam = findAndRemoveStyleParam(widget, 'textDecorationColor')
-	const textDecorationStyleParam = findAndRemoveStyleParam(widget, 'textDecorationStyle')
-	const wordSpacingParam = findAndRemoveStyleParam(widget, 'wordSpacing')
-	const textAlignParam = findAndRemoveStyleParam(widget, 'textAlign')
-	const textOverflowParam = findAndRemoveStyleParam(widget, 'textOverflow')
-	const wordWrapParam = findAndRemoveStyleParam(widget, 'wordWrap')
-	const softWrapParam = findAndRemoveStyleParam(widget, 'softWrap')
-	const maxLinesParam = findAndRemoveStyleParam(widget, 'maxLines')
+export function transformWidget(widget: Widget, options: Options): Widget {
+
+	console.log('transforming widget', widget)
+
+	const fontSizeParam = findAndRemoveParam(widget, 'fontSize')
+	const fontColorParam = findAndRemoveParam(widget, 'color')
+	const fontFamilyParam = findAndRemoveParam(widget, 'fontFamily')
+	const fontWeightParam = findAndRemoveParam(widget, 'fontWeight')
+	const fontStyleParam = findAndRemoveParam(widget, 'fontStyle')
+	const lineHeightParam = findAndRemoveParam(widget, 'lineHeight')
+	const textDecorationParam = findAndRemoveParam(widget, 'textDecoration')
+	const textDecorationColorParam = findAndRemoveParam(widget, 'textDecorationColor')
+	const textDecorationStyleParam = findAndRemoveParam(widget, 'textDecorationStyle')
+	const wordSpacingParam = findAndRemoveParam(widget, 'wordSpacing')
+	const textAlignParam = findAndRemoveParam(widget, 'textAlign')
+	const textOverflowParam = findAndRemoveParam(widget, 'textOverflow')
+	const wordWrapParam = findAndRemoveParam(widget, 'wordWrap')
+	const softWrapParam = findAndRemoveParam(widget, 'softWrap')
+	const maxLinesParam = findAndRemoveParam(widget, 'maxLines')
 
 	const update =
 		fontSizeParam ||
@@ -36,7 +39,11 @@ export function transformWidget(widget: Widget, plugins: RenderPlugin[], options
 		wordWrapParam ||
 		softWrapParam ||
 		maxLinesParam
-	if(!update) return widget
+	
+	if(!update) {
+		applyOnDescendants(widget, descendant=>transformWidget(descendant, options))
+		return widget
+	}
 
 	const textStyleParams: Param[] = []
 
@@ -147,7 +154,7 @@ export function transformWidget(widget: Widget, plugins: RenderPlugin[], options
 			class: 'param',
 			name: 'child',
 			type: 'widget',
-			value: applyPlugins(widget, plugins, options),
+			value: transformWidget(widget, options),
 			resolved: true
 		}
 	]
@@ -230,10 +237,16 @@ export function transformWidget(widget: Widget, plugins: RenderPlugin[], options
 		params.push(vForParam)
 	}
 
-	return {
+	const newRootWidget: Widget = {
 		constant: false,
 		class: 'widget',
 		name: 'DefaultTextStyle',
 		params: params
 	}
+
+	applyOnDescendants(newRootWidget, descendant=>transformWidget(descendant, options))
+
+	console.log('new root:', JSON.stringify(newRootWidget, null, 2))
+
+	return newRootWidget
 }

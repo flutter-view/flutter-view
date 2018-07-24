@@ -1,16 +1,15 @@
-import { Param, Widget } from '../flutter-model';
-import { findAndRemoveStyleParam, parseStyleColor, findParam, unquote } from '../tools';
-import { Options, RenderPlugin } from '../watcher';
-import { pull} from 'lodash';
+import { Widget } from '../flutter-model';
+import { findAndRemoveParam, getWidgetDescendants, parseStyleColor, unquote } from '../tools';
+import { Options } from '../watcher';
 
-export function transformWidget(widget: Widget, plugins: RenderPlugin[], options: Options): Widget {
+export function transformWidget(widget: Widget, options: Options): Widget {
 
 	// if(widget.name!='Container') {
 	// 	console.warn('cannot apply layout styles to widget', widget.name + ', must be a container')
 	// 	return widget
 	// }
 
-	const backgroundColorParam = findAndRemoveStyleParam(widget, 'backgroundColor')
+	const backgroundColorParam = findAndRemoveParam(widget, 'backgroundColor')
 
 	const update =
 		backgroundColorParam
@@ -39,6 +38,11 @@ export function transformWidget(widget: Widget, plugins: RenderPlugin[], options
 			value: parseStyleColor(unquote(backgroundColorParam.value.toString())),
 			resolved: true
 		})
+	}
+
+	// also apply the plugin to the rest of the widget tree of this widget
+	for(let descendant of getWidgetDescendants(widget)) {
+		transformWidget(descendant, options)
 	}
 
 	return widget

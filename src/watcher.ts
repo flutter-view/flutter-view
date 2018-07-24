@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import * as gaze from 'gaze';
-import { merge } from './tools'
+import { merge, applyPlugins } from './tools'
 import * as htmlparser from 'htmlparser';
 import * as juice from 'juice';
 import * as fs from 'mz/fs';
@@ -14,7 +14,7 @@ import { Element } from './html-model';
 import { renderDartFile } from './renderer';
 
 export interface RenderPlugin {
-	transformWidget(widget: Widget, plugins: RenderPlugin[], options: Options) : Widget
+	transformWidget(widget: Widget, options: Options) : Widget
 }
 
 export interface Options {
@@ -33,7 +33,8 @@ export interface Options {
 	debug?: { // some debugging settings
 		logHTML?: boolean, // log the generated merged style html
 		logHtmlAST?: boolean, // log the generated AST from the parsed html
-		logDartAST?: boolean, // log the generated AST from compiling the html AST
+		logDartPreAST?: boolean, // log the generated AST from compiling the html AST
+		logDartPostAST?: boolean, // log the generated AST after applying the plugins on the generated AST
 		logCode?: boolean // log the generated code
 	}
 }
@@ -42,8 +43,7 @@ const defaultOptions: Options = {
 	indentation: 2,
 	imports: [
 		'package:flutter/material.dart',
-		'package:flutter/cupertino.dart',
-		'package:flutter_platform_widgets/flutter_platform_widgets.dart',
+		'package:flutter/cupertino.dart'
 	],
 	tagClasses: {
 		text: 'PlatformText',
@@ -145,17 +145,31 @@ export function startWatching(dirs: string[], options: Options, plugins: RenderP
 			}
 		}
 		if(!html) throw `no html found in file ${file}`
-		if(options.debug && options.debug.logHTML) console.debug(relativeFile, 'HTML:\n' + html)
+		if(options.debug && options.debug.logHTML) 
+			console.debug(relativeFile, 'HTML:\n' + html)
 
 		// convert the html into an abstract syntax tree, merging any css in the process
 		const ast = await processHtml(file, html)
 		if(!ast) throw `no ast found in html of file ${file}`
-		if(options.debug && options.debug.logHtmlAST) console.debug(relativeFile, 'HTML AST:\n' + JSON.stringify(ast, null, 3))
+		if(options.debug && options.debug.logHtmlAST) 
+			console.debug(relativeFile, 'HTML AST:\n' + JSON.stringify(ast, null, 3))
 
 		// convert the html ast into a dart widget tree to render
-		const widgets = compile(ast, plugins, options)
-		if(options.debug && options.debug.logDartAST) console.debug(relativeFile, 'Dart AST:\n' + JSON.stringify(widgets, null, 3))
-
+		const compiled = compile(ast, options)
+		if(options.debug && options.debug.logDartPreAST) 
+			console.debug(relativeFile, 'Dart Pre-process AST:\n' + JSON.stringify(compiled, null, 3))
+		
+		// convert the html ast into a dart widget tree to render
+		const widgets = compiled.map(widget=>{
+			let result : Widget = widget
+			for(let plugin of plugins) {
+				result = plugin.transformWidget(result, options)
+			}
+			return result
+		})
+		if(options.debug && options.debug.logDartPostAST) 
+			console.debug(relativeFile, 'Dart Post-process AST:\n' + JSON.stringify(widgets, null, 3))
+		
 		// extract the imports to use from the ast
 		const imports = extractImports(ast)
 
