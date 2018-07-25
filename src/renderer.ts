@@ -143,7 +143,6 @@ function renderWidget(widget: Widget, vModelType: string, options: Options) : st
 
 	// if this widget is a switch, get all the cases and render only the case that resolves
 	if(widget.name=='Switch') {
-		console.log(JSON.stringify(widget, null, 2))
 		const valueParam = findParam(widget, 'select')
 		if(!valueParam) throw 'switch tag is missing select parameter'
 		const childrenParam = findParam(widget, 'children')
@@ -152,27 +151,17 @@ function renderWidget(widget: Widget, vModelType: string, options: Options) : st
 		const cases = children.filter(child=>findParam(child, 'vCase'))
 
 		return multiline(
-			cases.map(_case=>renderSwitchCase(_case)).join('\n: '),
+			cases.map(_case=>_renderSwitchCase(_case)).join('\n: '),
 			': Container()'
 		)
 
-		function renderSwitchCase(_case: Widget) {
+		function _renderSwitchCase(_case: Widget) {
 			const caseParam = findAndRemoveParam(_case, 'vCase')
 			return multiline(
 				`(${renderParamValue(valueParam, vModelType, options)}==${renderParamValue(caseParam, vModelType, options)}) ?`,
 				indent(renderWidget(_case, vModelType, options), options.indentation)
 			)
 		}
-
-		/*
-		(app.currentTab==0) ? 
-			Text('amazing')
-		: (app.currentTab==1) ? 
-			Text('Yaya')
-		: (app.currentTab==2) ? 
-			Text('Kaka')
-		: Container()
-		*/
 	}
 
 	// if this widget has v-if, write code that either renders the widget,

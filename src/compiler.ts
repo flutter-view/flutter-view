@@ -18,9 +18,11 @@ export function extractImports(html: Element[]) : string[] {
 			const tag = el as Tag
 			if(tag.name == 'import') {
 				imports.push(tag)
-				pull(html, tag)
 			}
 		}
+	}
+	for(let tag of imports) {
+		pull(html, tag)
 	}
 	return imports
 		.map(i=>i.attribs['package'])
