@@ -31,7 +31,6 @@ if(fs.existsSync(configFileName)) {
 let plugins = [
 	// './dest/plugins/process-text-style'
 ]
-console.log('plugins: ', config.plugins)
 if(config.plugins) {
 	for(let plugin of config.plugins) {
 		const pluginFn = require(plugin)

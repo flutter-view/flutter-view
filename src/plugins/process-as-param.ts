@@ -4,7 +4,17 @@ import { Widget } from '../flutter-model';
 import { applyOnDescendants, findAndRemoveParam, findParam } from '../tools';
 import { Options } from '../watcher';
 
-
+/**
+ * This plugin processes the **as** parameters.
+ * 
+ * It finds all child/children widgets with the as="..." parameter, 
+ * and changes any of those widgets from child(ren) to direct parameters of
+ * the name in the as parameter value.
+ * 
+ * @param widget the widget tree to process
+ * @param options the flutter-view options
+ * @return the transformed widget tree
+ */
 export function transformWidget(widget: Widget, options: Options): Widget {
 
 	const childrenParam = findParam(widget, 'children')
@@ -33,7 +43,6 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 				resolved: false
 			})
 		}
-		// now we can 
 	} 
 
 	const childParam = findParam(widget, 'child')
