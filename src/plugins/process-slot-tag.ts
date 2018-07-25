@@ -22,16 +22,13 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			if(param.type=='widget' && param.value) {
 				const slot = param.value as Widget
 				if(slot.name == 'Slot') {
-					console.log('Found slot', slot, 'in param', param)
 					const children = findParam(slot, 'children')
 					if(children) {
-						console.log('children', children)
 						param.value = children.value
 						param.type = 'widgets'
 					} else {
 						const child = findParam(slot, 'child')
 						if(child) {
-							console.log('child', children)
 							param.value = child.value
 							param.type = 'widget'
 						}
