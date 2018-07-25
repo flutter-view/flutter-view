@@ -60,26 +60,17 @@ function compileTag(tag: Tag, options: Options) : Widget {
 
 	// process the tag attributes, transforming them into widget params
 	if(tag.attribs) {
-		// apply styles as properties
-		if(tag.attribs['style']) {
-			const styleRules = styleparser(tag.attribs['style'])
-			for(const attr in styleRules) {
-				tag.attribs[':' + attr] = styleRules[attr]
-			}
-		}
 		for(const attr in tag.attribs) {
-			if(attr != 'id' && attr != 'class' && attr != 'style') {
-				const expression = attr.startsWith(':')
-				const name = expression ? attr.substring(1) : attr
-				const value = tag.attribs[attr]
-				params.push({
-					class: 'param',
-					type: expression ? 'expression' : 'literal',
-					name: (name=='value') ? undefined : camelCase(name),
-					value: attr!=value ? decode(value) : null, // pug renders empty attributes as key==value
-					resolved: false
-				})
-			}
+			const expression = attr.startsWith(':')
+			const name = expression ? attr.substring(1) : attr
+			const value = tag.attribs[attr]
+			params.push({
+				class: 'param',
+				type: expression ? 'expression' : 'literal',
+				name: (name=='value') ? undefined : camelCase(name),
+				value: attr!=value ? decode(value) : null, // pug renders empty attributes as key==value
+				resolved: false
+			})
 		}
 	}
 
