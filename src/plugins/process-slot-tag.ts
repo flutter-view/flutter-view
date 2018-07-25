@@ -25,7 +25,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 					const children = findParam(slot, 'children')
 					if(children) {
 						param.value = children.value
-						param.type = 'widgets'
+						param.type = 'array'
 					} else {
 						const child = findParam(slot, 'child')
 						if(child) {
