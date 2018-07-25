@@ -25,6 +25,16 @@ export function renderDartFile(widgets: Widget[], imports: string[], options: Op
 }
 
 /**
+ * Renders as dart text a list of imports.
+ * @param imports a list of imports to render as code
+ * @returns the generated dart code
+ */
+function renderClassImports(imports: string[]) : string {
+	if(!imports) return ''
+	return imports.map(_import => `// ignore: unused_import\nimport '${_import}';`).join('\r\n')
+}
+
+/**
  * Render a single widget function that builds a flutter-view widget tree
  * @param widget the widget to render
  * @param options flutter-view options
@@ -77,6 +87,23 @@ export function renderWidgetFunction(widget: Widget, options: Options) : string 
 			indent(`return ${built};`, options.indentation),
 			`}`
 		)
+	}
+}
+
+/**
+ * Renders the constructor of the widget function
+ * @param name The name of the function
+ * @param fields the widget function fields to add to the constructor
+ * @param vModelType the optional model type
+ * @returns the generated dart code
+ */
+function renderConstructor(name: string, fields: { name: string, value: string }[], vModelType: string) : string {
+	if(vModelType) {
+		return `${name}({ ${vModelType} model, ${fields.map(f=>`@required ${f.name}`).join(', ')} })`
+	} else if(fields.length > 0) {
+		return `${name}({ ${fields.map(f=>`@required ${f.name}`).join(', ')} })`
+	} else {
+		return `${name}()`
 	}
 }
 
@@ -144,33 +171,6 @@ function renderWidget(widget: Widget, vModelType: string, options: Options) : st
 		`)`
 	)
 	
-}
-
-/**
- * Renders as dart text a list of imports.
- * @param imports a list of imports to render as code
- * @returns the generated dart code
- */
-function renderClassImports(imports: string[]) : string {
-	if(!imports) return ''
-	return imports.map(_import => `// ignore: unused_import\nimport '${_import}';`).join('\r\n')
-}
-
-/**
- * Renders the constructor of the widget function
- * @param name The name of the function
- * @param fields the widget function fields to add to the constructor
- * @param vModelType the optional model type
- * @returns the generated dart code
- */
-function renderConstructor(name: string, fields: { name: string, value: string }[], vModelType: string) : string {
-	if(vModelType) {
-		return `${name}({ ${vModelType} model, ${fields.map(f=>`@required ${f.name}`).join(', ')} })`
-	} else if(fields.length > 0) {
-		return `${name}({ ${fields.map(f=>`@required ${f.name}`).join(', ')} })`
-	} else {
-		return `${name}()`
-	}
 }
 
 /**
