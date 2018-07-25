@@ -34,7 +34,7 @@ let plugins = [
 if(config.plugins) {
 	for(let plugin of config.plugins) {
 		const pluginFn = require(plugin)
-		console.log('loaded plugin', plugin)
+		// console.log('loaded plugin', plugin)
 		plugins.push(pluginFn)
 	}
 }
