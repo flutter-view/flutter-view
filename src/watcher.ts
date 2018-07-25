@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import * as gaze from 'gaze';
-import { merge, applyPlugins } from './tools'
 import * as htmlparser from 'htmlparser';
 import * as juice from 'juice';
 import * as fs from 'mz/fs';
@@ -12,6 +11,7 @@ import { compile, extractImports } from './compiler';
 import { Widget } from './flutter-model';
 import { Element } from './html-model';
 import { renderDartFile } from './renderer';
+import { merge } from './tools';
 
 export interface RenderPlugin {
 	transformWidget(widget: Widget, options: Options) : Widget

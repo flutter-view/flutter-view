@@ -1,5 +1,5 @@
 import { Widget } from '../flutter-model';
-import { findAndRemoveParam, parseStyleColor, unquote, applyOnDescendants } from '../tools';
+import { applyOnDescendants, findAndRemoveParam, parseStyleColor, unquote } from '../tools';
 import { Options } from '../watcher';
 
 export function transformWidget(widget: Widget, options: Options): Widget {

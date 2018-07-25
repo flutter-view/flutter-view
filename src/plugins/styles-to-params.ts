@@ -1,9 +1,9 @@
-import { Widget } from '../flutter-model';
-import { findAndRemoveParam, parseStyleColor, unquote, applyOnDescendants } from '../tools';
-import { Options } from '../watcher';
-import * as styleparser from 'style-parser';
-import { camelCase, upperCaseFirst } from 'change-case';
+import { camelCase } from 'change-case';
 import * as decode from 'decode-html';
+import * as styleparser from 'style-parser';
+import { Widget } from '../flutter-model';
+import { applyOnDescendants, findAndRemoveParam } from '../tools';
+import { Options } from '../watcher';
 
 /**
  * Parses style parameters generated from CSS, and transforms them into widget parameters

@@ -1,7 +1,7 @@
 import * as indent from 'indent-string';
 import { pull, union } from 'lodash';
-import { Widget, Param } from './flutter-model';
-import { findParam, multiline, unquote, findAndRemoveParam } from './tools';
+import { Param, Widget } from './flutter-model';
+import { findAndRemoveParam, findParam, multiline, unquote } from './tools';
 import { Options } from './watcher';
 
 /**
@@ -42,8 +42,8 @@ function renderClassImports(imports: string[]) : string {
  */
 export function renderWidgetFunction(widget: Widget, options: Options) : string | null {
 	const fields = getClassFields(widget)
-	const vModelTypeParam = findParam(widget, 'vModelType')
-	const vModelType = vModelTypeParam ? vModelTypeParam.value as string : null
+	const vModelParam = findParam(widget, 'vModel')
+	const vModel = vModelParam ? vModelParam.value as string : null
 
 	// find the single child to render
 	const childParam = findParam(widget, 'child')
@@ -63,18 +63,18 @@ export function renderWidgetFunction(widget: Widget, options: Options) : string 
 	}
 	if(!child) return ''
 
-	const built = renderWidget(child, vModelType, options)
+	const built = renderWidget(child, vModel, options)
 
 	const returnType = child.name
-	if(vModelType) {
+	if(vModel) {
 		return multiline(
 			'// ignore: non_constant_identifier_names',
-			`${renderConstructor(widget.name, fields, vModelType)} {`,
+			`${renderConstructor(widget.name, fields, vModel)} {`,
 			indent(multiline(
 				`final widget = ${built};`,
 				`return (model != null) ?`,
 				indent(multiline(
-					`ScopedModel<${vModelType}>(model: model, child: widget) `,
+					`ScopedModel<${vModel}>(model: model, child: widget) `,
 					`: widget;`
 				), options.indentation)
 			), options.indentation),
@@ -83,7 +83,7 @@ export function renderWidgetFunction(widget: Widget, options: Options) : string 
 	} else {
 		return multiline(
 			'// ignore: non_constant_identifier_names',
-			`${returnType} ${renderConstructor(widget.name, fields, vModelType)} {`,
+			`${returnType} ${renderConstructor(widget.name, fields, vModel)} {`,
 			indent(`return ${built};`, options.indentation),
 			`}`
 		)
@@ -112,28 +112,28 @@ function renderConstructor(name: string, fields: { name: string, value: string }
  * It will go into the parameters of the widget, extract the widgets from there, and
  * then render that code, etc. The result is the rendered code of the full widget.
  * @param widget the widget to render, including its descendants (through its parameters)
- * @param vModelType the type of the model, if available
+ * @param vModel the type of the model, if available
  * @param options the flutter-view options
  * @returns the generated dart code
  */
-function renderWidget(widget: Widget, vModelType: string, options: Options) : string {
+function renderWidget(widget: Widget, vModel: string, options: Options) : string {
 	if(!widget) return '\n'
 
 	// if this widget has v-model, wrap it with a ScopedModelDescendant
-	const vModelParam = findParam(widget, 'vModel')
-	if(vModelParam) {
-		pull(widget.params, vModelParam)
+	const vStateParam = findParam(widget, 'vState')
+	if(vStateParam) {
+		pull(widget.params, vStateParam)
 		// check if there is a v-model-type on the widget as well
-		const vModelTypeParam = findParam(widget, 'vModelType')
-		if(vModelTypeParam) pull(widget.params, vModelTypeParam)
-		const localVModelType = vModelTypeParam ? vModelTypeParam.value : vModelType
+		const vModelParam = findParam(widget, 'vModel')
+		if(vModelParam) pull(widget.params, vModelParam)
+		const localVModel = vModelParam ? vModelParam.value : vModel
 		// if we have a type, create the wrapper
-		if(localVModelType) {
+		if(localVModel) {
 			return multiline(
-				`ScopedModelDescendant<${localVModelType}>(`,
+				`ScopedModelDescendant<${localVModel}>(`,
 				indent(multiline(
-					`builder: (context, widget, ${vModelParam.value}) {`,
-					indent(`return ${renderWidget(widget, vModelType, options)};`, options.indentation),
+					`builder: (context, widget, ${vStateParam.value}) {`,
+					indent(`return ${renderWidget(widget, vModel, options)};`, options.indentation),
 					`}`
 				), options.indentation),
 				`)`
@@ -158,8 +158,8 @@ function renderWidget(widget: Widget, vModelType: string, options: Options) : st
 		function _renderSwitchCase(_case: Widget) {
 			const caseParam = findAndRemoveParam(_case, 'vCase')
 			return multiline(
-				`(${renderParamValue(valueParam, vModelType, options)}==${renderParamValue(caseParam, vModelType, options)}) ?`,
-				indent(renderWidget(_case, vModelType, options), options.indentation)
+				`(${renderParamValue(valueParam, vModel, options)}==${renderParamValue(caseParam, vModel, options)}) ?`,
+				indent(renderWidget(_case, vModel, options), options.indentation)
 			)
 		}
 	}
@@ -169,7 +169,7 @@ function renderWidget(widget: Widget, vModelType: string, options: Options) : st
 	const vIfParam = findParam(widget, 'vIf')
 	if(vIfParam) {
 		pull(widget.params, vIfParam)
-		return `${vIfParam.value} ? ${renderWidget(widget, vModelType, options)} : Container()`
+		return `${vIfParam.value} ? ${renderWidget(widget, vModel, options)} : Container()`
 	}
 
 	// if this widget has v-for, repeatedly render it
@@ -181,7 +181,7 @@ function renderWidget(widget: Widget, vModelType: string, options: Options) : st
 			`${result.list}.map<Widget>((${result.param}) {`,
 			indent(multiline(
 				`return`,
-				renderWidget(widget, vModelType, options)+';'
+				renderWidget(widget, vModel, options)+';'
 			), options.indentation),
 			`}).toList()`,
 		)
@@ -190,7 +190,7 @@ function renderWidget(widget: Widget, vModelType: string, options: Options) : st
 	// render the widget class with the parameters
 	return multiline(
 		`${widget.constant?'const ':''}${widget.name}(`,
-		indent(renderParams(widget, vModelType, options), options.indentation),
+		indent(renderParams(widget, vModel, options), options.indentation),
 		`)`
 	)
 	
@@ -200,20 +200,20 @@ function renderWidget(widget: Widget, vModelType: string, options: Options) : st
  * Renders the parameters of a widget. Since a parameter can contain another widget,
  * this is part of the recursive process of renderWidget.
  * @param widget the widget to render the parameters for
- * @param vModelType the optional model type to use
+ * @param vModel the optional model type to use
  * @param options the flutter-view options
  * @returns the generated dart code
  */
-function renderParams(widget: Widget, vModelType: string, options: Options) : string {
+function renderParams(widget: Widget, vModel: string, options: Options) : string {
 	const renderedParams : string[] = []
 	const paramsToRender = widget.params ? widget.params.filter(param=>param.name!='value'&&param.name!='const') : null
 	if(paramsToRender) {
 		for(var param of paramsToRender) {
 			if(param.name) {
 				const name = unquote(param.name)
-				renderedParams.push(`${name}: ${renderParamValue(param, vModelType, options)}`)
+				renderedParams.push(`${name}: ${renderParamValue(param, vModel, options)}`)
 			} else {
-				renderedParams.push(renderParamValue(param, vModelType, options))
+				renderedParams.push(renderParamValue(param, vModel, options))
 			}
 		}
 	}
@@ -225,11 +225,11 @@ function renderParams(widget: Widget, vModelType: string, options: Options) : st
  * Renders the value of a widget parameter. Since a parameter can contain another widget,
  * this is part of the recursive process of renderWidget.
  * @param widget the widget to render the parameters for
- * @param vModelType the optional model type to use
+ * @param vModel the optional model type to use
  * @param options the flutter-view options
  * @returns the generated dart code
  */
-function renderParamValue(param: Param, vModelType: string, options: Options) : string {
+function renderParamValue(param: Param, vModel: string, options: Options) : string {
 	switch(param.type) {
 		case 'literal': {
 			return `'${param.value}'`
@@ -240,11 +240,11 @@ function renderParamValue(param: Param, vModelType: string, options: Options) : 
 		case 'widget': {
 			const value = param.value as Widget
 			const _const = findParam(value, 'const') ? 'const ' : ''
-			return `${_const}${renderWidget(param.value as Widget, vModelType, options)}`
+			return `${_const}${renderWidget(param.value as Widget, vModel, options)}`
 		}
 		case 'array': {
 			const widgets = param.value as Widget[]
-			const values = widgets.map(widget=>`${renderWidget(widget, vModelType, options)}`)
+			const values = widgets.map(widget=>`${renderWidget(widget, vModel, options)}`)
 			return multiline(
 				`[`,
 				indent(values.join(',\n'), options.indentation),
@@ -253,7 +253,7 @@ function renderParamValue(param: Param, vModelType: string, options: Options) : 
 		}
 		case 'widgets': {
 			const widgets = param.value as Widget[]
-			const values = widgets.map(widget=>`${renderWidget(widget, vModelType, options)}`)
+			const values = widgets.map(widget=>`${renderWidget(widget, vModel, options)}`)
 			// in v-for loops we generate arrays. these arrays may already be in an array,
 			// so we will want to flatten these arrays of arrays before adding them
 			return multiline(

@@ -1,7 +1,6 @@
 import { camelCase, upperCaseFirst } from 'change-case';
 import * as decode from 'decode-html';
 import { pull } from 'lodash';
-import * as styleparser from 'style-parser';
 import { Param, Widget } from './flutter-model';
 import { Element, Tag, Text } from './html-model';
 import { Options } from './watcher';

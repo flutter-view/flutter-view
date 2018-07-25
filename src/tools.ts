@@ -1,4 +1,4 @@
-import { isArray, mergeWith, pull, tail, flatten } from 'lodash';
+import { isArray, mergeWith, pull, tail } from 'lodash';
 import { Param, Widget } from './flutter-model';
 import { Options, RenderPlugin } from './watcher';
 
