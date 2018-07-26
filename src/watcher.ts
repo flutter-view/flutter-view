@@ -11,7 +11,7 @@ import { compile, extractImports } from './compiler';
 import { Widget } from './flutter-model';
 import { Element } from './html-model';
 import { renderDartFile } from './renderer';
-import { merge } from './tools';
+import { merge, multiline } from './tools';
 
 export interface RenderPlugin {
 	transformWidget(widget: Widget, options: Options) : Widget
@@ -29,6 +29,7 @@ export interface Options {
 	multiChildClasses: string[], // a list of classes that have a children constructor parameter
 	autowrapChildren?: true, // use a wrapper child if a tag without a children parameter has multiple children in the template
 	autowrapChildrenClass?: string, // the class to use as the child wrapper
+	reportErrorsInDart?: boolean, // should errors also be reported in the dart file?
 	propagateDelete?: boolean, // should genenerated dart file be deleted if the pug/html file with the same name is deleted?
 	debug?: { // some debugging settings
 		logHTML?: boolean, // log the generated merged style html
@@ -65,6 +66,7 @@ const defaultOptions: Options = {
 	],
 	autowrapChildren: true,
 	autowrapChildrenClass: 'Column',
+	reportErrorsInDart: true,
 	propagateDelete: true
 }
 
@@ -226,7 +228,20 @@ export function startWatching(dirs: string[], options: Options, plugins: RenderP
 
 	function reportError(file: string, error: Error) {
 		console.error('Error on processing', relative(process.cwd(), file) + ':')
-		console.error(error)
+		console.error(error.toString())
+
+		const errorLines = error.toString().split('\\n')
+		const commentedLines = errorLines.map(line=>` * ${line}`)
+		const errorCode = multiline(
+			'/*',
+			commentedLines.join('\n'),
+			'*/',
+			'',
+			'false // intentional dart error'
+		)
+		const p = parseFileName(file)
+		const dartFile = `${p.dir}/${p.name}.dart`
+		fs.writeFileSync(dartFile, errorCode)
 	}
 
 }
