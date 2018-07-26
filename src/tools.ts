@@ -80,6 +80,48 @@ export function parseTRBLStyle(padding: string) : { top?: string, right?: string
 	}
 }
 
+export type Border = { width?: string, style?: string, color?: string }
+
+export function parseBorderStyle(border: string) : Border {
+	const regexp = /[.a-z0-9]+/gi
+	const matches = border.match(regexp)
+	switch (matches.length) {
+		case 1: {
+			if(matches[0]=='none') {
+				return { style: 'none' }
+			} else if(parseFloat(matches[0])) {
+				// border: 5.0
+				return { width: parseStyleDoubleValue(matches[0]) }
+			} else {
+				// border: red
+				return { color: parseStyleColor(matches[0]) }
+			}
+		}
+		case 2: {
+			if(parseFloat(matches[0])) {
+				// border: 5.0 red
+				return { 
+					width: parseStyleDoubleValue(matches[0]),
+					color: parseStyleColor(matches[1])
+				}
+			} else {
+				// border: solid red
+				return { 
+					style: matches[0],
+					color: parseStyleColor(matches[1])
+				}
+			}
+		}
+		case 3: return {
+			// border: 5.0 solid red
+			width: parseStyleDoubleValue(matches[0]),
+			style: matches[1],
+			color: parseStyleColor(matches[2])
+		}
+		default: return {}
+	}
+}
+
 export function parseStyleDoubleValue(value: string) : string {
 	if(!value) return ''
 	const isNumber = parseFloat(value)
