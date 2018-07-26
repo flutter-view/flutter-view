@@ -49,9 +49,9 @@ export function parseStyleColor(color: string) : string {
 	return color
 }
 
-export function parseTRBLStyle(padding: string) : { top?: string, right?: string, bottom?: string, left?: string } {
+export function parseTRBLStyle(style: string) : { top?: string, right?: string, bottom?: string, left?: string } {
 	const regexp = /[.a-z0-9]+/gi
-	const matches = padding.match(regexp)
+	const matches = style.match(regexp)
 	switch (matches.length) {
 		case 1: return {
 			top: matches[0],

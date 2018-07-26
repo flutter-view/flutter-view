@@ -201,12 +201,12 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 				})
 			}
 			if(borderRadiusParam) {
-				const radiusValue = parseStyleDoubleValue(borderRadiusParam.value.toString())
+				const radiusValue = parseTRBLStyle(borderRadiusParam.value.toString())
 				boxDecorationWidget.params.push({
 					class: 'param',
 					name: 'borderRadius',
 					type: 'expression',
-					value: `BorderRadius.all(Radius.circular(${radiusValue}))`,
+					value: toBorderRadiusCode(borderRadiusParam.value.toString()),
 					resolved: true
 				})
 			}
@@ -309,4 +309,16 @@ function toBorderWidget(borders: Borders) : Widget {
 		})
 	}
 	return borderWidget
+}
+
+function toBorderRadiusCode(radius: string) : string {
+	const radiusValue = parseTRBLStyle(radius)
+	const params: string[] = []
+	if(radiusValue.top) params.push(`topLeft: Radius.circular(${parseStyleDoubleValue(radiusValue.top)})`)
+	if(radiusValue.right) params.push(`topRight: Radius.circular(${parseStyleDoubleValue(radiusValue.right)})`)
+	if(radiusValue.bottom) params.push(`bottomRight: Radius.circular(${parseStyleDoubleValue(radiusValue.bottom)})`)
+	if(radiusValue.left) params.push(`bottomLeft: Radius.circular(${parseStyleDoubleValue(radiusValue.left)})`)
+	return `BorderRadius.only(${params.join(', ')})`
+
+	// BorderRadius.only
 }
