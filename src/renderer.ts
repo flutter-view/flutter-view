@@ -94,12 +94,12 @@ export function renderWidgetFunction(widget: Widget, options: Options) : string 
  * Renders the constructor of the widget function
  * @param name The name of the function
  * @param fields the widget function fields to add to the constructor
- * @param vModelType the optional model type
+ * @param vModel the optional model type
  * @returns the generated dart code
  */
-function renderConstructor(name: string, fields: { name: string, value: string }[], vModelType: string) : string {
-	if(vModelType) {
-		return `${name}({ ${vModelType} model, ${fields.map(f=>`@required ${f.name}`).join(', ')} })`
+function renderConstructor(name: string, fields: { name: string, value: string }[], vModel: string) : string {
+	if(vModel) {
+		return `${name}({ ${vModel} model, ${fields.map(f=>`@required ${f.name}`).join(', ')} })`
 	} else if(fields.length > 0) {
 		return `${name}({ ${fields.map(f=>`@required ${f.name}`).join(', ')} })`
 	} else {

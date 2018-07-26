@@ -49,6 +49,37 @@ export function parseStyleColor(color: string) : string {
 	return color
 }
 
+export function parseTRBLStyle(padding: string) : { top?: string, right?: string, bottom?: string, left?: string } {
+	const regexp = /[.a-z0-9]+/gi
+	const matches = padding.match(regexp)
+	switch (matches.length) {
+		case 1: return {
+			top: matches[0],
+			right: matches[0],
+			bottom: matches[0],
+			left: matches[0]
+		}
+		case 2: return {
+			top: matches[0],
+			bottom: matches[0],
+			left: matches[1],
+			right: matches[1]
+		}
+		case 3: return {
+			top: matches[0],
+			right: matches[1],
+			bottom: matches[2]
+		}
+		case 4: return {
+			top: matches[0],
+			right: matches[1],
+			bottom: matches[2],
+			left: matches[3]
+		}
+		default: return {}
+	}
+}
+
 export function parseStyleDoubleValue(value: string) : string {
 	if(!value) return ''
 	const isNumber = parseFloat(value)
