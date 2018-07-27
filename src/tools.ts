@@ -1,6 +1,7 @@
 import { isArray, mergeWith, pull, tail } from 'lodash';
 import { Param, Widget } from './flutter-model';
 import { Options, RenderPlugin } from './watcher';
+import { camelCase, upperCaseFirst } from 'change-case';
 
 export function unquote(text: string): string {
 	if (!text) return ''
@@ -47,6 +48,42 @@ export function parseStyleColor(color: string) : string {
 		return `Colors.${color}`
 	}
 	return color
+}
+
+export function parseStyleRepeat(repeat: string) : string {
+	if(!repeat) return ''
+	if(repeat.indexOf('.') < 0 && repeat.indexOf('(') < 0) {
+		return `ImageRepeat.${camelCase(repeat)}`
+	}
+	return repeat
+}
+
+export function parseStyleBackgroundSize(size: string) : string {
+	// CSS:     https://www.w3schools.com/cssref/css3_pr_background-size.asp
+	// Flutter: https://docs.flutter.io/flutter/painting/BoxFit-class.html
+	if(!size) return ''
+	if(size.indexOf('.') < 0 && size.indexOf('(') < 0) {
+		return `BoxFit.${camelCase(size)}`
+	}
+	return size
+}
+
+export function parseStyleMainAxisAlignment(alignment: string) : string {
+	// Flutter: https://docs.flutter.io/flutter/rendering/MainAxisAlignment-class.html
+	if(!alignment) return ''
+	if(alignment.indexOf('.') < 0 && alignment.indexOf('(') < 0) {
+		return `MainAxisAlignment.${camelCase(alignment)}`
+	}
+	return alignment
+}
+
+export function parseStyleCrossAxisAlignment(alignment: string) : string {
+	// Flutter: https://docs.flutter.io/flutter/rendering/CrossAxisAlignment-class.html
+	if(!alignment) return ''
+	if(alignment.indexOf('.') < 0 && alignment.indexOf('(') < 0) {
+		return `CrossAxisAlignment.${camelCase(alignment)}`
+	}
+	return alignment
 }
 
 export function parseTRBLStyle(style: string) : { top?: string, right?: string, bottom?: string, left?: string } {
