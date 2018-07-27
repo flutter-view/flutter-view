@@ -1,5 +1,5 @@
 import { Widget } from '../flutter-model';
-import { applyOnDescendants, findAndRemoveParam, parseStyleColor, unquote, parseStyleDoubleValue, parseTRBLStyle, Border, parseBorderStyle } from '../tools';
+import { applyOnDescendants, findAndRemoveParam, parseStyleUrl, parseStyleColor, unquote, parseStyleDoubleValue, parseTRBLStyle, Border, parseBorderStyle } from '../tools';
 import { Options } from '../watcher';
 
 type Borders = { top?: Border, right?: Border, bottom?: Border, left?: Border }
@@ -10,6 +10,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		if(!widget.params) widget.params = []
 
 		const backgroundColorParam = findAndRemoveParam(widget, 'backgroundColor')
+		const backgroundImageParam = findAndRemoveParam(widget, 'backgroundImage')
 
 		const widthParam = findAndRemoveParam(widget, 'width')
 		const heightParam = findAndRemoveParam(widget, 'height')
@@ -177,13 +178,86 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			borderWidget = toBorderWidget(borders)
 		}
 
-		if(borderWidget || backgroundColorParam) {
-			const boxDecorationWidget: Widget = {
+		// image
+
+		let imageWidget : Widget
+		if(backgroundImageParam) {
+			const imgLocation = parseStyleUrl(backgroundImageParam.value as string)
+			if(imgLocation) {
+				console.log('image', backgroundImageParam)
+				switch(imgLocation.type) {
+					case 'asset': {
+						imageWidget = {
+							class: 'widget',
+							name: options.tagClasses.backgroundAssetImg,
+							constant: false,
+							params: [
+								{
+									class: 'param',
+									resolved: false,
+									type: 'literal',
+									value: imgLocation.location
+								}
+							]
+						}
+						break
+					}
+					case 'url': {
+						imageWidget = {
+							class: 'widget',
+							name: options.tagClasses.backgroundUrlImg,
+							constant: false,
+							params: [
+								{
+									class: 'param',
+									resolved: false,
+									type: 'literal',
+									value: imgLocation.location
+								}
+							]
+						}
+						break
+					}
+				}
+			}
+		}
+
+		// decorationimage
+		
+		let decorationImageWidget : Widget
+		if(imageWidget) {
+			decorationImageWidget = {
+				class: 'widget',
+				name: 'DecorationImage',
+				constant: false,
+				params: []
+			}
+			if(imageWidget) decorationImageWidget.params.push({
+				class: 'param',
+				name: 'image',
+				type: 'widget',
+				resolved: false,
+				value: imageWidget
+			})
+		}
+
+		// box decoration
+
+		let boxDecorationWidget: Widget
+		if(borderWidget || backgroundColorParam || backgroundImageParam || decorationImageWidget) {
+			boxDecorationWidget = {
 				class: 'widget',
 				name: 'BoxDecoration',
 				constant: false,
 				params: []
 			}
+			if(decorationImageWidget) boxDecorationWidget.params.push({
+				class: 'param',
+				name: 'image',
+				resolved: false,
+				type: 'widget',
+				value: decorationImageWidget
+			})
 			if(borderWidget) boxDecorationWidget.params.push({
 				class: 'param',
 				name: 'border',
@@ -191,25 +265,23 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 				resolved: true,
 				value: borderWidget
 			})
-			if(backgroundColorParam) {
-				boxDecorationWidget.params.push({
-					class: 'param',
-					name: 'color',
-					type: 'expression',
-					value: parseStyleColor(unquote(backgroundColorParam.value.toString())),
-					resolved: true
-				})
-			}
-			if(borderRadiusParam) {
-				const radiusValue = parseTRBLStyle(borderRadiusParam.value.toString())
-				boxDecorationWidget.params.push({
-					class: 'param',
-					name: 'borderRadius',
-					type: 'expression',
-					value: toBorderRadiusCode(borderRadiusParam.value.toString()),
-					resolved: true
-				})
-			}
+			if(backgroundColorParam) boxDecorationWidget.params.push({
+				class: 'param',
+				name: 'color',
+				type: 'expression',
+				value: parseStyleColor(unquote(backgroundColorParam.value.toString())),
+				resolved: true
+			})
+			if(borderRadiusParam) boxDecorationWidget.params.push({
+				class: 'param',
+				name: 'borderRadius',
+				type: 'expression',
+				value: toBorderRadiusCode(borderRadiusParam.value.toString()),
+				resolved: true
+			})
+		}
+
+		if(boxDecorationWidget) {
 			widget.params.push({
 				class: 'param',
 				name: 'decoration',
@@ -218,14 +290,17 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 				value: boxDecorationWidget
 			})
 		}
+
 		/*
-		 * decoration: new BoxDecoration(
-				border: new Border(
-					top: new BorderSide(width: 16.0, color: Colors.lightBlue.shade50),
-					bottom: new BorderSide(width: 16.0, color: Colors.lightBlue.shade900),
-				),
-			),
-		 */
+		decoration: BoxDecoration(
+            image: DecorationImage(
+              image: NetworkImage('url'),
+              fit: BoxFit.contain,
+              alignment: Alignment(10.9, 5.0),
+              repeat: ImageRepeat.noRepeat
+            )
+		)
+		*/
 	}
 
 	// also apply the plugin to the rest of the widget tree of this widget
@@ -320,7 +395,6 @@ function toBorderRadiusCode(radius: string) : string {
 		}
 	}
 	const radiusValue = parseTRBLStyle(radius)
-	console.log('radiuses', radiusValue)
 	const params: string[] = []
 	if(radiusValue.top) params.push(`topLeft: ${toRadius(radiusValue.top)}`)
 	if(radiusValue.right) params.push(`topRight: ${toRadius(radiusValue.right)}`)

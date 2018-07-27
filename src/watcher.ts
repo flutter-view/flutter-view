@@ -24,9 +24,12 @@ export interface Options {
 	tagClasses: { // a map of tags with their asociated classes
 		div: string, // the class to represent a div in dart code
 		text: string // the class to represent text in dart code
-		span: string // the class to represent a span element in dart code
+		span: string, // the class to represent a span element in dart code
+		backgroundUrlImg: string, // the class to represent a background url image
+		backgroundAssetImg: string // the class to represent a background asset image
 	}, 
 	multiChildClasses: string[], // a list of classes that have a children constructor parameter
+
 	autowrapChildren?: true, // use a wrapper child if a tag without a children parameter has multiple children in the template
 	autowrapChildrenClass?: string, // the class to use as the child wrapper
 	reportErrorsInDart?: boolean, // should errors also be reported in the dart file?
@@ -49,7 +52,9 @@ const defaultOptions: Options = {
 	tagClasses: {
 		text: 'PlatformText',
 		div: 'Container',
-		span: 'Wrap'
+		span: 'Wrap',
+		backgroundAssetImg: 'ExactAssetImage',
+		backgroundUrlImg: 'NetworkImage'
 	},
 	multiChildClasses: [
 		'Row',

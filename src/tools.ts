@@ -129,6 +129,20 @@ export function parseStyleDoubleValue(value: string) : string {
 	return value
 }
 
+export function parseStyleUrl(value: string) : { type: 'url' | 'asset', location: string } | null {
+	const matchesUrl = /url\(['"]([a-zA-Z0-9:\/\._-]+)['"]\)/g.exec(value)
+	if(matchesUrl) return {
+		type: 'url',
+		location: matchesUrl[1]
+	}
+	const matchesAsset = /asset\(['"]([a-zA-Z0-9:\/\._-]+)['"]\)/g.exec(value)
+	if(matchesAsset) return {
+		type: 'asset',
+		location: matchesAsset[1]
+	}
+	return null
+}
+
 /**
  * Recursively apply all plugins to the widget and its descendants, either modifying or creating a new widget tree
  * @param widget the widget to apply all passed plugins on
