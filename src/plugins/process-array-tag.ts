@@ -3,9 +3,9 @@ import { applyOnDescendants, findParam } from '../tools';
 import { Options } from '../watcher';
 
 /**
- * This plugin processes the **slot** tags.
+ * This plugin processes the **array** tags.
  * 
- * If a slot tag is found, it replaces itself with its children.
+ * If a array tag is found, it replaces itself with its children.
  * 
  * @param widget the widget tree to process
  * @param options the flutter-view options
@@ -13,13 +13,13 @@ import { Options } from '../watcher';
  */
 export function transformWidget(widget: Widget, options: Options): Widget {
 
-	// we start looking from the perspective of the parent of the slot widget,
-	// so we can put the slot children into this widget
+	// we start looking from the perspective of the parent of the array widget,
+	// so we can put the array children into this widget
 	if(widget.params) {
 		for(let param of widget.params) {
 			if(param.type=='widget' && param.value) {
 				const slot = param.value as Widget
-				if(slot.name == 'Slot') {
+				if(slot.name == 'Array') {
 					const children = findParam(slot, 'children')
 					if(children) {
 						param.value = children.value
