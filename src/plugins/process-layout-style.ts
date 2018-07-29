@@ -8,10 +8,12 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 
 	const mainAxisAlignmentParam = findAndRemoveParam(widget, 'mainAxisAlignment')
 	const crossAxisAlignmentParam = findAndRemoveParam(widget, 'crossAxisAlignment')
+	const mainAxisSizeParam = findAndRemoveParam(widget, 'mainAxisSize')
+	const crossAxisSizeParam = findAndRemoveParam(widget, 'crossAxisSize')
 
 	// MainAxisAlignment
 
-	if (mainAxisAlignmentParam) {
+	if (mainAxisAlignmentParam && mainAxisAlignmentParam.value) {
 		widget.params.push({
 			class: 'param',
 			name: 'mainAxisAlignment',
@@ -21,7 +23,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		})
 	}
 
-	if (crossAxisAlignmentParam) {
+	if (crossAxisAlignmentParam && crossAxisAlignmentParam.value) {
 		widget.params.push({
 			class: 'param',
 			name: 'crossAxisAlignment',
@@ -68,7 +70,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 
 		// dimensions
 
-		if (widthParam) {
+		if (widthParam && widthParam.value) {
 			widget.params.push({
 				class: 'param',
 				name: 'width',
@@ -78,7 +80,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			})
 		}
 
-		if (heightParam) {
+		if (heightParam && heightParam.value) {
 			widget.params.push({
 				class: 'param',
 				name: 'height',
@@ -210,7 +212,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		// image
 
 		let imageWidget: Widget
-		if (backgroundImageParam) {
+		if (backgroundImageParam && backgroundImageParam.value) {
 			const imgLocation = parseStyleUrl(backgroundImageParam.value.toString())
 			if (imgLocation) {
 				switch (imgLocation.type) {
@@ -267,7 +269,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 				resolved: false,
 				value: imageWidget
 			})
-			if (backgroundRepeatParam) {
+			if (backgroundRepeatParam && backgroundRepeatParam.value) {
 				decorationImageWidget.params.push({
 					class: 'param',
 					name: 'repeat',
@@ -276,7 +278,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 					value: parseStyleRepeat(backgroundRepeatParam.value.toString())
 				})
 			}
-			if (backgroundSizeParam) {
+			if (backgroundSizeParam && backgroundSizeParam.value) {
 				decorationImageWidget.params.push({
 					class: 'param',
 					name: 'fit',
@@ -311,14 +313,14 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 				resolved: true,
 				value: borderWidget
 			})
-			if (backgroundColorParam) boxDecorationWidget.params.push({
+			if (backgroundColorParam && backgroundColorParam.value) boxDecorationWidget.params.push({
 				class: 'param',
 				name: 'color',
 				type: 'expression',
 				value: parseStyleColor(unquote(backgroundColorParam.value.toString())),
 				resolved: true
 			})
-			if (borderRadiusParam) boxDecorationWidget.params.push({
+			if (borderRadiusParam && borderRadiusParam.value) boxDecorationWidget.params.push({
 				class: 'param',
 				name: 'borderRadius',
 				type: 'expression',

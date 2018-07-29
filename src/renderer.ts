@@ -183,7 +183,11 @@ function renderWidget(widget: Widget, vModel: string, options: Options) : string
 	const vIfParam = findParam(widget, 'vIf')
 	if(vIfParam) {
 		pull(widget.params, vIfParam)
-		return `${vIfParam.value} ? ${renderWidget(widget, vModel, options)} : Container()`
+		if(vIfParam.value) {
+			return `${unquote(vIfParam.value.toString())} ? ${renderWidget(widget, vModel, options)} : Container()`
+		} else {
+			console.warn(`${widget.name} has a v-if without a condition`)
+		}
 	}
 
 	// if this widget has v-for, repeatedly render it
