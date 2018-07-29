@@ -164,6 +164,20 @@ function renderWidget(widget: Widget, vModel: string, options: Options) : string
 		}
 	}
 
+	if(widget.name=='Function') {
+		const paramsParam = findParam(widget, 'params')
+		const params = paramsParam ? paramsParam.value : ''
+		const childParam = findParam(widget, 'child')
+		if(!childParam || !childParam.value) return 'null'
+		const child = childParam.value as Widget
+		
+		return multiline(
+			`(${params}) {`,
+			indent(`return ${renderWidget(child, vModel, options)};`, options.indentation),
+			`}`
+		)
+	}
+
 	// if this widget has v-if, write code that either renders the widget,
 	// or that replaces it with an empty container.
 	const vIfParam = findParam(widget, 'vIf')
