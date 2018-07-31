@@ -17,7 +17,12 @@ export function renderDartFile(widgets: Widget[], imports: string[], options: Op
 		renderClassImports(allImports),
 		'',
 		widgets
-			.map(widget=>renderWidgetFunction(widget, options))
+			.filter(isFlutterView)
+			.map(widget=>renderFlutterView(widget, options))
+			.join('\r\n'),
+		widgets
+			.filter(isFlutterWidget)
+			.map(widget=>renderFlutterWidget(widget, options))
 			.join('\r\n'),
 		'',
 		renderHelperFunctions(options)
@@ -35,20 +40,13 @@ function renderClassImports(imports: string[]) : string {
 }
 
 /**
- * Render a single widget function that builds a flutter-view widget tree
- * @param widget the widget to render
- * @param options flutter-view options
- * @returns the generated dart code
+ * Gets the first child from either the child or the children property
+ * @param widget the widget to get the child from
  */
-export function renderWidgetFunction(widget: Widget, options: Options) : string | null {
-	const fields = getClassFields(widget)
-	const vModelParam = findParam(widget, 'vModel')
-	const vModel = vModelParam ? vModelParam.value as string : null
-
-	// find the single child to render
+function getTopChild(widget: Widget) : Widget | null {
 	const childParam = findParam(widget, 'child')
-	const childrenParam = findParam(widget, 'child')
-	let child: Widget
+	const childrenParam = findParam(widget, 'children')
+	let child: Widget | null = null
 	if(childParam) {
 		child = childParam.value as Widget
 	} else if(childrenParam) {
@@ -61,32 +59,111 @@ export function renderWidgetFunction(widget: Widget, options: Options) : string 
 	} else {
 		child = null
 	}
-	if(!child) return ''
+	return child
+}
 
-	const built = renderWidget(child, vModel, options)
+/**
+ * Render a single widget function that builds a flutter-view widget tree
+ * @param widget the widget to render
+ * @param options flutter-view options
+ * @returns the generated dart code
+ */
+export function renderFlutterView(widget: Widget, options: Options) : string | null {
+	const fields = getClassFields(widget)
+	const vModelParam = findParam(widget, 'vModel')
+	const vModel = vModelParam ? vModelParam.value as string : null
 
+	const child = getTopChild(widget)
+	const widgetCode = renderWidget(child, vModel, options)
 	const returnType = child.name
+	return multiline(
+		'// ignore: non_constant_identifier_names',
+		`${vModel ? returnType+' ' : ' '}${renderFunctionConstructor(widget.name, fields, vModel)} {`,
+			indent(renderBuildBody(child, vModel, options), options.indentation),
+		`}`
+	)
+}
+
+function renderBuildBody(widget: Widget, vModel: string | null, options: Options) {
+	const widgetCode = renderWidget(widget, vModel, options)
 	if(vModel) {
 		return multiline(
-			'// ignore: non_constant_identifier_names',
-			`${renderConstructor(widget.name, fields, vModel)} {`,
+			`final widget = ${widgetCode};`,
+			`return (model != null) ?`,
 			indent(multiline(
-				`final widget = ${built};`,
-				`return (model != null) ?`,
-				indent(multiline(
-					`ScopedModel<${vModel}>(model: model, child: widget) `,
-					`: widget;`
-				), options.indentation)
-			), options.indentation),
-			`}`
+				`ScopedModel<${vModel}>(model: model, child: widget) `,
+				`: widget;`
+			), options.indentation)
 		)
 	} else {
-		return multiline(
-			'// ignore: non_constant_identifier_names',
-			`${returnType} ${renderConstructor(widget.name, fields, vModel)} {`,
-			indent(`return ${built};`, options.indentation),
-			`}`
-		)
+		return `return ${widgetCode};`
+	}
+}
+
+/////////
+
+export function renderFlutterWidget(widget: Widget, options: Options) : string | null {
+	const vModelParam = findAndRemoveParam(widget, 'vModel')
+	const vModel = vModelParam ? vModelParam.value as string : null
+	const fields = getClassFields(widget)
+	if(vModel) {
+		fields.push({ 
+			name: 'model',
+			type: vModel
+		})
+	}
+	const child = getTopChild(widget)
+	const widgetCode = renderWidget(child, vModel, options)
+
+	return multiline(
+		`class ${widget.name} extends StatelessWidget {`,
+		indent(multiline(
+			'',
+			renderClassFields(fields),
+			'',
+			renderClassConstructor(widget.name, fields, vModel) + ';',
+			'',
+			multiline(
+				`@override`,
+				`Widget build(BuildContext context) {`,
+					indent(renderBuildBody(child, vModel, options), options.indentation),
+				`}`
+			),
+			''
+		), options.indentation),
+		'}'
+	)
+	
+}
+
+function renderClassFields(fields: { name: string, type?: string, value?: string }[]) : string {
+	return fields
+		.map(field=> {
+			if(field.value && field.value != 'true') {
+				return `final ${field.type || ''} ${field.name} = ${field.value};`
+			} else {
+				return `final ${field.type || ''} ${field.name};`
+			}
+		})
+		.join('\n')
+}
+
+/////////
+
+/**
+ * Renders the constructor of the widget function
+ * @param name The name of the function
+ * @param fields the widget function fields to add to the constructor
+ * @param vModel the optional model type
+ * @returns the generated dart code
+ */
+function renderFunctionConstructor(name: string, fields: { name: string, type?: string, value?: string }[], vModel: string) : string {
+	if(vModel) {
+		return `${name}({ ${vModel} model, ${fields.map(f=>`@required ${f.name}`).join(', ')} })`
+	} else if(fields.length > 0) {
+		return `${name}({ ${fields.map(f=>`@required ${f.name}`).join(', ')} })`
+	} else {
+		return `${name}()`
 	}
 }
 
@@ -97,14 +174,8 @@ export function renderWidgetFunction(widget: Widget, options: Options) : string 
  * @param vModel the optional model type
  * @returns the generated dart code
  */
-function renderConstructor(name: string, fields: { name: string, value: string }[], vModel: string) : string {
-	if(vModel) {
-		return `${name}({ ${vModel} model, ${fields.map(f=>`@required ${f.name}`).join(', ')} })`
-	} else if(fields.length > 0) {
-		return `${name}({ ${fields.map(f=>`@required ${f.name}`).join(', ')} })`
-	} else {
-		return `${name}()`
-	}
+function renderClassConstructor(name: string, fields: { name: string, type?: string, value?: string }[], vModel: string) : string {
+	return `${name}({ ${fields.map(f=>`@required this.${f.name}`).join(', ')} })`
 }
 
 /**
@@ -314,7 +385,7 @@ function renderHelperFunctions(options: Options) : string {
  * @param widget a top level widget, representing the widget function
  * @returns a list of fields
  */
-function getClassFields(widget: Widget) : { name: string, value: string }[] {
+function getClassFields(widget: Widget) : { name: string, value?: string, type?: string }[] {
 	if(widget.params) {
 		return widget.params
 			.filter(p=>p.type=='expression')
@@ -334,4 +405,12 @@ function parseVForExpression(expression: string) : { param: string, list: string
 	const match = regexp.exec(expression)
 	if(match) return { param: match[1], list: match[2] }
 	else throw `Invalid v-for expression: "${expression}"`
+}
+
+function isFlutterView(widget: Widget) {
+	return !!findParam(widget, 'flutterView')
+}
+
+function isFlutterWidget(widget: Widget) {
+	return !!findParam(widget, 'flutterWidget')
 }

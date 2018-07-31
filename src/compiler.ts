@@ -37,7 +37,7 @@ export function extractImports(html: Element[]) : string[] {
  */
 export function compile(html: Element[], options: Options): Widget[] {
 	return html
-		.filter(el=>isFlutterView(el))
+		// .filter(el=>isFlutterView(el))
 		.map(el=>compileTag(el as Tag, options))
 }
 
