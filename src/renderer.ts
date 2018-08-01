@@ -19,12 +19,11 @@ export function renderDartFile(widgets: Widget[], imports: string[], options: Op
 		widgets
 			.filter(isFlutterView)
 			.map(widget=>renderFlutterView(widget, options))
-			.join('\r\n'),
+			.join('\r\n\r\n'),
 		widgets
 			.filter(isFlutterWidget)
 			.map(widget=>renderFlutterWidget(widget, options))
-			.join('\r\n'),
-		'',
+			.join('\r\n\r\n'),
 		renderHelperFunctions(options)
 	)
 }
@@ -79,11 +78,11 @@ function renderBuildBody(widget: Widget, vModel: string | null, options: Options
 /////////
 
 export function renderFlutterWidget(widget: Widget, options: Options) : string | null {
-	const vModelParam = findAndRemoveParam(widget, 'vModel')
-	const vModel = vModelParam ? vModelParam.value as string : null
 	const fields = getClassFields(widget)
+	const vModelParam = findParam(widget, 'model')
+	const vModel = vModelParam ? vModelParam.value as string : null
 	if(vModel) {
-		fields.push({ 
+		fields.push({
 			name: 'model',
 			type: vModel
 		})
@@ -93,10 +92,9 @@ export function renderFlutterWidget(widget: Widget, options: Options) : string |
 	return multiline(
 		`class ${widget.name} extends StatelessWidget {`,
 		indent(multiline(
-			'',
 			renderClassFields(fields),
 			'',
-			renderClassConstructor(widget.name, fields, vModel) + ';',
+			renderClassConstructor(widget.name, fields),
 			'',
 			multiline(
 				`@override`,
@@ -149,8 +147,9 @@ function renderFunctionConstructor(name: string, fields: { name: string, type?: 
  * @param vModel the optional model type
  * @returns the generated dart code
  */
-function renderClassConstructor(name: string, fields: { name: string, type?: string, value?: string }[], vModel: string) : string {
-	return `${name}({ ${fields.map(f=>`@required this.${f.name}`).join(', ')} })`
+function renderClassConstructor(name: string, fields: { name: string, type?: string, value?: string }[]) : string {
+	if(fields.length == 0) return ''
+	return `${name}({ ${fields.map(f=>`@required this.${f.name}`).join(', ')} });`
 }
 
 /**
@@ -165,50 +164,34 @@ function renderClassConstructor(name: string, fields: { name: string, type?: str
 function renderWidget(widget: Widget, vModel: string, options: Options) : string {
 	if(!widget) return '\n'
 
-	// if this widget has v-model, wrap it with a ScopedModelDescendant
-	const vStateParam = findParam(widget, 'vState')
-	if(vStateParam) {
-		pull(widget.params, vStateParam)
-		// check if there is a v-model-type on the widget as well
-		const vModelParam = findParam(widget, 'vModel')
-		if(vModelParam) pull(widget.params, vModelParam)
-		const localVModel = vModelParam ? vModelParam.value : vModel
-		// if we have a type, create the wrapper
-		if(localVModel) {
-			return multiline(
-				`ScopedModelDescendant<${localVModel}>(`,
-				indent(multiline(
-					`builder: (context, widget, ${vStateParam.value}) {`,
-					indent(`return ${renderWidget(widget, vModel, options)};`, options.indentation),
-					`}`
-				), options.indentation),
-				`)`
-			)
-		}
-	}
-
 	if(widget.name=='Slot') {
 		const childrenParam = findParam(widget, 'children')
 		if(!childrenParam || !childrenParam.value) return 'Container()'
 		const children = childrenParam.value as Widget[]
 		
 		return multiline(
-			children.map(child=>_renderSwitchCase(child)).join(':\n// ignore: dead_code\n'),
+			children.map(child=>renderSlotChild(child)).join(':\n'),
 			'// ignore: dead_code',
 			': Container()'
 		)
 
-		function _renderSwitchCase(child: Widget) {
+		function renderSlotChild(child: Widget) {
 			const ifParam = findAndRemoveParam(child, 'vIf')
 			if(ifParam && ifParam.value) {
 				return multiline(
 					`(${ifParam.value}) ?`,
-					indent(renderWidget(child, vModel, options), options.indentation)
+					indent(multiline(
+						'// ignore: dead_code',
+						renderWidget(child, vModel, options)
+					), options.indentation)
 				) 
 			} else {
 				return multiline(
 					`true ?`,
-					indent(renderWidget(child, vModel, options), options.indentation)
+					indent(multiline(
+						'// ignore: dead_code',
+						renderWidget(child, vModel, options)
+					), options.indentation)
 				) 
 			}
 		}
