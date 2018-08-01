@@ -1,5 +1,5 @@
 import { pull } from 'lodash';
-import { Param, Widget } from '../flutter-model';
+import { Param, Widget } from '../models/flutter-model';
 import { applyOnDescendants, findAndRemoveParam, findParam, parseStyleColor, parseStyleDoubleValue, unquote } from '../tools';
 import { Options } from '../watcher';
 

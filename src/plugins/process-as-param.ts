@@ -1,6 +1,6 @@
 import { camelCase } from 'change-case';
 import { pull } from 'lodash';
-import { Widget } from '../flutter-model';
+import { Widget } from '../models/flutter-model';
 import { applyOnDescendants, findAndRemoveParam, findParam } from '../tools';
 import { Options } from '../watcher';
 

@@ -1,5 +1,5 @@
 import { pull } from 'lodash';
-import { Widget } from '../flutter-model';
+import { Widget } from '../models/flutter-model';
 import { applyOnDescendants, findParam } from '../tools';
 import { Options } from '../watcher';
 

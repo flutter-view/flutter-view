@@ -8,8 +8,8 @@ import { renderSync } from 'node-sass';
 import { extname, parse as parseFileName, relative } from 'path';
 import { renderFile } from 'pug';
 import { compile, extractImports } from './compiler';
-import { Widget } from './flutter-model';
-import { Element } from './html-model';
+import { Widget } from './models/flutter-model';
+import { Element } from './models/html-model';
 import { renderDartFile } from './renderer';
 import { merge, multiline } from './tools';
 
@@ -39,7 +39,8 @@ export interface Options {
 		logHtmlAST?: boolean, // log the generated AST from the parsed html
 		logDartPreAST?: boolean, // log the generated AST from compiling the html AST
 		logDartPostAST?: boolean, // log the generated AST after applying the plugins on the generated AST
-		logCode?: boolean // log the generated code
+		logCode?: boolean, // log the generated code
+		logErrorStack?: boolean // log the full error stracktrace when an error occurs
 	}
 }
 
@@ -89,7 +90,7 @@ export function startWatching(dirs: string[], options: Options, plugins: RenderP
 				if(extname(sourceFile).length > 0) {
 					processFile(sourceFile, false)
 						.then(dartFile=>{if(dartFile) console.log('updated', relative(process.cwd(), dartFile))})
-						.catch(error=>reportError(sourceFile, error))
+						.catch(error=>reportError(sourceFile, error, options))
 				}
 			}
 		}
@@ -104,12 +105,12 @@ export function startWatching(dirs: string[], options: Options, plugins: RenderP
 		watcher.on('added', sourceFile => {
 			processFile(sourceFile, true)
 				.then(dartFile=>{if(dartFile) console.log('added', relative(process.cwd(), dartFile))})
-				.catch(error=>reportError(sourceFile, error))
+				.catch(error=>reportError(sourceFile, error, options))
 		})
 		watcher.on('changed', sourceFile => {
 			processFile(sourceFile, true)
 				.then(dartFile=>{if(dartFile) console.log('updated', relative(process.cwd(), dartFile))})
-				.catch(error=>reportError(sourceFile, error))
+				.catch(error=>reportError(sourceFile, error, options))
 		})
 		watcher.on('deleted', sourceFile => {
 			if(options.propagateDelete) {
@@ -231,9 +232,12 @@ export function startWatching(dirs: string[], options: Options, plugins: RenderP
 		}
 	}
 
-	function reportError(file: string, error: Error) {
+	function reportError(file: string, error: Error, options: Options) {
 		console.error('Error on processing', relative(process.cwd(), file) + ':')
 		console.error(error.toString())
+		if(options.debug && options.debug.logErrorStack) {
+			console.error(error.stack)	
+		}
 
 		const errorLines = error.toString().split('\\n')
 		const commentedLines = errorLines.map(line=>` * ${line}`)

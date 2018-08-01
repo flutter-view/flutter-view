@@ -1,7 +1,7 @@
 import { camelCase } from 'change-case';
 import * as decode from 'decode-html';
 import * as styleparser from 'style-parser';
-import { Widget } from '../flutter-model';
+import { Widget } from '../models/flutter-model';
 import { applyOnDescendants, findAndRemoveParam } from '../tools';
 import { Options } from '../watcher';
 

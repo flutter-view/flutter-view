@@ -1,7 +1,7 @@
 import * as indent from 'indent-string';
-import { pull, union } from 'lodash';
-import { Param, Widget } from './flutter-model';
-import { findAndRemoveParam, findParam, multiline, unquote } from './tools';
+import { pull, union, head } from 'lodash';
+import { Param, Widget } from './models/flutter-model';
+import { findAndRemoveParam, findParam, multiline, unquote, getChildren } from './tools';
 import { Options } from './watcher';
 
 /**
@@ -40,29 +40,6 @@ function renderClassImports(imports: string[]) : string {
 }
 
 /**
- * Gets the first child from either the child or the children property
- * @param widget the widget to get the child from
- */
-function getTopChild(widget: Widget) : Widget | null {
-	const childParam = findParam(widget, 'child')
-	const childrenParam = findParam(widget, 'children')
-	let child: Widget | null = null
-	if(childParam) {
-		child = childParam.value as Widget
-	} else if(childrenParam) {
-		const children = childParam.value as Widget[]
-		if(children.length == 0) {
-			child = childrenParam.value[0] as Widget
-		} else {
-			child = null
-		}
-	} else {
-		child = null
-	}
-	return child
-}
-
-/**
  * Render a single widget function that builds a flutter-view widget tree
  * @param widget the widget to render
  * @param options flutter-view options
@@ -73,12 +50,11 @@ export function renderFlutterView(widget: Widget, options: Options) : string | n
 	const vModelParam = findParam(widget, 'vModel')
 	const vModel = vModelParam ? vModelParam.value as string : null
 
-	const child = getTopChild(widget)
-	const widgetCode = renderWidget(child, vModel, options)
+	const child = head(getChildren(widget))
 	const returnType = child.name
 	return multiline(
 		'// ignore: non_constant_identifier_names',
-		`${vModel ? returnType+' ' : ' '}${renderFunctionConstructor(widget.name, fields, vModel)} {`,
+		`${!vModel ? returnType+' ' : ' '}${renderFunctionConstructor(widget.name, fields, vModel)} {`,
 			indent(renderBuildBody(child, vModel, options), options.indentation),
 		`}`
 	)
@@ -112,8 +88,7 @@ export function renderFlutterWidget(widget: Widget, options: Options) : string |
 			type: vModel
 		})
 	}
-	const child = getTopChild(widget)
-	const widgetCode = renderWidget(child, vModel, options)
+	const child = head(getChildren(widget))
 
 	return multiline(
 		`class ${widget.name} extends StatelessWidget {`,
@@ -277,8 +252,9 @@ function renderWidget(widget: Widget, vModel: string, options: Options) : string
 	}
 
 	// render the widget class with the parameters
+	const genericParams = widget.generics ? `<${widget.generics.join(',')}>` : ''
 	return multiline(
-		`${widget.constant?'const ':''}${widget.name}(`,
+		`${widget.constant?'const ':''}${widget.name}${genericParams}(`,
 		indent(renderParams(widget, vModel, options), options.indentation),
 		`)`
 	)

@@ -1,8 +1,8 @@
 import { camelCase, upperCaseFirst } from 'change-case';
 import * as decode from 'decode-html';
 import { pull } from 'lodash';
-import { Param, Widget } from './flutter-model';
-import { Element, Tag, Text } from './html-model';
+import { Param, Widget } from './models/flutter-model';
+import { Element, Tag, Text } from './models/html-model';
 import { Options } from './watcher';
 
 /**
@@ -56,6 +56,7 @@ function compileTag(tag: Tag, options: Options) : Widget {
 	// start building a widget with params
 	const widgetClass = upperCaseFirst(camelCase(tag.name))
 	const params: Param[] = []
+	let generics: string[]
 
 	// process the tag attributes, transforming them into widget params
 	if(tag.attribs) {
@@ -63,13 +64,23 @@ function compileTag(tag: Tag, options: Options) : Widget {
 			const expression = attr.startsWith(':')
 			const name = expression ? attr.substring(1) : attr
 			const value = tag.attribs[attr]
-			params.push({
-				class: 'param',
-				type: expression ? 'expression' : 'literal',
-				name: (name=='value') ? undefined : camelCase(name),
-				value: attr!=value ? decode(value) : null, // pug renders empty attributes as key==value
-				resolved: false
-			})
+			switch (attr) {
+				case 'v-type': {
+					generics = value
+						.split(',')
+						.map(param=>param.trim())
+					break
+				}
+				default: {
+					params.push({
+						class: 'param',
+						type: expression ? 'expression' : 'literal',
+						name: (name=='value') ? undefined : camelCase(name),
+						value: attr!=value ? decode(value) : null, // pug renders empty attributes as key==value
+						resolved: false
+					})
+				}
+			}
 		}
 	}
 
@@ -128,6 +139,7 @@ function compileTag(tag: Tag, options: Options) : Widget {
 		class: 'widget',
 		constant: isConstant,
 		name: widgetClass,
+		generics: generics,
 		params: params
 	}
 }

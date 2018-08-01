@@ -1,5 +1,5 @@
 import { isArray, mergeWith, pull, tail } from 'lodash';
-import { Param, Widget } from './flutter-model';
+import { Param, Widget } from './models/flutter-model';
 import { Options, RenderPlugin } from './watcher';
 import { camelCase, upperCaseFirst } from 'change-case';
 
@@ -211,4 +211,17 @@ export function applyOnDescendants(widget: Widget, fn: (Widget)=>Widget) {
 			}
 		}
 	}
+}
+
+/**
+ * Gets the first child from either the child or the children property
+ * @param widget the widget to get the child from
+ * @returns a widget if it a child was found, or null if nothing was found
+ */
+export function getChildren(widget: Widget) : Widget[] {
+	const childParam = findParam(widget, 'child')
+	const childrenParam = findParam(widget, 'children')
+	if(childParam && childParam.value) return [childParam.value as Widget]
+	if(childrenParam && childrenParam.value) return childrenParam.value as Widget[]
+	return []
 }

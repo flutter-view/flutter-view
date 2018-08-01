@@ -1,4 +1,4 @@
-import { Widget } from '../flutter-model';
+import { Widget } from '../models/flutter-model';
 import { applyOnDescendants, parseStyleRepeat, parseStyleCrossAxisAlignment, parseStyleMainAxisAlignment, parseStyleBackgroundSize, findAndRemoveParam, parseStyleUrl, parseStyleColor, unquote, parseStyleDoubleValue, parseTRBLStyle, Border, parseBorderStyle } from '../tools';
 import { Options } from '../watcher';
 

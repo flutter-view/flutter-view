@@ -1,5 +1,6 @@
 export interface Widget {
 	class: 'widget'
+	generics?: string[]
 	name: string
 	value?: string
 	constant: boolean
