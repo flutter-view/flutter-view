@@ -47,7 +47,7 @@ function renderClassImports(imports: string[]) : string {
  */
 export function renderFlutterView(widget: Widget, options: Options) : string | null {
 	const fields = getClassFields(widget)
-	const vModelParam = findParam(widget, 'vModel')
+	const vModelParam = findParam(widget, 'model')
 	const vModel = vModelParam ? vModelParam.value as string : null
 
 	const child = head(getChildren(widget))
@@ -187,26 +187,32 @@ function renderWidget(widget: Widget, vModel: string, options: Options) : string
 		}
 	}
 
-	// if this widget is a switch, get all the cases and render only the case that resolves
-	if(widget.name=='Switch') {
-		const valueParam = findParam(widget, 'select')
-		if(!valueParam) throw 'switch tag is missing select parameter'
+	if(widget.name=='Slot') {
+		console.log('slot', JSON.stringify(widget, null, 3))
 		const childrenParam = findParam(widget, 'children')
-		if(!childrenParam || !childrenParam.value) return 'null'
+		console.log('slot children', childrenParam)
+		if(!childrenParam || !childrenParam.value) return 'Container()'
 		const children = childrenParam.value as Widget[]
-		const cases = children.filter(child=>findParam(child, 'vCase'))
-
+		
 		return multiline(
-			cases.map(_case=>_renderSwitchCase(_case)).join('\n: '),
+			children.map(child=>_renderSwitchCase(child)).join(':\n// ignore: dead_code\n'),
+			'// ignore: dead_code',
 			': Container()'
 		)
 
-		function _renderSwitchCase(_case: Widget) {
-			const caseParam = findAndRemoveParam(_case, 'vCase')
-			return multiline(
-				`(${renderParamValue(valueParam, vModel, options)}==${renderParamValue(caseParam, vModel, options)}) ?`,
-				indent(renderWidget(_case, vModel, options), options.indentation)
-			)
+		function _renderSwitchCase(child: Widget) {
+			const ifParam = findAndRemoveParam(child, 'vIf')
+			if(ifParam && ifParam.value) {
+				return multiline(
+					`(${ifParam.value}) ?`,
+					indent(renderWidget(child, vModel, options), options.indentation)
+				) 
+			} else {
+				return multiline(
+					`true ?`,
+					indent(renderWidget(child, vModel, options), options.indentation)
+				) 
+			}
 		}
 	}
 

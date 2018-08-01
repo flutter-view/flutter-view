@@ -6,7 +6,7 @@ import { Options } from '../watcher';
 
 export function transformWidget(widget: Widget, options: Options): Widget {
 	
-	if(widget.name && options.multiChildClasses && widget.name != 'Switch') {
+	if(widget.name && options.multiChildClasses && widget.name != 'Slot') {
 		if(options.multiChildClasses.indexOf(widget.name) < 0) {
 			const childrenParam = findParam(widget, 'children')
 			if(childrenParam) {
