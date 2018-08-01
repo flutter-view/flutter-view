@@ -198,7 +198,7 @@ export function applyPlugins(widget: Widget, plugins: RenderPlugin[], options: O
  * @param fn takes a widget and returns a modified or new widget, that should replace the value in the parameter
  */
 export function applyOnDescendants(widget: Widget, fn: (Widget)=>Widget) {
-	if(!widget.params) return widget
+	if(!widget.params) return
 	for(let param of widget.params) {
 		switch (param.type) {
 			case 'array': case 'widgets': {

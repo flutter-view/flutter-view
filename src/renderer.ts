@@ -1,5 +1,5 @@
 import * as indent from 'indent-string';
-import { pull, union, head } from 'lodash';
+import { pull, union, head, concat } from 'lodash';
 import { Param, Widget } from './models/flutter-model';
 import { findAndRemoveParam, findParam, multiline, unquote, getChildren } from './tools';
 import { Options } from './watcher';
@@ -45,7 +45,7 @@ function renderClassImports(imports: string[]) : string {
  * @returns the generated dart code
  */
 export function renderFlutterView(widget: Widget, options: Options) : string | null {
-	const fields = getClassFields(widget)
+	const fields = getClassConstructorFields(widget)
 	const vModelParam = findParam(widget, 'model')
 	const vModel = vModelParam ? vModelParam.value as string : null
 
@@ -54,13 +54,56 @@ export function renderFlutterView(widget: Widget, options: Options) : string | n
 	return multiline(
 		'// ignore: non_constant_identifier_names',
 		`${!vModel ? returnType+' ' : ' '}${renderFunctionConstructor(widget.name, fields, vModel)} {`,
-			indent(renderBuildBody(child, vModel, options), options.indentation),
+			indent(renderBuildBody(child, vModel, null, options), options.indentation),
 		`}`
 	)
 }
 
-function renderBuildBody(widget: Widget, vModel: string | null, options: Options) {
-	const widgetCode = renderWidget(widget, vModel, options)
+type Field = { 
+	name: string, 
+	type?: string, 
+	value?: string
+}
+
+export function renderFlutterWidget(widget: Widget, options: Options) : string | null {
+
+	// build the body, which also gathers the members in the process
+	const buildBodyFields : Field[] = []
+	const child = head(getChildren(widget))
+	const vModelParam = findParam(widget, 'model')
+	const vModel = vModelParam ? vModelParam.value as string : null
+	const buildBody = renderBuildBody(child, vModel, buildBodyFields, options)
+	if(vModel) {
+		buildBodyFields.push({
+			name: 'model',
+			type: vModel
+		})
+	}
+	const constructorFields = getClassConstructorFields(widget)
+	const allFields = concat(constructorFields, buildBodyFields)
+	return multiline(
+		'// ignore: must_be_immutable',
+		`class ${widget.name} extends StatelessWidget {`,
+		indent(multiline(
+			renderClassFields(allFields),
+			'',
+			renderClassConstructor(widget.name, constructorFields),
+			'',
+			multiline(
+				`@override`,
+				`Widget build(BuildContext context) {`,
+					indent(buildBody, options.indentation),
+				`}`
+			),
+			''
+		), options.indentation),
+		'}'
+	)
+	
+}
+
+function renderBuildBody(widget: Widget, vModel: string | null, fields: Field[], options: Options) {
+	const widgetCode = renderWidget(widget, vModel, fields, options)
 	if(vModel) {
 		return multiline(
 			`final widget = ${widgetCode};`,
@@ -75,53 +118,17 @@ function renderBuildBody(widget: Widget, vModel: string | null, options: Options
 	}
 }
 
-/////////
-
-export function renderFlutterWidget(widget: Widget, options: Options) : string | null {
-	const fields = getClassFields(widget)
-	const vModelParam = findParam(widget, 'model')
-	const vModel = vModelParam ? vModelParam.value as string : null
-	if(vModel) {
-		fields.push({
-			name: 'model',
-			type: vModel
-		})
-	}
-	const child = head(getChildren(widget))
-
-	return multiline(
-		`class ${widget.name} extends StatelessWidget {`,
-		indent(multiline(
-			renderClassFields(fields),
-			'',
-			renderClassConstructor(widget.name, fields),
-			'',
-			multiline(
-				`@override`,
-				`Widget build(BuildContext context) {`,
-					indent(renderBuildBody(child, vModel, options), options.indentation),
-				`}`
-			),
-			''
-		), options.indentation),
-		'}'
-	)
-	
-}
-
-function renderClassFields(fields: { name: string, type?: string, value?: string }[]) : string {
+function renderClassFields(fields: Field[]) : string {
 	return fields
 		.map(field=> {
 			if(field.value && field.value != 'true') {
-				return `final ${field.type || ''} ${field.name} = ${field.value};`
+				return `${field.type || 'dynamic'} ${field.name} = ${field.value};`
 			} else {
-				return `final ${field.type || ''} ${field.name};`
+				return `${field.type || 'dynamic'} ${field.name};`
 			}
 		})
 		.join('\n')
 }
-
-/////////
 
 /**
  * Renders the constructor of the widget function
@@ -161,7 +168,7 @@ function renderClassConstructor(name: string, fields: { name: string, type?: str
  * @param options the flutter-view options
  * @returns the generated dart code
  */
-function renderWidget(widget: Widget, vModel: string, options: Options) : string {
+function renderWidget(widget: Widget, vModel: string, fields: Field[], options: Options) : string {
 	if(!widget) return '\n'
 
 	if(widget.name=='Slot') {
@@ -182,7 +189,7 @@ function renderWidget(widget: Widget, vModel: string, options: Options) : string
 					`(${ifParam.value}) ?`,
 					indent(multiline(
 						'// ignore: dead_code',
-						renderWidget(child, vModel, options)
+						renderWidget(child, vModel, fields, options)
 					), options.indentation)
 				) 
 			} else {
@@ -190,7 +197,7 @@ function renderWidget(widget: Widget, vModel: string, options: Options) : string
 					`true ?`,
 					indent(multiline(
 						'// ignore: dead_code',
-						renderWidget(child, vModel, options)
+						renderWidget(child, vModel, fields, options)
 					), options.indentation)
 				) 
 			}
@@ -206,7 +213,7 @@ function renderWidget(widget: Widget, vModel: string, options: Options) : string
 		
 		return multiline(
 			`(${params}) {`,
-			indent(`return ${renderWidget(child, vModel, options)};`, options.indentation),
+			indent(`return ${renderWidget(child, vModel, fields, options)};`, options.indentation),
 			`}`
 		)
 	}
@@ -217,7 +224,7 @@ function renderWidget(widget: Widget, vModel: string, options: Options) : string
 	if(vIfParam) {
 		pull(widget.params, vIfParam)
 		if(vIfParam.value) {
-			return `${unquote(vIfParam.value.toString())} ? ${renderWidget(widget, vModel, options)} : Container()`
+			return `${unquote(vIfParam.value.toString())} ? ${renderWidget(widget, vModel, fields, options)} : Container()`
 		} else {
 			console.warn(`${widget.name} has a v-if without a condition`)
 		}
@@ -232,17 +239,29 @@ function renderWidget(widget: Widget, vModel: string, options: Options) : string
 			`${result.list}.map<Widget>((${result.param}) {`,
 			indent(multiline(
 				`return`,
-				renderWidget(widget, vModel, options)+';'
+				renderWidget(widget, vModel, fields, options)+';'
 			), options.indentation),
 			`}).toList()`,
 		)
 	}
 
+	const idParam = findAndRemoveParam(widget, 'id')
+	findAndRemoveParam(widget, 'class')
+
+	let assignment: string = ''
+	if(fields && idParam && idParam.value) {
+		fields.push({
+			name: idParam.value.toString(),
+			type: widget.name
+		})
+		assignment = `${idParam.value.toString()} = `
+	}
+
 	// render the widget class with the parameters
 	const genericParams = widget.generics ? `<${widget.generics.join(',')}>` : ''
 	return multiline(
-		`${widget.constant?'const ':''}${widget.name}${genericParams}(`,
-		indent(renderParams(widget, vModel, options), options.indentation),
+		`${widget.constant?'const ':''}${assignment}${widget.name}${genericParams}(`,
+		indent(renderParams(widget, vModel, fields, options), options.indentation),
 		`)`
 	)
 	
@@ -256,16 +275,16 @@ function renderWidget(widget: Widget, vModel: string, options: Options) : string
  * @param options the flutter-view options
  * @returns the generated dart code
  */
-function renderParams(widget: Widget, vModel: string, options: Options) : string {
+function renderParams(widget: Widget, vModel: string, fields: Field[], options: Options) : string {
 	const renderedParams : string[] = []
 	const paramsToRender = widget.params ? widget.params.filter(param=>param.name!='value'&&param.name!='const') : null
 	if(paramsToRender) {
 		for(var param of paramsToRender) {
 			if(param.name) {
 				const name = unquote(param.name)
-				renderedParams.push(`${name}: ${renderParamValue(param, vModel, options)}`)
+				renderedParams.push(`${name}: ${renderParamValue(param, vModel, fields, options)}`)
 			} else {
-				renderedParams.push(renderParamValue(param, vModel, options))
+				renderedParams.push(renderParamValue(param, vModel, fields, options))
 			}
 		}
 	}
@@ -281,7 +300,7 @@ function renderParams(widget: Widget, vModel: string, options: Options) : string
  * @param options the flutter-view options
  * @returns the generated dart code
  */
-function renderParamValue(param: Param, vModel: string, options: Options) : string {
+function renderParamValue(param: Param, vModel: string, fields: Field[], options: Options) : string {
 	switch(param.type) {
 		case 'literal': {
 			return `'${param.value}'`
@@ -292,11 +311,11 @@ function renderParamValue(param: Param, vModel: string, options: Options) : stri
 		case 'widget': {
 			const value = param.value as Widget
 			const _const = findParam(value, 'const') ? 'const ' : ''
-			return `${_const}${renderWidget(param.value as Widget, vModel, options)}`
+			return `${_const}${renderWidget(param.value as Widget, vModel, fields, options)}`
 		}
 		case 'array': {
 			const widgets = param.value as Widget[]
-			const values = widgets.map(widget=>`${renderWidget(widget, vModel, options)}`)
+			const values = widgets.map(widget=>`${renderWidget(widget, vModel, fields, options)}`)
 			return multiline(
 				`[`,
 				indent(values.join(',\n'), options.indentation),
@@ -305,7 +324,7 @@ function renderParamValue(param: Param, vModel: string, options: Options) : stri
 		}
 		case 'widgets': {
 			const widgets = param.value as Widget[]
-			const values = widgets.map(widget=>`${renderWidget(widget, vModel, options)}`)
+			const values = widgets.map(widget=>`${renderWidget(widget, vModel, fields, options)}`)
 			// in v-for loops we generate arrays. these arrays may already be in an array,
 			// so we will want to flatten these arrays of arrays before adding them
 			return multiline(
@@ -348,7 +367,7 @@ function renderHelperFunctions(options: Options) : string {
  * @param widget a top level widget, representing the widget function
  * @returns a list of fields
  */
-function getClassFields(widget: Widget) : { name: string, value?: string, type?: string }[] {
+function getClassConstructorFields(widget: Widget) : Field[] {
 	if(widget.params) {
 		return widget.params
 			.filter(p=>p.type=='expression')

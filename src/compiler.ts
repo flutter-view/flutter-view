@@ -143,14 +143,3 @@ function compileTag(tag: Tag, options: Options) : Widget {
 		params: params
 	}
 }
-
-/**
- * Checks if the element contains the flutter-view attribute
- * @param element the root element to check
- * @returns true if the element is a flutter-view root element
- */
-function isFlutterView(element: Element) : boolean {
-	if(element.type != 'tag') return false
-	const tag = element as Tag
-	return tag.attribs && (tag.attribs['flutter-view'] || tag.attribs['flutter-view'] == '')
-}

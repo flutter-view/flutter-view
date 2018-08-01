@@ -12,8 +12,6 @@ import { Options } from '../watcher';
  */
 export function transformWidget(widget: Widget, options: Options): Widget {
 	
-	findAndRemoveParam(widget, 'id')
-	findAndRemoveParam(widget, 'class')	
 	const styleParam = findAndRemoveParam(widget, 'style')
 
 	if(styleParam && styleParam.value) {
