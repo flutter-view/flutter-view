@@ -188,9 +188,7 @@ function renderWidget(widget: Widget, vModel: string, options: Options) : string
 	}
 
 	if(widget.name=='Slot') {
-		console.log('slot', JSON.stringify(widget, null, 3))
 		const childrenParam = findParam(widget, 'children')
-		console.log('slot children', childrenParam)
 		if(!childrenParam || !childrenParam.value) return 'Container()'
 		const children = childrenParam.value as Widget[]
 		
