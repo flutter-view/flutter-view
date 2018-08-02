@@ -23,21 +23,7 @@ if(!dir) {
 }
 // get the configuration
 const configFileName = program.config
-let config = {}
-if(fs.existsSync(configFileName)) {
-	config = JSON.parse(fs.readFileSync(configFileName).toString())
-}
-// load any plugins
-let plugins = [
-	// './dest/plugins/process-text-style'
-]
-if(config.plugins) {
-	for(let plugin of config.plugins) {
-		const pluginFn = require(plugin)
-		// console.log('loaded plugin', plugin)
-		plugins.push(pluginFn)
-	}
-}
+
 // start the watching
 if(program.watch) console.log('watching for file changes...')
-watcher.startWatching(dir, config, plugins, program.watch)
+watcher.startWatching(dir, configFileName, program.watch)

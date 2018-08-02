@@ -46,6 +46,15 @@ export interface Options {
 
 const defaultOptions: Options = {
 	indentation: 2,
+	plugins: [
+		"./dest/plugins/styles-to-params",
+		"./dest/plugins/process-scoped-tag",
+		"./dest/plugins/process-as-param",
+		"./dest/plugins/process-array-tag",
+		"./dest/plugins/automatic-columns",
+		"./dest/plugins/process-text-style",
+		"./dest/plugins/process-layout-style"
+	],
 	imports: [
 		'package:flutter/material.dart',
 		'package:flutter/cupertino.dart'
@@ -76,7 +85,32 @@ const defaultOptions: Options = {
 	propagateDelete: true
 }
 
-export function startWatching(dir: string, options: Options, plugins: RenderPlugin[], watch: boolean) {
+export function startWatching(dir: string, configFileName: string, watch: boolean) {
+
+	let options: Options
+	let plugins: RenderPlugin[]
+
+	function loadOptions() {
+		if(fs.existsSync(configFileName)) {
+			options = JSON.parse(fs.readFileSync(configFileName).toString())
+		}
+		// load any plugins
+		plugins = [
+			// './dest/plugins/process-text-style'
+		]
+		if(options.plugins) {
+			for(let plugin of options.plugins) {
+				try {
+					const pluginFn = require(plugin)
+					plugins.push(pluginFn)
+				} catch(e) {
+					console.error(`error loading ${plugin}`, e)
+				}
+			}
+		}
+	}
+
+	loadOptions()
 	merge(options, defaultOptions)
 
 	gaze('**/*.+(pug|htm|html|sass|css)', { cwd: dir }, (err, watcher) => {
@@ -101,6 +135,8 @@ export function startWatching(dir: string, options: Options, plugins: RenderPlug
 		gaze('flutter-view.json', (err, watcher) => {
 			watcher.on('changed', sourceFile => {
 				console.log('flutter-view updated')
+				loadOptions()
+				merge(options, defaultOptions)
 				processAllWatched()
 			})
 		})
