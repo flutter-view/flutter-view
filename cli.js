@@ -13,9 +13,9 @@ program
 	.parse(process.argv)
 
 // extract the directories to scan
-const dirs = program.args.length > 0 ? program.args : null
+const dir = program.args.length > 0 ? program.args[0] : null
 console.log('flutter-view - flutter template code generator')
-if(!dirs) {
+if(!dir) {
 	console.log('Converts html and css templates into Flutter view widget code.')
 	console.log('Please pass a directory to scan.')
 	console.log('flutter-view -h for help.')
@@ -40,4 +40,4 @@ if(config.plugins) {
 }
 // start the watching
 if(program.watch) console.log('watching for file changes...')
-watcher.startWatching(dirs, config, plugins, program.watch)
+watcher.startWatching(dir, config, plugins, program.watch)

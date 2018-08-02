@@ -76,12 +76,12 @@ const defaultOptions: Options = {
 	propagateDelete: true
 }
 
-export function startWatching(dirs: string[], options: Options, plugins: RenderPlugin[], watch: boolean) {
+export function startWatching(dir: string, options: Options, plugins: RenderPlugin[], watch: boolean) {
 	merge(options, defaultOptions)
 	
-	const gazePatterns = dirs.map(dir=>`${dir}/**/*.+(pug|htm|html|sass|css)`)
+	// const gazePatterns = dirs.map(dir=>`${dir}/**/*.+(pug|htm|html|sass|css)`)
 	
-	gaze(gazePatterns, (err, watcher) => {
+	gaze('**/*.+(pug|htm|html|sass|css)', { cwd: dir }, (err, watcher) => {
 		
 		// process all watched files once
 		const dirs = watcher.watched()
@@ -103,6 +103,7 @@ export function startWatching(dirs: string[], options: Options, plugins: RenderP
 	
 		// watch for changes
 		watcher.on('added', sourceFile => {
+			console.log('added', sourceFile)
 			processFile(sourceFile, true)
 				.then(dartFile=>{if(dartFile) console.log('added', relative(process.cwd(), dartFile))})
 				.catch(error=>reportError(sourceFile, error, options))
