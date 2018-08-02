@@ -86,6 +86,24 @@ export function parseStyleCrossAxisAlignment(alignment: string) : string {
 	return alignment
 }
 
+export function parseStyleMainAxisSize(alignment: string) : string {
+	// Flutter: https://docs.flutter.io/flutter/rendering/MainAxisSize-class.html
+	if(!alignment) return ''
+	if(alignment.indexOf('.') < 0 && alignment.indexOf('(') < 0) {
+		return `MainAxisSize.${camelCase(alignment)}`
+	}
+	return alignment
+}
+
+export function parseStyleCrossAxisSize(alignment: string) : string {
+	// Flutter: https://docs.flutter.io/flutter/rendering/CrossAxisSize-class.html
+	if(!alignment) return ''
+	if(alignment.indexOf('.') < 0 && alignment.indexOf('(') < 0) {
+		return `CrossAxisSize.${camelCase(alignment)}`
+	}
+	return alignment
+}
+
 export function parseTRBLStyle(style: string) : { top?: string, right?: string, bottom?: string, left?: string } {
 	const regexp = /[.a-z0-9\.\,\(\)]+/gi
 	const matches = style.match(regexp)

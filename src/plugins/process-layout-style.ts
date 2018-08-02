@@ -1,5 +1,5 @@
 import { Widget } from '../models/flutter-model';
-import { applyOnDescendants, parseStyleRepeat, parseStyleCrossAxisAlignment, parseStyleMainAxisAlignment, parseStyleBackgroundSize, findAndRemoveParam, parseStyleUrl, parseStyleColor, unquote, parseStyleDoubleValue, parseTRBLStyle, Border, parseBorderStyle } from '../tools';
+import { applyOnDescendants, Border, findAndRemoveParam, parseBorderStyle, parseStyleBackgroundSize, parseStyleColor, parseStyleCrossAxisAlignment, parseStyleCrossAxisSize, parseStyleDoubleValue, parseStyleMainAxisAlignment, parseStyleMainAxisSize, parseStyleRepeat, parseStyleUrl, parseTRBLStyle, unquote } from '../tools';
 import { Options } from '../watcher';
 
 type Borders = { top?: Border, right?: Border, bottom?: Border, left?: Border }
@@ -32,6 +32,27 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			resolved: true
 		})
 	}
+
+	if (mainAxisSizeParam && mainAxisSizeParam.value) {
+		widget.params.push({
+			class: 'param',
+			name: 'mainAxisSize',
+			type: 'expression',
+			value: parseStyleMainAxisSize(mainAxisSizeParam.value.toString()),
+			resolved: true
+		})
+	}
+
+	if (crossAxisSizeParam && crossAxisSizeParam.value) {
+		widget.params.push({
+			class: 'param',
+			name: 'crossAxisSize',
+			type: 'expression',
+			value: parseStyleCrossAxisSize(crossAxisSizeParam.value.toString()),
+			resolved: true
+		})
+	}
+
 
 	// Container only
 	
