@@ -78,22 +78,33 @@ const defaultOptions: Options = {
 
 export function startWatching(dir: string, options: Options, plugins: RenderPlugin[], watch: boolean) {
 	merge(options, defaultOptions)
-	
-	// const gazePatterns = dirs.map(dir=>`${dir}/**/*.+(pug|htm|html|sass|css)`)
-	
+
 	gaze('**/*.+(pug|htm|html|sass|css)', { cwd: dir }, (err, watcher) => {
-		
-		// process all watched files once
-		const dirs = watcher.watched()
-		for(var dir of Object.keys(dirs)) {
-			for(var sourceFile of dirs[dir]) {
-				if(extname(sourceFile).length > 0) {
-					processFile(sourceFile, false)
-						.then(dartFile=>{if(dartFile) console.log('updated', relative(process.cwd(), dartFile))})
-						.catch(error=>reportError(sourceFile, error, options))
+
+		function processAllWatched() {
+			const dirs = watcher.watched()
+			for(var dir of Object.keys(dirs)) {
+				for(var sourceFile of dirs[dir]) {
+					if(extname(sourceFile).length > 0) {
+						processFile(sourceFile, false)
+							.then(dartFile=>{if(dartFile) console.log('updated', relative(process.cwd(), dartFile))})
+							.catch(error=>reportError(sourceFile, error, options))
+					}
 				}
 			}
 		}
+
+		// process all watched files once
+		processAllWatched()
+
+		// process again if flutter-view updates
+		gaze('flutter-view.json', (err, watcher) => {
+			watcher.on('changed', sourceFile => {
+				console.log('flutter-view updated')
+				processAllWatched()
+			})
+		})
+	
 	
 		// stop if we do not want to keep watching
 		if(!watch) {
