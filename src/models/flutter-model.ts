@@ -10,19 +10,8 @@ export interface Widget {
 
 export interface Param {
 	class: 'param',
-	type: 'literal' | 'expression' | 'widget' | 'widgets' | 'array'
+	type: 'literal' | 'expression' | 'widget' | 'widgets' | 'array' | 'closure'
 	name?: string
 	value: string | Widget | Widget[] | string[]
 	resolved: boolean
-}
-
-export interface Reference {
-	class: 'ref',
-	type: 'method'
-	name: string
-}
-
-export interface MethodReference extends Reference {
-	class: 'ref',
-	type: 'method'
 }

@@ -61,8 +61,18 @@ function compileTag(tag: Tag, options: Options) : Widget {
 	// process the tag attributes, transforming them into widget params
 	if(tag.attribs) {
 		for(const attr in tag.attribs) {
-			const expression = attr.startsWith(':')
-			const name = expression ? attr.substring(1) : attr
+			let type: 'expression' | 'literal' | 'closure'
+			let name: string
+			if(attr.startsWith(':')) {
+				type = 'expression'
+				name = attr.substring(1)
+			} else if(attr.startsWith('@')) {
+				type = 'closure'
+				name = attr.substring(1)
+			} else {
+				type = 'literal'
+				name = attr
+			}
 			const value = tag.attribs[attr]
 			switch (attr) {
 				case 'v-type': {
@@ -74,7 +84,7 @@ function compileTag(tag: Tag, options: Options) : Widget {
 				default: {
 					params.push({
 						class: 'param',
-						type: expression ? 'expression' : 'literal',
+						type: type,
 						name: (name=='value') ? undefined : camelCase(name),
 						value: attr!=value ? decode(value) : null, // pug renders empty attributes as key==value
 						resolved: false

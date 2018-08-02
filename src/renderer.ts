@@ -308,6 +308,10 @@ function renderParamValue(param: Param, vModel: string, fields: Field[], options
 		case 'expression': {
 			return `${param.value ? param.value.toString() : ''}`
 		}
+		case 'closure': {
+			if(!param.value) return ''
+			return `() { ${param.value}; }`
+		}
 		case 'widget': {
 			const value = param.value as Widget
 			const _const = findParam(value, 'const') ? 'const ' : ''
