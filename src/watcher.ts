@@ -47,13 +47,13 @@ export interface Options {
 const defaultOptions: Options = {
 	indentation: 2,
 	plugins: [
-		"./dest/plugins/styles-to-params",
-		"./dest/plugins/process-scoped-tag",
-		"./dest/plugins/process-as-param",
-		"./dest/plugins/process-array-tag",
-		"./dest/plugins/automatic-columns",
-		"./dest/plugins/process-text-style",
-		"./dest/plugins/process-layout-style"
+		"./plugins/styles-to-params",
+		"./plugins/process-scoped-tag",
+		"./plugins/process-as-param",
+		"./plugins/process-array-tag",
+		"./plugins/automatic-columns",
+		"./plugins/process-text-style",
+		"./plugins/process-layout-style"
 	],
 	imports: [
 		'package:flutter/material.dart',
@@ -87,7 +87,7 @@ const defaultOptions: Options = {
 
 export function startWatching(dir: string, configFileName: string, watch: boolean) {
 
-	let options: Options
+	let options: Options = defaultOptions
 	let plugins: RenderPlugin[]
 
 	function loadOptions() {
@@ -98,11 +98,12 @@ export function startWatching(dir: string, configFileName: string, watch: boolea
 		plugins = [
 			// './dest/plugins/process-text-style'
 		]
-		if(options.plugins) {
+		if(options && options.plugins) {
 			for(let plugin of options.plugins) {
 				try {
 					const pluginFn = require(plugin)
 					plugins.push(pluginFn)
+					console.log(`loaded plugin ${plugin}`)
 				} catch(e) {
 					console.error(`error loading ${plugin}`, e)
 				}
@@ -281,24 +282,28 @@ export function startWatching(dir: string, configFileName: string, watch: boolea
 	}
 
 	function reportError(file: string, error: Error, options: Options) {
-		console.error('Error on processing', relative(process.cwd(), file) + ':')
-		console.error(error.toString())
-		if(options.debug && options.debug.logErrorStack) {
-			console.error(error.stack)	
+		try {
+			console.error('Error on processing', relative(process.cwd(), file) + ':')
+			console.error(error.toString())
+			if(options.debug && options.debug.logErrorStack) {
+				console.error(error.stack)	
+			}
+	
+			const errorLines = error.toString().split('\\n')
+			const commentedLines = errorLines.map(line=>` * ${line}`)
+			const errorCode = multiline(
+				'/*',
+				commentedLines.join('\n'),
+				'*/',
+				'',
+				'false // intentional dart error'
+			)
+			const p = parseFileName(file)
+			const dartFile = `${p.dir}/${p.name}.dart`
+			fs.writeFileSync(dartFile, errorCode)
+		} catch(e) {
+			console.error(`error handling error ${error} on file ${file}.`)
 		}
-
-		const errorLines = error.toString().split('\\n')
-		const commentedLines = errorLines.map(line=>` * ${line}`)
-		const errorCode = multiline(
-			'/*',
-			commentedLines.join('\n'),
-			'*/',
-			'',
-			'false // intentional dart error'
-		)
-		const p = parseFileName(file)
-		const dartFile = `${p.dir}/${p.name}.dart`
-		fs.writeFileSync(dartFile, errorCode)
 	}
 
 }
