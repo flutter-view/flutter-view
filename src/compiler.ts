@@ -73,7 +73,11 @@ function compileTag(tag: Tag, options: Options) : Widget {
 				type = 'literal'
 				name = attr
 			}
-			const value = tag.attribs[attr]
+			let value = tag.attribs[attr]
+			if(value && value.startsWith(':')) {
+				type = 'expression'
+				value = value.substring(1)
+			}
 			switch (attr) {
 				case 'v-type': {
 					generics = value

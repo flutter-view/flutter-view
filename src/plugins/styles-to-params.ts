@@ -2,7 +2,7 @@ import { camelCase } from 'change-case';
 import * as decode from 'decode-html';
 import * as styleparser from 'style-parser';
 import { Widget } from '../models/flutter-model';
-import { applyOnDescendants, findAndRemoveParam } from '../tools';
+import { applyOnDescendants, findAndRemoveParam, unquote } from '../tools';
 import { Options } from '../watcher';
 
 /**
@@ -18,12 +18,21 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		const style = styleParam.value as string
 		const styleRules = styleparser(style)
 		for(const attr in styleRules) {
-			const expression = attr.startsWith(':')
-			const name = expression ? attr.substring(1) : attr
-			const value = styleRules[attr]
+			let name: string = attr
+			let value = styleRules[attr]
+			let type: 'expression' | 'literal' = 'literal'
+			console.log(attr, value)
+			if(attr.startsWith(':')) {
+				type = 'expression'
+				name = attr.substring(1)
+			}
+			if(unquote(value).startsWith(':')) {
+				type = 'expression'
+				value = unquote(value).substring(1)
+			}
 			widget.params.push({
 				class: 'param',
-				type: expression ? 'expression' : 'literal',
+				type: type,
 				name: (name=='value') ? undefined : camelCase(name),
 				value: attr!=value ? decode(value) : null, // pug renders empty attributes as key==value
 				resolved: false

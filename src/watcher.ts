@@ -11,7 +11,7 @@ import { compile, extractImports } from './compiler';
 import { Widget } from './models/flutter-model';
 import { Element } from './models/html-model';
 import { renderDartFile } from './renderer';
-import { merge, multiline } from './tools';
+import { merge, multiline, clone } from './tools';
 
 export interface RenderPlugin {
 	transformWidget(widget: Widget, options: Options) : Widget
@@ -60,7 +60,7 @@ const defaultOptions: Options = {
 		'package:flutter/cupertino.dart'
 	],
 	tagClasses: {
-		text: 'PlatformText',
+		text: 'Text',
 		div: 'Container',
 		span: 'Wrap',
 		backgroundAssetImg: 'ExactAssetImage',
@@ -82,28 +82,34 @@ const defaultOptions: Options = {
 	autowrapChildren: true,
 	autowrapChildrenClass: 'Column',
 	reportErrorsInDart: true,
-	propagateDelete: true
+	propagateDelete: true,
+	debug: {
+		logHTML: false,
+		logHtmlAST: false,
+		logDartPreAST: false,
+		logDartPostAST: false,
+		logCode: false,
+		logErrorStack: false
+	}
 }
 
 export function startWatching(dir: string, configFileName: string, watch: boolean) {
 
-	let options: Options = defaultOptions
+	let options: Options
 	let plugins: RenderPlugin[]
 
 	function loadOptions() {
+		options = clone(defaultOptions)
 		if(fs.existsSync(configFileName)) {
-			options = JSON.parse(fs.readFileSync(configFileName).toString())
+			const loadedOptions = JSON.parse(fs.readFileSync(configFileName).toString())
+			options = merge(options, loadedOptions)
 		}
-		// load any plugins
-		plugins = [
-			// './dest/plugins/process-text-style'
-		]
+		plugins = []
 		if(options && options.plugins) {
 			for(let plugin of options.plugins) {
 				try {
 					const pluginFn = require(plugin)
 					plugins.push(pluginFn)
-					console.log(`loaded plugin ${plugin}`)
 				} catch(e) {
 					console.error(`error loading ${plugin}`, e)
 				}
@@ -112,7 +118,6 @@ export function startWatching(dir: string, configFileName: string, watch: boolea
 	}
 
 	loadOptions()
-	merge(options, defaultOptions)
 
 	gaze('**/*.+(pug|htm|html|sass|css)', { cwd: dir }, (err, watcher) => {
 
@@ -132,22 +137,20 @@ export function startWatching(dir: string, configFileName: string, watch: boolea
 		// process all watched files once
 		processAllWatched()
 
-		// process again if flutter-view updates
-		gaze('flutter-view.json', (err, watcher) => {
-			watcher.on('changed', sourceFile => {
-				console.log('flutter-view updated')
-				loadOptions()
-				merge(options, defaultOptions)
-				processAllWatched()
-			})
-		})
-	
-	
 		// stop if we do not want to keep watching
 		if(!watch) {
 			watcher.close()
 			return
 		}
+		
+		// process again if flutter-view updates
+		gaze('flutter-view.json', (err, watcher) => {
+			watcher.on('changed', sourceFile => {
+				console.log('flutter-view updated')
+				loadOptions()
+				processAllWatched()
+			})
+		})
 	
 		// watch for changes
 		watcher.on('added', sourceFile => {

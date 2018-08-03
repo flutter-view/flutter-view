@@ -18,6 +18,10 @@ export function multiline(...lines: string[]): string {
 	return lines.join('\n')
 }
 
+export function clone(object: any) {
+	return JSON.parse(JSON.stringify(object))
+}
+
 export function merge(object, other) {
 	function customizer(objValue, srcValue) {
 		if (isArray(objValue)) {
@@ -178,10 +182,7 @@ export function parseBorderStyle(border: string) : Border {
 }
 
 export function parseStyleDoubleValue(value: string) : string {
-	if(!value) return ''
-	const isNumber = parseFloat(value)
-	if(isNumber && value.indexOf('.') < 0) return `${value}.0`
-	return value
+	return `(${value}).toDouble()`
 }
 
 export function parseStyleUrl(value: string) : { type: 'url' | 'asset', location: string } | null {
