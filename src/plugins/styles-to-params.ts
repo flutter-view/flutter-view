@@ -21,7 +21,6 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			let name: string = attr
 			let value = styleRules[attr]
 			let type: 'expression' | 'literal' = 'literal'
-			console.log(attr, value)
 			if(attr.startsWith(':')) {
 				type = 'expression'
 				name = attr.substring(1)

@@ -56,7 +56,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 
 	// Container only
 	
-	if (widget.name == 'Container') {
+	if (widget.name == 'Container' || widget.name == 'AnimatedContainer') {
 		if (!widget.params) widget.params = []
 
 		const backgroundColorParam = findAndRemoveParam(widget, 'backgroundColor')
@@ -114,19 +114,19 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		// padding
 
 		let paddings: { top?: string, right?: string, bottom?: string, left?: string } = {}
-		if (paddingParam && paddingParam.type == 'literal' && paddingParam.value) {
+		if (paddingParam && paddingParam.value) {
 			paddings = parseTRBLStyle(paddingParam.value.toString())
 		}
-		if (paddingTopParam && paddingTopParam.type == 'literal' && paddingTopParam.value) {
+		if (paddingTopParam && paddingTopParam.value) {
 			paddings.top = paddingTopParam.value.toString()
 		}
-		if (paddingRightParam && paddingRightParam.type == 'literal' && paddingRightParam.value) {
+		if (paddingRightParam && paddingRightParam.value) {
 			paddings.right = paddingRightParam.value.toString()
 		}
-		if (paddingBottomParam && paddingBottomParam.type == 'literal' && paddingBottomParam.value) {
+		if (paddingBottomParam && paddingBottomParam.value) {
 			paddings.bottom = paddingBottomParam.value.toString()
 		}
-		if (paddingLeftParam && paddingLeftParam.type == 'literal' && paddingLeftParam.value) {
+		if (paddingLeftParam && paddingLeftParam.value) {
 			paddings.left = paddingLeftParam.value.toString()
 		}
 		if (Object.keys(paddings).length > 0) {
@@ -148,19 +148,19 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		// margin
 
 		let margins: { top?: string, right?: string, bottom?: string, left?: string } = {}
-		if (marginParam && marginParam.type == 'literal' && marginParam.value) {
+		if (marginParam && marginParam.value) {
 			margins = parseTRBLStyle(marginParam.value.toString())
 		}
-		if (marginTopParam && marginTopParam.type == 'literal' && marginTopParam.value) {
+		if (marginTopParam && marginTopParam.value) {
 			margins.top = marginTopParam.value.toString()
 		}
-		if (marginRightParam && marginRightParam.type == 'literal' && marginRightParam.value) {
+		if (marginRightParam && marginRightParam.value) {
 			margins.right = marginRightParam.value.toString()
 		}
-		if (marginBottomParam && marginBottomParam.type == 'literal' && marginBottomParam.value) {
+		if (marginBottomParam && marginBottomParam.value) {
 			margins.bottom = marginBottomParam.value.toString()
 		}
-		if (marginLeftParam && marginLeftParam.type == 'literal' && marginLeftParam.value) {
+		if (marginLeftParam && marginLeftParam.value) {
 			margins.left = marginLeftParam.value.toString()
 		}
 		if (Object.keys(margins).length > 0) {
@@ -181,47 +181,47 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 
 		// border
 		let borders: Borders = {}
-		if (borderParam && borderParam.type == 'literal' && borderParam.value) {
+		if (borderParam && borderParam.value) {
 			const border = parseBorderStyle(borderParam.value.toString())
 			borders.top = border
 			borders.right = border
 			borders.bottom = border
 			borders.left = border
 		}
-		if (borderWidthParam && borderWidthParam.type == 'literal' && borderWidthParam.value) {
+		if (borderWidthParam && borderWidthParam.value) {
 			const width = parseStyleDoubleValue(borderWidthParam.value.toString())
 			if (borders.top) { borders.top.width = width } else borders.top = { width }
 			if (borders.right) { borders.right.width = width } else borders.right = { width }
 			if (borders.bottom) { borders.bottom.width = width } else borders.bottom = { width }
 			if (borders.left) { borders.left.width = width } else borders.left = { width }
 		}
-		if (borderStyleParam && borderStyleParam.type == 'literal' && borderStyleParam.value) {
+		if (borderStyleParam && borderStyleParam.value) {
 			const style = parseStyleDoubleValue(borderStyleParam.value.toString())
 			if (borders.top) { borders.top.style = style } else borders.top = { style }
 			if (borders.right) { borders.right.style = style } else borders.right = { style }
 			if (borders.bottom) { borders.bottom.style = style } else borders.bottom = { style }
 			if (borders.left) { borders.left.style = style } else borders.left = { style }
 		}
-		if (borderColorParam && borderColorParam.type == 'literal' && borderColorParam.value) {
+		if (borderColorParam && borderColorParam.value) {
 			const color = parseStyleColor(borderColorParam.value.toString())
 			if (borders.top) { borders.top.color = color } else borders.top = { color }
 			if (borders.right) { borders.right.color = color } else borders.right = { color }
 			if (borders.bottom) { borders.bottom.color = color } else borders.bottom = { color }
 			if (borders.left) { borders.left.color = color } else borders.left = { color }
 		}
-		if (borderTopParam && borderTopParam.type == 'literal' && borderTopParam.value) {
+		if (borderTopParam && borderTopParam.value) {
 			const border = parseBorderStyle(borderTopParam.value.toString())
 			borders.top = border
 		}
-		if (borderRightParam && borderRightParam.type == 'literal' && borderRightParam.value) {
+		if (borderRightParam && borderRightParam.value) {
 			const border = parseBorderStyle(borderRightParam.value.toString())
 			borders.right = border
 		}
-		if (borderBottomParam && borderBottomParam.type == 'literal' && borderBottomParam.value) {
+		if (borderBottomParam && borderBottomParam.value) {
 			const border = parseBorderStyle(borderBottomParam.value.toString())
 			borders.bottom = border
 		}
-		if (borderLeftParam && borderLeftParam.type == 'literal' && borderLeftParam.value) {
+		if (borderLeftParam && borderLeftParam.value) {
 			const border = parseBorderStyle(borderLeftParam.value.toString())
 			borders.left = border
 		}

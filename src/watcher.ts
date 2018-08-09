@@ -154,7 +154,6 @@ export function startWatching(dir: string, configFileName: string, watch: boolea
 	
 		// watch for changes
 		watcher.on('added', sourceFile => {
-			console.log('added', sourceFile)
 			processFile(sourceFile, true)
 				.then(dartFile=>{if(dartFile) console.log('added', relative(process.cwd(), dartFile))})
 				.catch(error=>reportError(sourceFile, error, options))

@@ -109,7 +109,7 @@ export function parseStyleCrossAxisSize(alignment: string) : string {
 }
 
 export function parseTRBLStyle(style: string) : { top?: string, right?: string, bottom?: string, left?: string } {
-	const regexp = /[.a-z0-9\.\,\(\)]+/gi
+	const regexp = /[.a-z0-9\_\*\:\.\,\(\)]+/gi
 	const matches = style.match(regexp)
 	switch (matches.length) {
 		case 1: return {
