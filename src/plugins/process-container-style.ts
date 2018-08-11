@@ -5,56 +5,6 @@ import { Options } from '../watcher';
 type Borders = { top?: Border, right?: Border, bottom?: Border, left?: Border }
 
 export function transformWidget(widget: Widget, options: Options): Widget {
-
-	const mainAxisAlignmentParam = findAndRemoveParam(widget, 'mainAxisAlignment')
-	const crossAxisAlignmentParam = findAndRemoveParam(widget, 'crossAxisAlignment')
-	const mainAxisSizeParam = findAndRemoveParam(widget, 'mainAxisSize')
-	const crossAxisSizeParam = findAndRemoveParam(widget, 'crossAxisSize')
-
-	// MainAxisAlignment
-
-	if (mainAxisAlignmentParam && mainAxisAlignmentParam.value) {
-		widget.params.push({
-			class: 'param',
-			name: 'mainAxisAlignment',
-			type: 'expression',
-			value: parseStyleMainAxisAlignment(mainAxisAlignmentParam.value.toString()),
-			resolved: true
-		})
-	}
-
-	if (crossAxisAlignmentParam && crossAxisAlignmentParam.value) {
-		widget.params.push({
-			class: 'param',
-			name: 'crossAxisAlignment',
-			type: 'expression',
-			value: parseStyleCrossAxisAlignment(crossAxisAlignmentParam.value.toString()),
-			resolved: true
-		})
-	}
-
-	if (mainAxisSizeParam && mainAxisSizeParam.value) {
-		widget.params.push({
-			class: 'param',
-			name: 'mainAxisSize',
-			type: 'expression',
-			value: parseStyleMainAxisSize(mainAxisSizeParam.value.toString()),
-			resolved: true
-		})
-	}
-
-	if (crossAxisSizeParam && crossAxisSizeParam.value) {
-		widget.params.push({
-			class: 'param',
-			name: 'crossAxisSize',
-			type: 'expression',
-			value: parseStyleCrossAxisSize(crossAxisSizeParam.value.toString()),
-			resolved: true
-		})
-	}
-
-
-	// Container only
 	
 	if (widget.name == 'Container' || widget.name == 'AnimatedContainer') {
 		if (!widget.params) widget.params = []
@@ -180,6 +130,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		}
 
 		// border
+		
 		let borders: Borders = {}
 		if (borderParam && borderParam.value) {
 			const border = parseBorderStyle(borderParam.value.toString())
