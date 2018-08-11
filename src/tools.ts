@@ -181,8 +181,13 @@ export function parseBorderStyle(border: string) : Border {
 	}
 }
 
-export function parseStyleDoubleValue(value: string) : string {
+export function parseStyleDoubleValueOLD(value: string) : string {
 	return `(${value}).toDouble()`
+}
+
+export function parseStyleDoubleValue(value: string) : string {
+	if(parseFloat(value)) return parseFloat(value).toFixed(2).toString()
+	return value
 }
 
 export function parseStyleUrl(value: string) : { type: 'url' | 'asset', location: string } | null {
@@ -197,6 +202,62 @@ export function parseStyleUrl(value: string) : { type: 'url' | 'asset', location
 		location: matchesAsset[1]
 	}
 	return null
+}
+
+export function parseBoxShadow(value: string) : { color?: string, hoffset: string, voffset: string, blur?: string, spread?: string } {
+	const regexp = /([\w\.\(\)\:\_]+)/g
+	const matches = value.match(regexp)
+	let params = []
+	switch (matches.length) {
+		case 2: {
+			return {
+				hoffset: parseStyleDoubleValue(matches[0]),
+				voffset: parseStyleDoubleValue(matches[1])
+			}
+		}
+		case 3: {
+			if(parseStyleColor(matches[2])) {
+				return {
+					hoffset: parseStyleDoubleValue(matches[0]),
+					voffset: parseStyleDoubleValue(matches[1]),
+					color: parseStyleColor(matches[3])
+				} 
+			} else {
+				return {
+					hoffset: parseStyleDoubleValue(matches[0]),
+					voffset: parseStyleDoubleValue(matches[1]),
+					blur: parseStyleDoubleValue(matches[2])
+				}
+			}
+		}
+		case 4: {
+			if(parseStyleColor(matches[3])) {
+				return {
+					hoffset: parseStyleDoubleValue(matches[0]),
+					voffset: parseStyleDoubleValue(matches[1]),
+					blur: parseStyleDoubleValue(matches[2]),
+					color: parseStyleColor(matches[3])
+				} 
+			} else {
+				return {
+					hoffset: parseStyleDoubleValue(matches[0]),
+					voffset: parseStyleDoubleValue(matches[1]),
+					blur: parseStyleDoubleValue(matches[2]),
+					spread: parseStyleDoubleValue(matches[3])
+				}
+			}
+		}
+		case 5: {
+			return {
+				hoffset: parseStyleDoubleValue(matches[0]),
+				voffset: parseStyleDoubleValue(matches[1]),
+				blur: parseStyleDoubleValue(matches[2]),
+				spread: parseStyleDoubleValue(matches[3]),
+				color: parseStyleColor(matches[4])
+			}
+		}
+		default: throw `box-shadow style ${value} is invalid, needs at least hoffset and voffset, but found ${matches.length} properties.`
+	}
 }
 
 /**

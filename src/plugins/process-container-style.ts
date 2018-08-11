@@ -1,5 +1,5 @@
-import { Widget } from '../models/flutter-model';
-import { applyOnDescendants, Border, findAndRemoveParam, parseBorderStyle, parseStyleBackgroundSize, parseStyleColor, parseStyleCrossAxisAlignment, parseStyleCrossAxisSize, parseStyleDoubleValue, parseStyleMainAxisAlignment, parseStyleMainAxisSize, parseStyleRepeat, parseStyleUrl, parseTRBLStyle, unquote } from '../tools';
+import { Widget, Param } from '../models/flutter-model';
+import { applyOnDescendants, Border, findAndRemoveParam, parseBorderStyle, parseStyleBackgroundSize, parseStyleColor, parseStyleCrossAxisAlignment, parseStyleCrossAxisSize, parseStyleDoubleValue, parseStyleMainAxisAlignment, parseStyleMainAxisSize, parseStyleRepeat, parseStyleUrl, parseTRBLStyle, unquote, parseBoxShadow } from '../tools';
 import { Options } from '../watcher';
 
 type Borders = { top?: Border, right?: Border, bottom?: Border, left?: Border }
@@ -38,6 +38,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		const borderStyleParam = findAndRemoveParam(widget, 'borderStyle')
 		const borderColorParam = findAndRemoveParam(widget, 'borderColor')
 		const borderRadiusParam = findAndRemoveParam(widget, 'borderRadius')
+		const boxShadowParam = findAndRemoveParam(widget, 'boxShadow')
 
 		// dimensions
 
@@ -299,6 +300,17 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 				value: toBorderRadiusCode(borderRadiusParam.value.toString()),
 				resolved: true
 			})
+			if (boxShadowParam && boxShadowParam.value) {
+				const values = boxShadowParam.value.toString().split(',')
+				const boxShadows = values.map(value=>toBoxShadow(parseBoxShadow(value)))
+				boxDecorationWidget.params.push({
+					class: 'param',
+					name: 'boxShadow',
+					type: 'array',
+					value: boxShadows,
+					resolved: true
+				})
+			}
 		}
 
 		if (boxDecorationWidget) {
@@ -311,16 +323,6 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			})
 		}
 
-		/*
-		decoration: BoxDecoration(
-            image: DecorationImage(
-              image: NetworkImage('url'),
-              fit: BoxFit.contain,
-              alignment: Alignment(10.9, 5.0),
-              repeat: ImageRepeat.noRepeat
-            )
-		)
-		*/
 	}
 
 	// also apply the plugin to the rest of the widget tree of this widget
@@ -421,4 +423,48 @@ function toBorderRadiusCode(radius: string): string {
 	if (radiusValue.bottom) params.push(`bottomRight: ${toRadius(radiusValue.bottom)}`)
 	if (radiusValue.left) params.push(`bottomLeft: ${toRadius(radiusValue.left)}`)
 	return `BorderRadius.only(${params.join(', ')})`
+}
+
+function toBoxShadow(boxShadow: { color?: string, hoffset: string, voffset: string, blur?: string, spread?: string }) : Widget {
+	const params : Param[] = []
+	params.push({
+		class: 'param',
+		type: 'expression',
+		resolved: true,
+		name: 'offset',
+		value: `Offset(${boxShadow.hoffset}, ${boxShadow.voffset})`
+	})
+	if(boxShadow.color) {
+		params.push({
+			class: 'param',
+			type: 'expression',
+			resolved: true,
+			name: 'color',
+			value: boxShadow.color
+		})
+	}
+	if(boxShadow.blur) {
+		params.push({
+			class: 'param',
+			type: 'expression',
+			resolved: true,
+			name: 'blurRadius',
+			value: boxShadow.blur
+		})
+	}
+	if(boxShadow.spread) {
+		params.push({
+			class: 'param',
+			type: 'expression',
+			resolved: true,
+			name: 'spreadRadius',
+			value: boxShadow.spread
+		})
+	}
+	return {
+		class: 'widget',
+		constant: true,
+		name: 'BoxShadow',
+		params: params
+	}
 }
