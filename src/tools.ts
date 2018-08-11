@@ -109,7 +109,7 @@ export function parseStyleCrossAxisSize(alignment: string) : string {
 }
 
 export function parseTRBLStyle(style: string) : { top?: string, right?: string, bottom?: string, left?: string } {
-	const regexp = /[.a-z0-9\_\*\:\.\,\(\)]+/gi
+	const regexp = /[.a-z0-9\-\_\*\:\.\,\(\)]+/gi
 	const matches = style.match(regexp)
 	switch (matches.length) {
 		case 1: return {
@@ -142,7 +142,7 @@ export function parseTRBLStyle(style: string) : { top?: string, right?: string, 
 export type Border = { width?: string, style?: string, color?: string }
 
 export function parseBorderStyle(border: string) : Border {
-	const regexp = /[.a-z0-9\.\,\(\)]+/gi
+	const regexp = /[.a-z0-9\-\.\,\(\)]+/gi
 	const matches = border.match(regexp)
 	switch (matches.length) {
 		case 1: {
@@ -181,11 +181,16 @@ export function parseBorderStyle(border: string) : Border {
 	}
 }
 
-export function parseStyleDoubleValueOLD(value: string) : string {
+export function parseStyleDoubleValue(value: string) : string {
 	return `(${value}).toDouble()`
 }
 
-export function parseStyleDoubleValue(value: string) : string {
+/**
+ * Fallback double value parser, in case the result must be a constant value
+ * or else the dart compiler will complain.
+ * @param value the value to process
+ */
+export function parseConstStyleDoubleValue(value: string) : string {
 	if(parseFloat(value)) return parseFloat(value).toFixed(2).toString()
 	return value
 }
@@ -205,54 +210,54 @@ export function parseStyleUrl(value: string) : { type: 'url' | 'asset', location
 }
 
 export function parseBoxShadow(value: string) : { color?: string, hoffset: string, voffset: string, blur?: string, spread?: string } {
-	const regexp = /([\w\.\(\)\:\_]+)/g
+	const regexp = /([\w\.\(\)\:\_\-]+)/g
 	const matches = value.match(regexp)
 	let params = []
 	switch (matches.length) {
 		case 2: {
 			return {
-				hoffset: parseStyleDoubleValue(matches[0]),
-				voffset: parseStyleDoubleValue(matches[1])
+				hoffset: parseConstStyleDoubleValue(matches[0]),
+				voffset: parseConstStyleDoubleValue(matches[1])
 			}
 		}
 		case 3: {
 			if(parseStyleColor(matches[2])) {
 				return {
-					hoffset: parseStyleDoubleValue(matches[0]),
-					voffset: parseStyleDoubleValue(matches[1]),
+					hoffset: parseConstStyleDoubleValue(matches[0]),
+					voffset: parseConstStyleDoubleValue(matches[1]),
 					color: parseStyleColor(matches[3])
 				} 
 			} else {
 				return {
-					hoffset: parseStyleDoubleValue(matches[0]),
-					voffset: parseStyleDoubleValue(matches[1]),
-					blur: parseStyleDoubleValue(matches[2])
+					hoffset: parseConstStyleDoubleValue(matches[0]),
+					voffset: parseConstStyleDoubleValue(matches[1]),
+					blur: parseConstStyleDoubleValue(matches[2])
 				}
 			}
 		}
 		case 4: {
 			if(parseStyleColor(matches[3])) {
 				return {
-					hoffset: parseStyleDoubleValue(matches[0]),
-					voffset: parseStyleDoubleValue(matches[1]),
-					blur: parseStyleDoubleValue(matches[2]),
-					color: parseStyleColor(matches[3])
+					hoffset: parseConstStyleDoubleValue(matches[0]),
+					voffset: parseConstStyleDoubleValue(matches[1]),
+					blur: parseConstStyleDoubleValue(matches[2]),
+					color: parseConstStyleDoubleValue(matches[3])
 				} 
 			} else {
 				return {
-					hoffset: parseStyleDoubleValue(matches[0]),
-					voffset: parseStyleDoubleValue(matches[1]),
-					blur: parseStyleDoubleValue(matches[2]),
-					spread: parseStyleDoubleValue(matches[3])
+					hoffset: parseConstStyleDoubleValue(matches[0]),
+					voffset: parseConstStyleDoubleValue(matches[1]),
+					blur: parseConstStyleDoubleValue(matches[2]),
+					spread: parseConstStyleDoubleValue(matches[3])
 				}
 			}
 		}
 		case 5: {
 			return {
-				hoffset: parseStyleDoubleValue(matches[0]),
-				voffset: parseStyleDoubleValue(matches[1]),
-				blur: parseStyleDoubleValue(matches[2]),
-				spread: parseStyleDoubleValue(matches[3]),
+				hoffset: parseConstStyleDoubleValue(matches[0]),
+				voffset: parseConstStyleDoubleValue(matches[1]),
+				blur: parseConstStyleDoubleValue(matches[2]),
+				spread: parseConstStyleDoubleValue(matches[3]),
 				color: parseStyleColor(matches[4])
 			}
 		}

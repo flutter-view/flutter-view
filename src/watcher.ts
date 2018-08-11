@@ -25,6 +25,7 @@ export interface Options {
 		div: string, // the class to represent a div in dart code
 		text: string // the class to represent text in dart code
 		span: string, // the class to represent a span element in dart code
+		button: string, // the class to represent a button element in dart code
 		backgroundUrlImg: string, // the class to represent a background url image
 		backgroundAssetImg: string // the class to represent a background asset image
 	}, 
@@ -67,6 +68,7 @@ const defaultOptions: Options = {
 		text: 'Text',
 		div: 'Container',
 		span: 'Wrap',
+		button: 'RaisedButton',
 		backgroundAssetImg: 'ExactAssetImage',
 		backgroundUrlImg: 'NetworkImage'
 	},
