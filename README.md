@@ -236,7 +236,7 @@ ScopedModel<UserModel>(
 )
 ```
 
-#### Passing functions
+### Passing functions
 
 Some widgets require a function to be passed. A very common example in Flutter is a builder function, which simply needs to return a new tree of widgets. To create a function, you use the **function** tag. It requires a *params* property, which is a string that lists the parameters your function receives, separated by commas.
 
@@ -258,7 +258,7 @@ ScopedModelDescendant<UserModel>(
 )
 ```
 
-#### Passing arrays
+### Passing arrays
 
 Sometimes you need to pass an array of widgets or complex objects as a property. In that case you can use the **array** tag. All children of the array tag become values in the array, and you can use the *as* property to assign the array as a parent property.
 
@@ -277,7 +277,7 @@ bottom-navigation-bar(:current-index='currentTab')
 
 Here each **BottomNavigationBar** is created as an entry of an array and put in the *items* property of the BottomNavigationBar.
 
-#### Passing single items
+### Passing single items
 
 Sometimes you want to insert a single item into a tree of widgets, by value. This means you do not yet know the tag you will insert, so you can not use the *as* property.
 
@@ -293,7 +293,17 @@ user-card(flutter-view :user :add-to-bottom)
 
 Here any widget that is passed to the **UserCard.addToBottom** parameter will be added in the position of the slot.
 
+Since slot picks the first value from its children, you can also use this as a switch. For example:
 
+```pug
+material-app(title='My App' :currentPage)
+	theme-data(as='theme')
+	slot(as='home')
+		home-page(v-if='currentPage=="home"')
+		profile-page(v-if='currentPage=="profile"')
+```
+
+In the above example, the currentPage property will switch between the homepage and the profilepage.
 
 ### Conditionals
 
@@ -325,6 +335,94 @@ To use, simple pass a list:
 ```dart
 ShowNames(names: ['James', 'Mary', 'John'])
 ```
+
+### Importing dart files
+
+Since you will want to call other widgets from your views, you will need to import them. You can import with the **import** tag. Pass the package to import with the package property. All imports should be at the top of your html or pug file. For example:
+
+```pug
+import(package='flutter_platform_widgets/flutter_platform_widgets.dart')
+import(package='scoped_model/scoped_model.dart')
+```
+
+## Styling Views
+
+You can add styling to your views by adding a .css or .sass file of the same name in the same directory as your .pug or .html file.
+
+### Adding ids and classes to your pug/html
+
+Styles will match based on the names of tags or classes and ids you add to your html/pug code.
+
+For example, consider the following view:
+
+```pug
+show-names(flutter-view :names)
+	#name-entries
+		.name-entry(v-for='name in names') $name
+```
+
+Here *#name-entries* is an *id* and *.name-entry* is a *class*. This information will be lost once dart code is generated. 
+
+If you use pug and you do not provide a tag with an *id* or *class*, the *id* or *class* will be represented by a **Container()**.
+
+```pug
+.test //- results in Container()
+button.test //- results in Button()
+
+#test //- results in Container()
+button#test //- results in Button()
+```
+
+If you use html, you must always provide a tag. In that case, you can use **div** which will also be replaced by **Container()**. For example:
+
+```html
+<div class='test'></div> //- results in Container()
+<div id='test'></div> //- results in Container()
+<container class='test'></container> //- results in Container()
+```
+
+### Adding properties using styles
+
+Now that you have assigned classes and ids to elements, you can use css or sass to add properties to elements that match those classes and ids.
+
+Let's say we create a container:
+
+```pug
+.message Hello!
+```
+
+We know this is a Container, and we can find in the [Flutter Container documentation](https://docs.flutter.io/flutter/widgets/Container/Container.html) that Container has a constructor property *height* we can set, which is a double. We can of course just set it directly in our view:
+
+```pug
+.message(:height='100.0') Hello!
+```
+
+However, instead, we can also set it using a style rule:
+
+```sass
+.message
+	height: 100
+```
+
+Since the class matches, the style will be converted into a property, and added as a constructor property of the Container, with the following combined code:
+
+```dart
+Container(
+	child: Text('Hello!'),
+	height: (100).toDouble()
+)
+```
+
+*Note: flutter-view has some convenience parsing built in, so you do not have to set 100.0, and can instead use 100. the (100).toDouble() makes sure the value is converted to a double for you.*
+
+
+
+
+
+
+
+
+
 
 
 
