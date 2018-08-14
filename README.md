@@ -415,8 +415,77 @@ Container(
 
 *Note: flutter-view has some convenience parsing built in, so you do not have to set 100.0, and can instead use 100. the (100).toDouble() makes sure the value is converted to a double for you.*
 
+#### Adding expressions in styles
 
+Since all we are doing is generating code, you can also put simple code expressions in your styles.
 
+For example, say that you want to set an icon on this tabbar:
+
+```pug
+bottom-navigation-bar-item#home-bar-item
+	.title(as='title') Home
+```
+
+Since it has an id *#home-bar-item*, you can style it:
+
+```sass
+#home-bar-item
+	icon: ':Icon(Icons.home)'
+```
+
+Notice the *:* sign before *:Icon(Icons.home)*. This is to indicate that this is an expression and not a literal string. It must be part of the total string you pass.
+
+The resulting code will now be in Dart:
+
+```dart
+BottomNavigationBarItem(
+	icon: Icon(Icons.home),
+	title: Text("Home")
+)
+```
+
+#### Dynamic styling and animation
+
+We can also use this same principle to animate elements with styles:
+
+```pug
+animated-message(flutter-view :target-height)
+	animated-container(:duration-ms=1000).message 
+		| Hello!
+```
+
+```sass
+.message
+	height: ':targetHeight'
+```
+
+#### Passing code for widget styling
+
+*AnimatedContainer* will animate its properties over the passed duration. We refer to the targetHeight in the style property. This means that calling our widget with a new targetHeight will smoothly scale our widget to the new height.
+
+This "trick" of passing code in styles should not be abused. The general rule is that it should be for the purpose of styling only. Remember that you can pass anything through properties, even functions. Let's say you want a complicated calculation to happen on the height before you set it as the style. Instead of inlining the code in the style, you can pass the code to your widget:
+
+```pug
+animated-message(flutter-view :value :toMessageHeight)
+	animated-container(:duration-ms=1000).message 
+		| Hello!
+```
+
+```sass
+.message
+	height: ':toMessageHeight(value)'
+```
+
+```dart
+double toMessageHeight(double value) {
+	return sin(value) * 50;
+}
+final buildFunction = (context) {
+	return AnimatedMessage(currentCount, toMessageHeight)
+}
+```
+
+The idea of flutter-view is to force you to separate your concerns. The views are about presentation. Any code you want to use to change behavior you either pass, or you create widgets that have that behavior and use them in your view.
 
 
 
