@@ -259,8 +259,11 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
 
 	// render the widget class with the parameters
 	const genericParams = widget.generics ? `<${widget.generics.join(',')}>` : ''
+	const vConstructorParam = findAndRemoveParam(widget, 'vConstructor')
+	const name = vConstructorParam ? `${widget.name}.${vConstructorParam.value}` : widget.name
+	console.log('constructor', vConstructorParam)
 	return multiline(
-		`${widget.constant?'const ':''}${assignment}${widget.name}${genericParams}(`,
+		`${widget.constant?'const ':''}${assignment}${name}${genericParams}(`,
 		indent(renderParams(widget, vModel, fields, options), options.indentation),
 		`)`
 	)
