@@ -14,7 +14,7 @@ You need
 
 1. clone this repository
 2. change to the project directory
-3. * npm install*
+3. *npm install*
 4. *npm link*
 
 Typing *flutter-view* in any directory should now work.
@@ -125,10 +125,11 @@ This way, parameters allow you to both pass down information, and pass up inform
 Some notes:
 
 - in the html and pug, always use dash-cased instead of camel case, except for in string values.
+- To show the name in a string, we are using normal Dart string interpolation: $name. This means that single parameters can use $param, and if you want to traverse to a property use the Dart ${param.property} notation. For example, if you have a class User with a property name, you could pass the name as ${user.name}.
 
 ### Parameter types
 
-### Expression parameters
+#### Expression parameters
 
 If you put : in front of a parameter, it is not taken as a string value, but is taken as an expression to put in the code literally.
 
@@ -174,6 +175,8 @@ However some widgets take other widgets or class instances as parameters, which 
 
 By default, child tags of tags are added as the *child* property or as members of the *children* array property of tags.
 
+#### Passing complex properties
+
 By adding *as='...'* to children of a tag, they are set as that property of their parent.
 
 For example: 
@@ -213,8 +216,115 @@ MaterialApp TestApp() {
 
 Tags that have *as* as a property, are placed as the child of that name of their parent, allowing you to build any widget structure.
 
+#### Setting generic types
+
+If a widget is generic, that is, if you need to pass a generic parameter, you can do so with the *v-type* property. The value of the property is the name of the generic parameter. If there are multiple generic parameters, pass them both as the value, separated by a comma.
+
+For example:
+
+```pug
+scoped-model(v-type='UserModel' :model='myModel')
+	...
+```
+
+This will create the following Dart code:
+
+```dart
+ScopedModel<UserModel>(
+    model: myModel,
+    child: ...
+)
+```
+
+#### Passing functions
+
+Some widgets require a function to be passed. A very common example in Flutter is a builder function, which simply needs to return a new tree of widgets. To create a function, you use the **function** tag. It requires a *params* property, which is a string that lists the parameters your function receives, separated by commas.
+
+For example, to implement ScopedModelDescendant:
+
+```pug
+scoped-model-descendant(v-type='UserModel')
+	function(as='builder' params='(context, widget, model')
+		...
+```
+
+This will create this Dart code:
+
+```dart
+ScopedModelDescendant<UserModel>(
+	builder: ((context, widget, model) {
+		return ...
+	}
+)
+```
+
+#### Passing arrays
+
+Sometimes you need to pass an array of widgets or complex objects as a property. In that case you can use the **array** tag. All children of the array tag become values in the array, and you can use the *as* property to assign the array as a parent property.
+
+For example, you can set up a BottomNavigationBar like this:
+
+```pug
+bottom-navigation-bar(:current-index='currentTab')
+	array(as='items')
+		bottom-navigation-bar-item(:icon='Icon(Icons.home)')
+			.title(as='title') Home
+		bottom-navigation-bar-item(:icon='Icon(Icons.mail)')
+			.title(as='title') Messages
+		bottom-navigation-bar-item(:icon='Icon(Icons.person)')
+			.title(as='title') Profile
+```
+
+Here each **BottomNavigationBar** is created as an entry of an array and put in the *items* property of the BottomNavigationBar.
+
+#### Passing single items
+
+Sometimes you want to insert a single item into a tree of widgets, by value. This means you do not yet know the tag you will insert, so you can not use the *as* property.
+
+For example, to put a widget parameter into a position:
+
+```pug
+user-card(flutter-view :user :add-to-bottom)
+	column.user-card
+		row.name ${user.name}
+		row.company ${user.company}
+		slot(:value='addToBottom)
+```
+
+Here any widget that is passed to the **UserCard.addToBottom** parameter will be added in the position of the slot.
 
 
+
+### Conditionals
+
+By passing the reserved **v-if** property in a tag, you make it conditional on an expression.
+
+For example, the below code will only show the even-message container if the passed count is an even number.
+
+```pug
+show-counter(flutter-view :count)
+	.counter $count
+	.even-message(v-if='count.isEven') it is even
+	.odd-message(v-if='!count.isEven') it is odd
+```
+
+### Looping and Iteration
+
+By passing the reserved **v-for** property in a tag, you can loop through a list of values and repeat the tag and all of its children for each value in the list.
+
+For example, this code will show all names being passed:
+
+```pug
+show-names(flutter-view :names)
+	.names
+		.name(v-for='name in names') $name
+```
+
+To use, simple pass a list:
+
+```dart
+ShowNames(names: ['James', 'Mary', 'John'])
+```
 
 
 
