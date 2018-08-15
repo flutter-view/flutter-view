@@ -12,6 +12,7 @@ import { Widget } from './models/flutter-model';
 import { Element } from './models/html-model';
 import { renderDartFile } from './renderer';
 import { merge, multiline, clone } from './tools';
+import * as removeEmptyChildren from './plugins/remove-empty-children';
 
 export interface RenderPlugin {
 	transformWidget(widget: Widget, options: Options) : Widget
@@ -230,6 +231,7 @@ export function startWatching(dir: string, configFileName: string, watch: boolea
 			for(let plugin of plugins) {
 				result = plugin.transformWidget(result, options)
 			}
+			result = removeEmptyChildren.transformWidget(result, options)
 			return result
 		})
 		if(options.debug && options.debug.logDartPostAST) 

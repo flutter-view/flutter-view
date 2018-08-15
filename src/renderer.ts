@@ -204,6 +204,8 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
 		}
 	}
 
+	// if this is a function, create a Dart function which returns the child tree
+	// of the function
 	if(widget.name=='Function') {
 		const paramsParam = findParam(widget, 'params')
 		const params = paramsParam ? paramsParam.value : ''
@@ -261,7 +263,6 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
 	const genericParams = widget.generics ? `<${widget.generics.join(',')}>` : ''
 	const vConstructorParam = findAndRemoveParam(widget, 'vConstructor')
 	const name = vConstructorParam ? `${widget.name}.${vConstructorParam.value}` : widget.name
-	console.log('constructor', vConstructorParam)
 	return multiline(
 		`${widget.constant?'const ':''}${assignment}${name}${genericParams}(`,
 		indent(renderParams(widget, vModel, fields, options), options.indentation),
