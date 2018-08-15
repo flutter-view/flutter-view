@@ -29,13 +29,19 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 				type = 'expression'
 				value = unquote(value).substring(1)
 			}
+			let resolved = false
+			if(value.startsWith('^')) {
+				resolved = true
+				value = value.substring(1)
+			}
 			widget.params.push({
 				class: 'param',
 				type: type,
 				name: (name=='value') ? undefined : camelCase(name),
-				value: attr!=value ? decode(value) : null, // pug renders empty attributes as key==value
-				resolved: false
+				value: attr!=value ? decode(value) : true, // pug renders empty attributes as key==value
+				resolved: resolved
 			})
+			console.log('name', name)
 		}
 	}
 

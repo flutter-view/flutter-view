@@ -91,7 +91,7 @@ function compileTag(tag: Tag, options: Options) : Widget {
 						type: type,
 						name: (name=='value') ? undefined : camelCase(name),
 						value: attr!=value ? decode(value) : null, // pug renders empty attributes as key==value
-						resolved: false
+						resolved: name.startsWith('^')
 					})
 				}
 			}

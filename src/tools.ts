@@ -31,11 +31,13 @@ export function merge(object, other) {
 	return mergeWith(object, other, customizer)
 }
 
+/** Find a parameter of the given name in the widget */
 export function findParam(widget: Widget, name: string) : Param | null {
 	if(!widget.params) return null
 	return widget.params.find(param => param.name==name)
 }
 
+/** Find and remove an unresolved parameter in the widget */
 export function findAndRemoveParam(widget: Widget, name: string) : Param | null {
 	if(!widget.params) return null
 	const param = widget.params.find(param => param.name==name && !param.resolved)
