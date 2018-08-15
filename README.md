@@ -236,6 +236,34 @@ ScopedModel<UserModel>(
 )
 ```
 
+#### Calling different constructors
+
+Normally using a Dart class name in a flutter-vuew in dash-case will create that class.
+
+```pug
+list-view(:shrink-wrap='true')
+```
+
+will generate this Dart code:
+
+```dart
+ListView(shrinkWrap=true)
+```
+
+However, there are cases where you need to call a specific named constructor, like **ListView.builder()**.
+
+In that case, you can use the *v-constructor* property, which you set to the name of the constructor.
+
+```pug
+list-view(v-constructor='builder' :shrink-wrap='true')
+```
+
+will generate:
+
+```dart
+ListView.builder(shrinkWrap=true)
+```
+
 ### Passing functions
 
 Some widgets require a function to be passed. A very common example in Flutter is a builder function, which simply needs to return a new tree of widgets. To create a function, you use the **function** tag. It requires a *params* property, which is a string that lists the parameters your function receives, separated by commas.
