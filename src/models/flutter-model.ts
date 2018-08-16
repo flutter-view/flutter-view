@@ -6,6 +6,7 @@ export interface Widget {
 	value?: string
 	constant: boolean
 	params?: Param[]
+	originalName?: string
 }
 
 export interface Param {
@@ -14,4 +15,5 @@ export interface Param {
 	name?: string
 	value: string | Widget | Widget[] | string[]
 	resolved: boolean
+	originalName?: string
 }

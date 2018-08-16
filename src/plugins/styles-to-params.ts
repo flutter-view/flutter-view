@@ -41,7 +41,6 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 				value: attr!=value ? decode(value) : true, // pug renders empty attributes as key==value
 				resolved: resolved
 			})
-			console.log('name', name)
 		}
 	}
 

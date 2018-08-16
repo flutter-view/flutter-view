@@ -1,5 +1,5 @@
 import { Widget } from '../models/flutter-model';
-import { applyOnDescendants, findParam, findAndRemoveParam, getChildren } from '../tools';
+import { applyOnDescendants, findParam, findAndRemoveParam, getWidgetChildren } from '../tools';
 import { Options } from '../watcher';
 
 /**
@@ -27,7 +27,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		const contextParam = findParam(widget, 'context')
 		const widgetParam = findParam(widget, 'widget')
 		const asParam = findParam(widget, 'as')
-		const children = getChildren(widget)
+		const children = getWidgetChildren(widget)
 		if(modelParam && children.length > 0) {
 			const model = modelParam.value.toString()
 			const _state = stateParam ? stateParam.value : 'model'

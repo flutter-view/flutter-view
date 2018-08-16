@@ -1,7 +1,7 @@
 import * as indent from 'indent-string';
 import { pull, union, head, concat } from 'lodash';
 import { Param, Widget } from './models/flutter-model';
-import { findAndRemoveParam, findParam, multiline, unquote, getChildren } from './tools';
+import { findAndRemoveParam, findParam, multiline, unquote, getWidgetChildren } from './tools';
 import { Options } from './watcher';
 
 /**
@@ -49,7 +49,7 @@ export function renderFlutterView(widget: Widget, options: Options) : string | n
 	const vModelParam = findParam(widget, 'model')
 	const vModel = vModelParam ? vModelParam.value as string : null
 
-	const child = head(getChildren(widget))
+	const child = head(getWidgetChildren(widget))
 	const returnType = child.name
 	return multiline(
 		'// ignore: non_constant_identifier_names',
@@ -69,7 +69,7 @@ export function renderFlutterWidget(widget: Widget, options: Options) : string |
 
 	// build the body, which also gathers the members in the process
 	const buildBodyFields : Field[] = []
-	const child = head(getChildren(widget))
+	const child = head(getWidgetChildren(widget))
 	const vModelParam = findParam(widget, 'model')
 	const vModel = vModelParam ? vModelParam.value as string : null
 	const buildBody = renderBuildBody(child, vModel, buildBodyFields, options)
@@ -172,16 +172,27 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
 	if(!widget) return '\n'
 
 	if(widget.name=='Slot') {
+		// if the slot has a direct value, render that value
+		const valueParam = findParam(widget, undefined)
+		if(valueParam && valueParam.value) {
+			if(valueParam.type == 'expression') return valueParam.value.toString()
+			if(valueParam.type == 'literal') return '"' + valueParam.value.toString() + '"'
+		}
+
+		// if the slot has children, render them as options, since only one gets shown at max
 		const childrenParam = findParam(widget, 'children')
 		if(!childrenParam || !childrenParam.value) return 'Container()'
 		const children = childrenParam.value as Widget[]
-		
 		return multiline(
 			children.map(child=>renderSlotChild(child)).join(':\n'),
 			'// ignore: dead_code',
 			': Container()'
 		)
 
+		/**
+		 * render a single optional slot child
+		 * @param child the child to add to the slot
+		 */
 		function renderSlotChild(child: Widget) {
 			const ifParam = findAndRemoveParam(child, 'vIf')
 			if(ifParam && ifParam.value) {

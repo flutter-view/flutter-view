@@ -13,7 +13,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 				const children = childrenParam.value as Widget[]
 				pull(widget.params, childrenParam)
 				if(children.length == 0) {
-					// console.log(`${widget.name} is empty`)
+					// skip empty name
 				} else if(children.length > 1) {
 					if(options.autowrapChildren) {
 						widget.params.push({

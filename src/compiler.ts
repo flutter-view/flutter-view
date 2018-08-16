@@ -49,6 +49,7 @@ export function compile(html: Element[], options: Options): Widget[] {
  */
 function compileTag(tag: Tag, options: Options) : Widget {
 	// use the configured class name if we set it in the tagClasses option
+	const originalName = tag.name
 	for(let tagName of Object.keys(options.tagClasses)) {
 		if(tag.name == tagName) tag.name = options.tagClasses[tagName]
 	}
@@ -90,7 +91,8 @@ function compileTag(tag: Tag, options: Options) : Widget {
 						class: 'param',
 						type: type,
 						name: (name=='value') ? undefined : camelCase(name),
-						value: attr!=value ? decode(value) : null, // pug renders empty attributes as key==value
+						originalName: name,
+						value: attr!=value ? decode(value) : true, // pug renders empty attributes as key==value
 						resolved: name.startsWith('^')
 					})
 				}
@@ -119,6 +121,7 @@ function compileTag(tag: Tag, options: Options) : Widget {
 							const widget: Widget = {
 								class: 'widget',
 								name: options.tagClasses['text'],
+								originalName: 'text',
 								constant: false,
 								params: [
 									{
@@ -153,7 +156,8 @@ function compileTag(tag: Tag, options: Options) : Widget {
 		class: 'widget',
 		constant: isConstant,
 		name: widgetClass,
-		generics: generics,
-		params: params
+		originalName,
+		generics,
+		params
 	}
 }

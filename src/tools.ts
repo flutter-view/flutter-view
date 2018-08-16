@@ -305,10 +305,11 @@ export function applyOnDescendants(widget: Widget, fn: (Widget)=>Widget) {
  * @param widget the widget to get the child from
  * @returns a widget if it a child was found, or null if nothing was found
  */
-export function getChildren(widget: Widget) : Widget[] {
-	const childParam = findParam(widget, 'child')
-	const childrenParam = findParam(widget, 'children')
-	if(childParam && childParam.value) return [childParam.value as Widget]
-	if(childrenParam && childrenParam.value) return childrenParam.value as Widget[]
+export function getWidgetChildren(widget: Widget) : Widget[] {
+	if(!widget.params) return []
+	const childParam = widget.params.find(param => param.name=='child' && param.type == 'widget' && !!param.value)
+	const childrenParam = widget.params.find(param => param.name=='children' && param.type == 'widgets' && !!param.value)
+	if(childParam) return [childParam.value as Widget]
+	if(childrenParam) return childrenParam.value as Widget[]
 	return []
 }
