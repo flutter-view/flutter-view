@@ -156,6 +156,13 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			type: 'widget',
 			value: transformWidget(widget, options),
 			resolved: true
+		},
+		{
+			class: 'param',
+			name: 'vConstructor',
+			type: 'expression',
+			value: 'merge',
+			resolved: false
 		}
 	]
 
