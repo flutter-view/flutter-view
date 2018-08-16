@@ -59,7 +59,8 @@ const defaultOptions: Options = {
 		"./plugins/process-text-style",
 		"./plugins/process-container-style",
 		"./plugins/process-positioned-tag",
-		"./plugins/process-axis-alignment"
+		"./plugins/process-axis-alignment",
+		"./plugins/process-text"
 	],
 	imports: [
 		'package:flutter/material.dart',
