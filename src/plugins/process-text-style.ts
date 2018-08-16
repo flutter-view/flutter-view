@@ -20,6 +20,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 	const wordWrapParam = findAndRemoveParam(widget, 'wordWrap')
 	const softWrapParam = findAndRemoveParam(widget, 'softWrap')
 	const maxLinesParam = findAndRemoveParam(widget, 'maxLines')
+	const lineClampParam = findAndRemoveParam(widget, 'lineClamp')
 
 	const update =
 		fontSizeParam ||
@@ -36,7 +37,8 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		textOverflowParam ||
 		wordWrapParam ||
 		softWrapParam ||
-		maxLinesParam
+		maxLinesParam ||
+		lineClampParam
 	
 	if(!update) {
 		applyOnDescendants(widget, descendant=>transformWidget(descendant, options))
@@ -218,12 +220,15 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		})
 	}
 
-	if(maxLinesParam) {
+	if(maxLinesParam || lineClampParam) {
+		let maxLinesValue 
+		if (maxLinesParam) maxLinesValue = maxLinesParam.value.toString()
+		if (lineClampParam) maxLinesValue = lineClampParam.value.toString()
 		params.push({
 			class: 'param',
 			name: 'maxLines',
 			type: 'expression',
-			value: unquote(maxLinesParam.value.toString()),
+			value: unquote(maxLinesValue),
 			resolved: true
 		})
 	}
