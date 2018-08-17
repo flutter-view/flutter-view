@@ -1,6 +1,6 @@
 import { camelCase, upperCaseFirst } from 'change-case';
 import * as decode from 'decode-html';
-import { pull } from 'lodash';
+import { pull, concat } from 'lodash';
 import { Param, Widget } from './models/flutter-model';
 import { Element, Tag, Text } from './models/html-model';
 import { Options } from './watcher';
@@ -23,10 +23,14 @@ export function extractImports(html: Element[]) : string[] {
 	for(let tag of imports) {
 		pull(html, tag)
 	}
-	return imports
+	const packageImports = imports
 		.map(i=>i.attribs['package'])
 		.filter(i=>!!i)
 		.map(i=>`package:${i}`)
+	const fileImports = imports
+		.map(i=>i.attribs['file'])
+		.filter(i=>!!i)
+	return concat(packageImports, fileImports)
 }
 
 /**
