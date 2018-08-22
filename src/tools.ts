@@ -53,6 +53,7 @@ export function parseStyleColor(color: string) : string {
 	if(color.indexOf('.') < 0 && color.indexOf('(') < 0) {
 		return `Colors.${color}`
 	}
+	if(color.startsWith(':')) return color
 	return color
 }
 
@@ -193,7 +194,7 @@ export function parseStyleDoubleValue(value: string) : string {
  * @param value the value to process
  */
 export function parseConstStyleDoubleValue(value: string) : string {
-	if(parseFloat(value)) return parseFloat(value).toFixed(2).toString()
+	if(parseFloat(value) || value == '0') return parseFloat(value).toFixed(2).toString()
 	return value
 }
 
@@ -212,7 +213,7 @@ export function parseStyleUrl(value: string) : { type: 'url' | 'asset', location
 }
 
 export function parseBoxShadow(value: string) : { color?: string, hoffset: string, voffset: string, blur?: string, spread?: string } {
-	const regexp = /([\w\.\(\)\:\_\-]+)/g
+	const regexp = /([\w\.\(\)\:\_\-\#]+)/g
 	const matches = value.match(regexp)
 	let params = []
 	switch (matches.length) {
@@ -223,7 +224,7 @@ export function parseBoxShadow(value: string) : { color?: string, hoffset: strin
 			}
 		}
 		case 3: {
-			if(parseStyleColor(matches[2])) {
+			if(parseStyleColor(matches[2]) == matches[2]) {
 				return {
 					hoffset: parseConstStyleDoubleValue(matches[0]),
 					voffset: parseConstStyleDoubleValue(matches[1]),
@@ -238,12 +239,12 @@ export function parseBoxShadow(value: string) : { color?: string, hoffset: strin
 			}
 		}
 		case 4: {
-			if(parseStyleColor(matches[3])) {
+			if(parseStyleColor(matches[3]) == matches[3]) {
 				return {
 					hoffset: parseConstStyleDoubleValue(matches[0]),
 					voffset: parseConstStyleDoubleValue(matches[1]),
 					blur: parseConstStyleDoubleValue(matches[2]),
-					color: parseConstStyleDoubleValue(matches[3])
+					color: parseStyleColor(matches[3])
 				} 
 			} else {
 				return {
