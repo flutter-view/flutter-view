@@ -246,7 +246,13 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
 		pull(widget.params, vForParam)
 		return multiline(
 			(result.index)
-				? `${result.list}.map<Widget>((${result.param}, ${result.index}) {`
+				? multiline(
+					`${result.list}.asMap().entries.map((entry) {`, 
+					indent(multiline(
+						`final index = entry.key;`, 
+						`final ${result.param} = entry.value;`
+					), options.indentation)
+				)
 				: `${result.list}.map<Widget>((${result.param}) {`,
 			indent(multiline(
 				`return`,
