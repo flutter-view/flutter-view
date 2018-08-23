@@ -40,6 +40,8 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		const borderRadiusParam = findAndRemoveParam(widget, 'borderRadius')
 		const boxShadowParam = findAndRemoveParam(widget, 'boxShadow')
 
+		const shapeParam = findAndRemoveParam(widget, 'shape')
+
 		// dimensions
 
 		if (widthParam && widthParam.value) {
@@ -265,7 +267,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		// box decoration
 
 		let boxDecorationWidget: Widget
-		if (borderWidget || backgroundColorParam || backgroundImageParam || decorationImageWidget) {
+		if (borderWidget || backgroundColorParam || backgroundImageParam || decorationImageWidget || shapeParam) {
 			boxDecorationWidget = {
 				class: 'widget',
 				name: 'BoxDecoration',
@@ -298,6 +300,13 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 				name: 'borderRadius',
 				type: 'expression',
 				value: toBorderRadiusCode(borderRadiusParam.value.toString()),
+				resolved: true
+			})
+			if (shapeParam && shapeParam.value) boxDecorationWidget.params.push({
+				class: 'param',
+				name: 'shape',
+				type: 'expression',
+				value: toShapeCode(shapeParam.value.toString()),
 				resolved: true
 			})
 			if (boxShadowParam && boxShadowParam.value) {
@@ -423,6 +432,10 @@ function toBorderRadiusCode(radius: string): string {
 	if (radiusValue.bottom) params.push(`bottomRight: ${toRadius(radiusValue.bottom)}`)
 	if (radiusValue.left) params.push(`bottomLeft: ${toRadius(radiusValue.left)}`)
 	return `BorderRadius.only(${params.join(', ')})`
+}
+
+function toShapeCode(shape: string): string {
+	return `BoxShape.${shape}`
 }
 
 function toBoxShadow(boxShadow: { color?: string, hoffset: string, voffset: string, blur?: string, spread?: string }) : Widget {
