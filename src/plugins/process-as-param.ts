@@ -17,14 +17,14 @@ import { Options } from '../watcher';
  */
 export function transformWidget(widget: Widget, options: Options): Widget {
 
-	const childrenParam = findParam(widget, 'children')
+	const childrenParam = findParam(widget, 'children', true)
 	if(childrenParam) {
 		const params: { name: string, value: Widget }[] = []
 		const children = childrenParam.value as Widget[]
 		// we cannot remove while iterating the children, so we do this in two steps:
 		// 1) find all the children to be moved, and what prop to put them 
 		for(let child of children) {
-			const asParam = findAndRemoveParam(child, 'as')
+			const asParam = findAndRemoveParam(child, 'as', true)
 			if(asParam) {
 				params.push({ 
 					name: asParam.value.toString(), 
@@ -45,10 +45,10 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		}
 	} 
 
-	const childParam = findParam(widget, 'child')
+	const childParam = findParam(widget, 'child', true)
 	if(childParam) {
 		const child = childParam.value as Widget
-		const asParam = findAndRemoveParam(child, 'as')
+		const asParam = findAndRemoveParam(child, 'as', true)
 		if(asParam) {
 			childParam.name = camelCase(asParam.value.toString())
 		}

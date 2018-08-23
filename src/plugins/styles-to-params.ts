@@ -12,7 +12,7 @@ import { Options } from '../watcher';
  */
 export function transformWidget(widget: Widget, options: Options): Widget {
 	
-	const styleParam = findAndRemoveParam(widget, 'style')
+	const styleParam = findAndRemoveParam(widget, 'style', false)
 
 	if(styleParam && styleParam.value) {
 		const style = styleParam.value as string
@@ -39,8 +39,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 				type: type,
 				name: (name=='value') ? undefined : camelCase(name),
 				value: attr!=value ? decode(value) : true, // pug renders empty attributes as key==value
-				resolved: resolved,
-				escaped: false
+				resolved: resolved
 			})
 		}
 	}

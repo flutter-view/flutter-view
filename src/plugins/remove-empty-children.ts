@@ -13,7 +13,7 @@ import { pull } from 'lodash';
  */
 export function transformWidget(widget: Widget, options: Options): Widget {
 
-	const childrenParam = findParam(widget, 'children')
+	const childrenParam = findParam(widget, 'children', true)
 	if(childrenParam && (childrenParam.type == 'array' || childrenParam.type == 'widgets')) {
 		const children = childrenParam.value as Widget[]
 		if(children.length == 0) pull(widget.params, childrenParam)

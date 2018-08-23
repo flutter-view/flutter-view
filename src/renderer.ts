@@ -20,10 +20,6 @@ export function renderDartFile(widgets: Widget[], imports: string[], options: Op
 			.filter(isFlutterView)
 			.map(widget=>renderFlutterView(widget, options))
 			.join('\r\n\r\n'),
-		widgets
-			.filter(isFlutterWidget)
-			.map(widget=>renderFlutterWidget(widget, options))
-			.join('\r\n\r\n'),
 		renderHelperFunctions(options)
 	)
 }
@@ -46,7 +42,7 @@ function renderClassImports(imports: string[]) : string {
  */
 export function renderFlutterView(widget: Widget, options: Options) : string | null {
 	const fields = getClassConstructorFields(widget)
-	const vModelParam = findParam(widget, 'model')
+	const vModelParam = findParam(widget, 'model', true)
 	const vModel = vModelParam ? vModelParam.value as string : null
 
 	const child = head(getWidgetChildren(widget))
@@ -70,7 +66,7 @@ export function renderFlutterWidget(widget: Widget, options: Options) : string |
 	// build the body, which also gathers the members in the process
 	const buildBodyFields : Field[] = []
 	const child = head(getWidgetChildren(widget))
-	const vModelParam = findParam(widget, 'model')
+	const vModelParam = findParam(widget, 'model', true)
 	const vModel = vModelParam ? vModelParam.value as string : null
 	const buildBody = renderBuildBody(child, vModel, buildBodyFields, options)
 	if(vModel) {
@@ -173,14 +169,14 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
 
 	if(widget.name=='Slot') {
 		// if the slot has a direct value, render that value
-		const valueParam = findParam(widget, undefined)
+		const valueParam = findParam(widget, undefined, true)
 		if(valueParam && valueParam.value) {
 			if(valueParam.type == 'expression') return valueParam.value.toString()
 			if(valueParam.type == 'literal') return '"' + valueParam.value.toString() + '"'
 		}
 
 		// if the slot has children, render them as options, since only one gets shown at max
-		const childrenParam = findParam(widget, 'children')
+		const childrenParam = findParam(widget, 'children', true)
 		if(!childrenParam || !childrenParam.value) return 'Container()'
 		const children = childrenParam.value as Widget[]
 		return multiline(
@@ -218,9 +214,9 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
 	// if this is a function, create a Dart function which returns the child tree
 	// of the function
 	if(widget.name=='Function') {
-		const paramsParam = findParam(widget, 'params')
+		const paramsParam = findParam(widget, 'params', true)
 		const params = paramsParam ? paramsParam.value : ''
-		const childParam = findParam(widget, 'child')
+		const childParam = findParam(widget, 'child', true)
 		if(!childParam || !childParam.value) return 'null'
 		const child = childParam.value as Widget
 		
@@ -233,7 +229,7 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
 
 	// if this widget has v-if, write code that either renders the widget,
 	// or that replaces it with an empty container.
-	const vIfParam = findParam(widget, 'vIf')
+	const vIfParam = findParam(widget, 'vIf', true)
 	if(vIfParam) {
 		pull(widget.params, vIfParam)
 		if(vIfParam.value) {
@@ -244,7 +240,7 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
 	}
 
 	// if this widget has v-for, repeatedly render it
-	const vForParam = findParam(widget, 'vFor')
+	const vForParam = findParam(widget, 'vFor', true)
 	if(vForParam) {
 		const result = parseVForExpression(vForParam.value as string)
 		pull(widget.params, vForParam)
@@ -259,7 +255,7 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
 	}
 
 	const idParam = findAndRemoveParam(widget, 'id')
-	findAndRemoveParam(widget, 'class')
+	findAndRemoveParam(widget, 'class', true)
 
 	let assignment: string = ''
 	if(fields && idParam && idParam.value) {
@@ -272,7 +268,7 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
 
 	// render the widget class with the parameters
 	const genericParams = widget.generics ? `<${widget.generics.join(',')}>` : ''
-	const vConstructorParam = findAndRemoveParam(widget, 'vConstructor')
+	const vConstructorParam = findAndRemoveParam(widget, 'vConstructor', true)
 	const name = vConstructorParam ? `${widget.name}.${vConstructorParam.value}` : widget.name
 	return multiline(
 		`${widget.constant?'const ':''}${assignment}${name}${genericParams}(`,
@@ -329,7 +325,7 @@ function renderParamValue(param: Param, vModel: string, fields: Field[], options
 		}
 		case 'widget': {
 			const value = param.value as Widget
-			const _const = findParam(value, 'const') ? 'const ' : ''
+			const _const = findParam(value, 'const', true) ? 'const ' : ''
 			return `${_const}${renderWidget(param.value as Widget, vModel, fields, options)}`
 		}
 		case 'array': {
@@ -409,9 +405,5 @@ function parseVForExpression(expression: string) : { param: string, list: string
 }
 
 function isFlutterView(widget: Widget) {
-	return !!findParam(widget, 'flutterView')
-}
-
-function isFlutterWidget(widget: Widget) {
-	return !!findParam(widget, 'flutterWidget')
+	return !!findParam(widget, 'flutterView', true)
 }

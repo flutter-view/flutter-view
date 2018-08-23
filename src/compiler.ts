@@ -91,14 +91,14 @@ function compileTag(tag: Tag, options: Options) : Widget {
 					break
 				}
 				default: {
+					const resolved = name.startsWith('^')
 					params.push({
 						class: 'param',
 						type: type,
-						name: (name=='value') ? undefined : camelCase(name),
+						name: (name=='value' && !resolved) ? undefined : camelCase(name),
 						originalName: name,
 						value: attr!=value ? decode(value) : true, // pug renders empty attributes as key==value
-						resolved: name.startsWith('^'),
-						escaped: name.startsWith('_')
+						resolved: resolved
 					})
 				}
 			}
@@ -133,8 +133,7 @@ function compileTag(tag: Tag, options: Options) : Widget {
 										class: 'param',
 										type: 'literal',
 										value: decode(value),
-										resolved: true,
-										escaped: false
+										resolved: true
 									}
 								]
 							}
@@ -151,8 +150,7 @@ function compileTag(tag: Tag, options: Options) : Widget {
 				type: 'widgets',
 				name: 'children',
 				value: children,
-				resolved: true,
-				escaped: false
+				resolved: true
 			})
 		}
 	}

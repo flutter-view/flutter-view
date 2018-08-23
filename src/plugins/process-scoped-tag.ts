@@ -22,11 +22,11 @@ import { Options } from '../watcher';
  */
 export function transformWidget(widget: Widget, options: Options): Widget {
 	if(widget.name=='Scoped') {
-		const modelParam = findParam(widget, 'model')
-		const stateParam = findParam(widget, 'state')
-		const contextParam = findParam(widget, 'context')
-		const widgetParam = findParam(widget, 'widget')
-		const asParam = findParam(widget, 'as')
+		const modelParam = findParam(widget, 'model', true)
+		const stateParam = findParam(widget, 'state', true)
+		const contextParam = findParam(widget, 'context', true)
+		const widgetParam = findParam(widget, 'widget', true)
+		const asParam = findParam(widget, 'as', true)
 		const children = getWidgetChildren(widget)
 		if(modelParam && children.length > 0) {
 			const model = modelParam.value.toString()

@@ -8,7 +8,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 	
 	if(widget.name && options.multiChildClasses && widget.name != 'Slot') {
 		if(options.multiChildClasses.indexOf(widget.name) < 0) {
-			const childrenParam = findParam(widget, 'children')
+			const childrenParam = findParam(widget, 'children', true)
 			if(childrenParam) {
 				const children = childrenParam.value as Widget[]
 				pull(widget.params, childrenParam)

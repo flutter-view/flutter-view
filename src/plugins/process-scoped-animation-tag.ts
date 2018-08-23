@@ -3,7 +3,7 @@ import { applyOnDescendants, findParam, findAndRemoveParam, getWidgetChildren } 
 import { Options } from '../watcher';
 
 /**
- * This plugin processes the **scoped** tags.
+ * This plugin processes the **scoped-animation** tags.
  * 
  * It replaces this:
  * 
