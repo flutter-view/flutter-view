@@ -32,15 +32,15 @@ export function merge(object, other) {
 }
 
 /** Find a parameter of the given name in the widget */
-export function findParam(widget: Widget, name: string) : Param | null {
+export function findParam(widget: Widget, name: string, includeEscaped?: boolean) : Param | null {
 	if(!widget.params) return null
-	return widget.params.find(param => param.name==name)
+	return widget.params.find(param => param.name==name && (includeEscaped || !param.escaped))
 }
 
 /** Find and remove an unresolved parameter in the widget */
-export function findAndRemoveParam(widget: Widget, name: string) : Param | null {
+export function findAndRemoveParam(widget: Widget, name: string, includeEscaped?: boolean) : Param | null {
 	if(!widget.params) return null
-	const param = widget.params.find(param => param.name==name && !param.resolved)
+	const param = widget.params.find(param => param.name==name && !param.resolved && (includeEscaped || !param.escaped))
 	if(param) pull(widget.params, param)
 	return param
 }

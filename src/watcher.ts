@@ -50,6 +50,7 @@ const defaultOptions: Options = {
 	indentation: 2,
 	plugins: [
 		"./plugins/styles-to-params",
+		// "./plugins/unescape-widget-params",
 		"./plugins/process-duration-params",
 		"./plugins/process-scoped-tag",
 		"./plugins/process-scoped-animation-tag",

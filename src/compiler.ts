@@ -97,7 +97,8 @@ function compileTag(tag: Tag, options: Options) : Widget {
 						name: (name=='value') ? undefined : camelCase(name),
 						originalName: name,
 						value: attr!=value ? decode(value) : true, // pug renders empty attributes as key==value
-						resolved: name.startsWith('^')
+						resolved: name.startsWith('^'),
+						escaped: name.startsWith('_')
 					})
 				}
 			}
@@ -132,7 +133,8 @@ function compileTag(tag: Tag, options: Options) : Widget {
 										class: 'param',
 										type: 'literal',
 										value: decode(value),
-										resolved: true
+										resolved: true,
+										escaped: false
 									}
 								]
 							}
@@ -149,7 +151,8 @@ function compileTag(tag: Tag, options: Options) : Widget {
 				type: 'widgets',
 				name: 'children',
 				value: children,
-				resolved: true
+				resolved: true,
+				escaped: false
 			})
 		}
 	}

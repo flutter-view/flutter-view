@@ -39,7 +39,8 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 				type: type,
 				name: (name=='value') ? undefined : camelCase(name),
 				value: attr!=value ? decode(value) : true, // pug renders empty attributes as key==value
-				resolved: resolved
+				resolved: resolved,
+				escaped: false
 			})
 		}
 	}

@@ -15,5 +15,6 @@ export interface Param {
 	name?: string
 	value: string | Widget | Widget[] | string[]
 	resolved: boolean
+	escaped?: boolean
 	originalName?: string
 }
