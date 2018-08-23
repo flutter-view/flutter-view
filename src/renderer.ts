@@ -399,16 +399,16 @@ function getClassConstructorFields(widget: Widget) : Field[] {
  * @param expression the parameter passed
  * @returns the name of the iterating parameter and the name of the list being iterated
  */
-function parseVForExpression(expression: string) : { param: string, index?: number, list: string } {
+function parseVForExpression(expression: string) : { param: string, index?: string, list: string } {
 	const regexp3params = /(\w+), (\w+)? in ([\$\(\)\w.]+)/g
 	const match3 = regexp3params.exec(expression)
-	if(match3) return { param: match3[1], index: parseInt(match3[2]), list: match3[3] }
+	if(match3) return { param: match3[1], index: match3[2], list: match3[3] }
 
 	const regexp2params = /(\w+) in ([\$\(\)\w.]+)/g
 	const match2 = regexp2params.exec(expression)
 	if(match2) return { param: match2[1], list: match2[2] }
 
-	else throw `Invalid v-for expression: "${expression}"`
+	throw `Invalid v-for expression: "${expression}"`
 }
 
 function isFlutterView(widget: Widget) {
