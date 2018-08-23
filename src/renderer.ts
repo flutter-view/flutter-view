@@ -242,10 +242,12 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
 	// if this widget has v-for, repeatedly render it
 	const vForParam = findParam(widget, 'vFor', true)
 	if(vForParam) {
-		const result = parseVForExpression(vForParam.value as string)
+		const result = parseVForExpression(vForParam.value.toString())
 		pull(widget.params, vForParam)
 		return multiline(
-			`${result.list}.map<Widget>((${result.param}) {`,
+			(result.index)
+				? `${result.list}.map<Widget>((${result.param}, ${result.index}) {`
+				: `${result.list}.map<Widget>((${result.param}) {`,
 			indent(multiline(
 				`return`,
 				renderWidget(widget, vModel, fields, options)+';'
@@ -397,10 +399,15 @@ function getClassConstructorFields(widget: Widget) : Field[] {
  * @param expression the parameter passed
  * @returns the name of the iterating parameter and the name of the list being iterated
  */
-function parseVForExpression(expression: string) : { param: string, list: string } {
-	const regexp = /(\w+) in ([\w.]+)/g
-	const match = regexp.exec(expression)
-	if(match) return { param: match[1], list: match[2] }
+function parseVForExpression(expression: string) : { param: string, index?: number, list: string } {
+	const regexp3params = /(\w+), (\w+)? in ([\$\(\)\w.]+)/g
+	const match3 = regexp3params.exec(expression)
+	if(match3) return { param: match3[1], index: parseInt(match3[2]), list: match3[3] }
+
+	const regexp2params = /(\w+) in ([\$\(\)\w.]+)/g
+	const match2 = regexp2params.exec(expression)
+	if(match2) return { param: match2[1], list: match2[2] }
+
 	else throw `Invalid v-for expression: "${expression}"`
 }
 
