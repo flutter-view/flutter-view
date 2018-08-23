@@ -288,7 +288,7 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
  */
 function renderParams(widget: Widget, vModel: string, fields: Field[], options: Options) : string {
 	const renderedParams : string[] = []
-	const paramsToRender = widget.params ? widget.params.filter(param=>param.name!='value'&&param.name!='const') : null
+	const paramsToRender = widget.params ? widget.params.filter(param=>param.name!='const') : null
 	if(paramsToRender) {
 		for(var param of paramsToRender) {
 			if(param.name) {
