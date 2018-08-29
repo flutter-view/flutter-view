@@ -23,32 +23,32 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 	const durationSecParam = findAndRemoveParam(widget, 'durationSec')
 	const durationSecsParam = findAndRemoveParam(widget, 'durationSecs')
 
-	if(durationMsParam) {
+	if(durationMsParam && durationMsParam.value) {
 		widget.params.push({
 			class: 'param',
 			type: 'expression',
 			name: 'duration',
-			resolved: true,
+			resolved: false,
 			value: `Duration(milliseconds: ${durationMsParam.value.toString()})`
 		})
 	}
 
-	if(durationSecParam) {
+	if(durationSecParam && durationSecParam.value) {
 		widget.params.push({
 			class: 'param',
 			type: 'expression',
 			name: 'duration',
-			resolved: true,
+			resolved: false,
 			value: `Duration(seconds: ${durationSecParam.value.toString()})`
 		})
 	}
 
-	if(durationSecsParam) {
+	if(durationSecsParam && durationSecsParam.value) {
 		widget.params.push({
 			class: 'param',
 			type: 'expression',
 			name: 'duration',
-			resolved: true,
+			resolved: false,
 			value: `Duration(seconds: ${durationSecsParam.value.toString()})`
 		})
 	}

@@ -31,6 +31,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		const asParam = findParam(widget, 'as')
 		const children = getWidgetChildren(widget)
 		if(modelParam && modelFnParam && children.length > 0) {
+			if(!durationParam.value) throw 'scoped-animation requires a duration'
 			const model = modelParam.value.toString()
 			const _modelFn = modelFnParam.value.toString()
 			const _duration = durationParam.value.toString()

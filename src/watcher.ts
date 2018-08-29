@@ -51,8 +51,9 @@ const defaultOptions: Options = {
 	plugins: [
 		"./plugins/styles-to-params",
 		"./plugins/process-duration-params",
-		"./plugins/process-scoped-tag",
 		"./plugins/process-scoped-animation-tag",
+		"./plugins/process-scoped-tag",
+		"./plugins/process-reactive-tag",
 		"./plugins/process-as-param",
 		"./plugins/process-array-tag",
 		"./plugins/automatic-columns",

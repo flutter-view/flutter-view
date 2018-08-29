@@ -42,15 +42,12 @@ function renderClassImports(imports: string[]) : string {
  */
 export function renderFlutterView(widget: Widget, options: Options) : string | null {
 	const fields = getClassConstructorFields(widget)
-	const vModelParam = findParam(widget, 'model', true)
-	const vModel = vModelParam ? vModelParam.value as string : null
-
 	const child = head(getWidgetChildren(widget))
 	const returnType = child.name
 	return multiline(
 		'// ignore: non_constant_identifier_names',
-		`${!vModel ? returnType+' ' : ' '}${renderFunctionConstructor(widget.name, fields, vModel)} {`,
-			indent(renderBuildBody(child, vModel, null, options), options.indentation),
+		`${returnType} ${renderFunctionConstructor(widget.name, fields)} {`,
+			indent(renderBuildBody(child, null, options), options.indentation),
 		`}`
 	)
 }
@@ -66,15 +63,7 @@ export function renderFlutterWidget(widget: Widget, options: Options) : string |
 	// build the body, which also gathers the members in the process
 	const buildBodyFields : Field[] = []
 	const child = head(getWidgetChildren(widget))
-	const vModelParam = findParam(widget, 'model', true)
-	const vModel = vModelParam ? vModelParam.value as string : null
-	const buildBody = renderBuildBody(child, vModel, buildBodyFields, options)
-	if(vModel) {
-		buildBodyFields.push({
-			name: 'model',
-			type: vModel
-		})
-	}
+	const buildBody = renderBuildBody(child, buildBodyFields, options)
 	const constructorFields = getClassConstructorFields(widget)
 	const allFields = concat(constructorFields, buildBodyFields)
 	return multiline(
@@ -98,20 +87,9 @@ export function renderFlutterWidget(widget: Widget, options: Options) : string |
 	
 }
 
-function renderBuildBody(widget: Widget, vModel: string | null, fields: Field[], options: Options) {
-	const widgetCode = renderWidget(widget, vModel, fields, options)
-	if(vModel) {
-		return multiline(
-			`final widget = ${widgetCode};`,
-			`return (model != null) ?`,
-			indent(multiline(
-				`ScopedModel<${vModel}>(model: model, child: widget) `,
-				`: widget;`
-			), options.indentation)
-		)
-	} else {
-		return `return ${widgetCode};`
-	}
+function renderBuildBody(widget: Widget, fields: Field[], options: Options) {
+	const widgetCode = renderWidget(widget, fields, options)
+	return `return ${widgetCode};`;
 }
 
 function renderClassFields(fields: Field[]) : string {
@@ -130,14 +108,11 @@ function renderClassFields(fields: Field[]) : string {
  * Renders the constructor of the widget function
  * @param name The name of the function
  * @param fields the widget function fields to add to the constructor
- * @param vModel the optional model type
  * @returns the generated dart code
  */
-function renderFunctionConstructor(name: string, fields: { name: string, type?: string, value?: string }[], vModel: string) : string {
-	if(vModel) {
-		return `${name}({ ${vModel} model, ${fields.map(f=>`@required ${f.name}`).join(', ')} })`
-	} else if(fields.length > 0) {
-		return `${name}({ ${fields.map(f=>`@required ${f.name}`).join(', ')} })`
+function renderFunctionConstructor(name: string, fields: { name: string, type?: string, value?: string }[]) : string {
+	if(fields.length > 0) {
+		return `${name}({ ${fields.map(f=>`${f.name}`).join(', ')} })`
 	} else {
 		return `${name}()`
 	}
@@ -147,7 +122,6 @@ function renderFunctionConstructor(name: string, fields: { name: string, type?: 
  * Renders the constructor of the widget function
  * @param name The name of the function
  * @param fields the widget function fields to add to the constructor
- * @param vModel the optional model type
  * @returns the generated dart code
  */
 function renderClassConstructor(name: string, fields: { name: string, type?: string, value?: string }[]) : string {
@@ -160,11 +134,10 @@ function renderClassConstructor(name: string, fields: { name: string, type?: str
  * It will go into the parameters of the widget, extract the widgets from there, and
  * then render that code, etc. The result is the rendered code of the full widget.
  * @param widget the widget to render, including its descendants (through its parameters)
- * @param vModel the type of the model, if available
  * @param options the flutter-view options
  * @returns the generated dart code
  */
-function renderWidget(widget: Widget, vModel: string, fields: Field[], options: Options) : string {
+function renderWidget(widget: Widget, fields: Field[], options: Options) : string {
 	if(!widget) return '\n'
 
 	if(widget.name=='Slot') {
@@ -196,7 +169,7 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
 					`(${ifParam.value}) ?`,
 					indent(multiline(
 						'// ignore: dead_code',
-						renderWidget(child, vModel, fields, options)
+						renderWidget(child, fields, options)
 					), options.indentation)
 				) 
 			} else {
@@ -204,7 +177,7 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
 					`true ?`,
 					indent(multiline(
 						'// ignore: dead_code',
-						renderWidget(child, vModel, fields, options)
+						renderWidget(child, fields, options)
 					), options.indentation)
 				) 
 			}
@@ -222,7 +195,7 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
 		
 		return multiline(
 			`(${params}) {`,
-			indent(`return ${renderWidget(child, vModel, fields, options)};`, options.indentation),
+			indent(`return ${renderWidget(child, fields, options)};`, options.indentation),
 			`}`
 		)
 	}
@@ -233,7 +206,7 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
 	if(vIfParam) {
 		pull(widget.params, vIfParam)
 		if(vIfParam.value) {
-			return `${unquote(vIfParam.value.toString())} ? ${renderWidget(widget, vModel, fields, options)} : Container()`
+			return `${unquote(vIfParam.value.toString())} ? ${renderWidget(widget, fields, options)} : Container()`
 		} else {
 			console.warn(`${widget.name} has a v-if without a condition`)
 		}
@@ -256,7 +229,7 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
 				: `${result.list}.map<Widget>((${result.param}) {`,
 			indent(multiline(
 				`return`,
-				renderWidget(widget, vModel, fields, options)+';'
+				renderWidget(widget, fields, options)+';'
 			), options.indentation),
 			`}).toList()`,
 		)
@@ -280,7 +253,7 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
 	const name = vConstructorParam ? `${widget.name}.${vConstructorParam.value}` : widget.name
 	return multiline(
 		`${widget.constant?'const ':''}${assignment}${name}${genericParams}(`,
-		indent(renderParams(widget, vModel, fields, options), options.indentation),
+		indent(renderParams(widget, fields, options), options.indentation),
 		`)`
 	)
 	
@@ -290,20 +263,19 @@ function renderWidget(widget: Widget, vModel: string, fields: Field[], options: 
  * Renders the parameters of a widget. Since a parameter can contain another widget,
  * this is part of the recursive process of renderWidget.
  * @param widget the widget to render the parameters for
- * @param vModel the optional model type to use
  * @param options the flutter-view options
  * @returns the generated dart code
  */
-function renderParams(widget: Widget, vModel: string, fields: Field[], options: Options) : string {
+function renderParams(widget: Widget, fields: Field[], options: Options) : string {
 	const renderedParams : string[] = []
 	const paramsToRender = widget.params ? widget.params.filter(param=>param.name!='const') : null
 	if(paramsToRender) {
 		for(var param of paramsToRender) {
 			if(param.name) {
 				const name = unquote(param.name)
-				renderedParams.push(`${name}: ${renderParamValue(param, vModel, fields, options)}`)
+				renderedParams.push(`${name}: ${renderParamValue(param, fields, options)}`)
 			} else {
-				renderedParams.push(renderParamValue(param, vModel, fields, options))
+				renderedParams.push(renderParamValue(param, fields, options))
 			}
 		}
 	}
@@ -315,11 +287,10 @@ function renderParams(widget: Widget, vModel: string, fields: Field[], options: 
  * Renders the value of a widget parameter. Since a parameter can contain another widget,
  * this is part of the recursive process of renderWidget.
  * @param widget the widget to render the parameters for
- * @param vModel the optional model type to use
  * @param options the flutter-view options
  * @returns the generated dart code
  */
-function renderParamValue(param: Param, vModel: string, fields: Field[], options: Options) : string {
+function renderParamValue(param: Param, fields: Field[], options: Options) : string {
 	switch(param.type) {
 		case 'literal': {
 			return `'${param.value}'`
@@ -334,11 +305,11 @@ function renderParamValue(param: Param, vModel: string, fields: Field[], options
 		case 'widget': {
 			const value = param.value as Widget
 			const _const = findParam(value, 'const', true) ? 'const ' : ''
-			return `${_const}${renderWidget(param.value as Widget, vModel, fields, options)}`
+			return `${_const}${renderWidget(param.value as Widget, fields, options)}`
 		}
 		case 'array': {
 			const widgets = param.value as Widget[]
-			const values = widgets.map(widget=>`${renderWidget(widget, vModel, fields, options)}`)
+			const values = widgets.map(widget=>`${renderWidget(widget, fields, options)}`)
 			return multiline(
 				`[`,
 				indent(values.join(',\n'), options.indentation),
@@ -347,7 +318,7 @@ function renderParamValue(param: Param, vModel: string, fields: Field[], options
 		}
 		case 'widgets': {
 			const widgets = param.value as Widget[]
-			const values = widgets.map(widget=>`${renderWidget(widget, vModel, fields, options)}`)
+			const values = widgets.map(widget=>`${renderWidget(widget, fields, options)}`)
 			// in v-for loops we generate arrays. these arrays may already be in an array,
 			// so we will want to flatten these arrays of arrays before adding them
 			return multiline(
