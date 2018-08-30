@@ -12,7 +12,7 @@ import { Options } from '../watcher';
  * 
  * With this:
  * 
- * reactive(model='someModel')
+ * reactive-model(model='someModel')
  *     function(as='builder' params='context, model')
  *         child
  * 
@@ -54,6 +54,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 					}
 				]
 			}
+			widget.name = 'ReactiveModel'
 			widget.params.push({
 					class: 'param',
 					type: 'widget',
