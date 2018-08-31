@@ -203,17 +203,18 @@ function renderWidget(widget: Widget, fields: Field[], options: Options) : strin
 	// if this widget has v-if, write code that either renders the widget,
 	// or that replaces it with an empty container.
 	const vIfParam = findParam(widget, 'vIf', true)
+	const vForParam = findParam(widget, 'vFor', true)
 	if(vIfParam) {
 		pull(widget.params, vIfParam)
+		const elseValue = (vForParam && vForParam.value) ? '[Container()]' : 'Container()'
 		if(vIfParam.value) {
-			return `${unquote(vIfParam.value.toString())} ? ${renderWidget(widget, fields, options)} : Container()`
+			return `${unquote(vIfParam.value.toString())} ? ${renderWidget(widget, fields, options)} : ${elseValue}`
 		} else {
 			console.warn(`${widget.name} has a v-if without a condition`)
 		}
 	}
 
 	// if this widget has v-for, repeatedly render it
-	const vForParam = findParam(widget, 'vFor', true)
 	if(vForParam) {
 		const result = parseVForExpression(vForParam.value.toString())
 		pull(widget.params, vForParam)
