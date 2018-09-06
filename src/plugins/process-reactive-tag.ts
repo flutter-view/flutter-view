@@ -22,6 +22,10 @@ import { Options } from '../watcher';
  */
 export function transformWidget(widget: Widget, options: Options): Widget {
 	if(widget.name=='Reactive') {
+		const listenableParam = findParam(widget, 'listenable', true)
+		if (listenableParam != null) listenableParam.value = `${listenableParam.value} as Listenable`
+		const isReactiveListener = listenableParam != null
+
 		const asParam = findParam(widget, 'as', true)
 		const children = getWidgetChildren(widget)
 		findAndRemoveParam(widget, 'children', true)
@@ -42,7 +46,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 						class: 'param',
 						type: 'literal',
 						name: 'params',
-						value: 'context, model',
+						value: `context, ${isReactiveListener ? 'listenable' : 'model'}`,
 						resolved: true
 					},
 					{
@@ -54,7 +58,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 					}
 				]
 			}
-			widget.name = 'ReactiveModel'
+			widget.name = isReactiveListener ? 'ReactiveListener' : 'ReactiveModel'
 			widget.params.push({
 					class: 'param',
 					type: 'widget',
