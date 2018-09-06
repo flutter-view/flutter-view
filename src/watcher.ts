@@ -13,6 +13,11 @@ import { Element } from './models/html-model';
 import { renderDartFile } from './renderer';
 import { merge, multiline, clone } from './tools';
 import * as removeEmptyChildren from './plugins/remove-empty-children';
+import { Block, Tag, Attribute, Text } from './models/pug-model'
+import * as pugparse from 'pug-parser'
+import * as puglex from 'pug-lexer'
+import * as pugcodegen from 'pug-code-gen'
+import * as pugwrap from 'pug-runtime/wrap'
 
 export interface RenderPlugin {
 	transformWidget(widget: Widget, options: Options) : Widget
@@ -34,6 +39,7 @@ export interface Options {
 
 	autowrapChildren?: true, // use a wrapper child if a tag without a children parameter has multiple children in the template
 	autowrapChildrenClass?: string, // the class to use as the child wrapper
+	showPugLineNumbers?: boolean // show Pug line numbers in the dart file?
 	reportErrorsInDart?: boolean, // should errors also be reported in the dart file?
 	propagateDelete?: boolean, // should genenerated dart file be deleted if the pug/html file with the same name is deleted?
 	debug?: { // some debugging settings
@@ -90,6 +96,7 @@ const defaultOptions: Options = {
 	],
 	autowrapChildren: true,
 	autowrapChildrenClass: 'Column',
+	showPugLineNumbers: true,
 	reportErrorsInDart: true,
 	propagateDelete: true,
 	debug: {
@@ -185,13 +192,44 @@ export function startWatching(dir: string, configFileName: string, watch: boolea
 	
 	})
 	
+	function renderPugFileAsHtml(file: string) : string {
+		const templateName = 'flutter'
+		const pug = fs.readFileSync(file).toString()
+		const lexed = puglex(pug)
+		const parsed: Block = pugparse(lexed)
+		addPugLineAttributes(parsed)
+		const codegenfn = pugcodegen(parsed, {
+			compileDebug: false,
+			pretty: true,
+			inlineRuntimeFunctions: false,
+			templateName
+		});
+		const pugTemplate = pugwrap(codegenfn, templateName);
+		return pugTemplate()
+	}
+
+	function addPugLineAttributes(block: Block) {
+		const tags = block.nodes.filter(node=>node.type=='Tag') as Tag[]
+		for(let tag of tags) {
+			if(!tag.line) continue
+			tag.attrs = tag.attrs || []
+			tag.attrs.push({
+				name: 'pug-line',
+				val: `"${tag.line},${tag.column}"`,
+				mustEscape: true
+			})
+			if(tag.block) addPugLineAttributes(tag.block)
+		}
+	}
+
 	async function processFile(file: string, isUpdate: boolean) : Promise<string> {
 		const relativeFile = relative(process.cwd(), file)
 		// extract the html from the file, depending on the type
 		let html
 		switch(extname(file)) {
 			case '.pug': {
-				html = await renderFile(file)
+				html = renderPugFileAsHtml(file)
+				// html = await renderFile(file)
 				break
 			}
 			case '.htm': case '.html': {
@@ -243,12 +281,13 @@ export function startWatching(dir: string, configFileName: string, watch: boolea
 		const imports = extractImports(ast)
 
 		// convert the widget tree with imports into dart source code
-		const code = renderDartFile(widgets, imports, options)
+		const p = parseFileName(file)
+		const dartFile = `${p.dir}/${p.name}.dart`
+		const relativeDartFile = relative(process.cwd(), dartFile)
+		const code = renderDartFile(relativeDartFile, widgets, imports, options)
 		if(options.debug && options.debug.logCode) console.debug(relativeFile, 'Code:\n' + code)
 
 		// save the code
-		const p = parseFileName(file)
-		const dartFile = `${p.dir}/${p.name}.dart`
 		fs.writeFileSync(dartFile, code)
 		return dartFile
 	}

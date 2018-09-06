@@ -22,7 +22,6 @@ export interface Tag extends Node {
 	attrs?: Attribute[]
 	// attributeBlocks?: AttributeBlock[]
 	isInline?: boolean
-
 }
 
 export interface Attribute {

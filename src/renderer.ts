@@ -4,6 +4,12 @@ import { Param, Widget } from './models/flutter-model';
 import { findAndRemoveParam, findParam, multiline, unquote, getWidgetChildren } from './tools';
 import { Options } from './watcher';
 
+type Field = { 
+	name: string, 
+	type?: string, 
+	value?: string
+}
+
 /**
  * Render the text for the .dart file, containing the dart functions to create the widgets
  * @param widgets the widgets code to render
@@ -11,7 +17,8 @@ import { Options } from './watcher';
  * @param options flutter-view options
  * @returns the generated dart code
  */
-export function renderDartFile(widgets: Widget[], imports: string[], options: Options) : string {
+export function renderDartFile(dartFile: string, widgets: Widget[], imports: string[], options: Options) : string {
+	const pugFileName = dartFile.replace('.dart', '.pug')
 	const allImports = union(options.imports, imports)
 	return multiline(
 		renderClassImports(allImports),
@@ -22,339 +29,339 @@ export function renderDartFile(widgets: Widget[], imports: string[], options: Op
 			.join('\r\n\r\n'),
 		renderHelperFunctions(options)
 	)
-}
-
-/**
- * Renders as dart text a list of imports.
- * @param imports a list of imports to render as code
- * @returns the generated dart code
- */
-function renderClassImports(imports: string[]) : string {
-	if(!imports) return ''
-	return imports.map(_import => `// ignore: unused_import\nimport '${_import}';`).join('\r\n')
-}
-
-/**
- * Render a single widget function that builds a flutter-view widget tree
- * @param widget the widget to render
- * @param options flutter-view options
- * @returns the generated dart code
- */
-export function renderFlutterView(widget: Widget, options: Options) : string | null {
-	const fields = getClassConstructorFields(widget)
-	const child = head(getWidgetChildren(widget))
-	const returnType = child.name
-	return multiline(
-		'// ignore: non_constant_identifier_names',
-		`${returnType} ${renderFunctionConstructor(widget.name, fields)} {`,
-			indent(renderBuildBody(child, null, options), options.indentation),
-		`}`
-	)
-}
-
-type Field = { 
-	name: string, 
-	type?: string, 
-	value?: string
-}
-
-export function renderFlutterWidget(widget: Widget, options: Options) : string | null {
-
-	// build the body, which also gathers the members in the process
-	const buildBodyFields : Field[] = []
-	const child = head(getWidgetChildren(widget))
-	const buildBody = renderBuildBody(child, buildBodyFields, options)
-	const constructorFields = getClassConstructorFields(widget)
-	const allFields = concat(constructorFields, buildBodyFields)
-	return multiline(
-		'// ignore: must_be_immutable',
-		`class ${widget.name} extends StatelessWidget {`,
-		indent(multiline(
-			renderClassFields(allFields),
-			'',
-			renderClassConstructor(widget.name, constructorFields),
-			'',
-			multiline(
-				`@override`,
-				`Widget build(BuildContext context) {`,
-					indent(buildBody, options.indentation),
-				`}`
-			),
-			''
-		), options.indentation),
-		'}'
-	)
 	
-}
-
-function renderBuildBody(widget: Widget, fields: Field[], options: Options) {
-	const widgetCode = renderWidget(widget, fields, options)
-	return `return ${widgetCode};`;
-}
-
-function renderClassFields(fields: Field[]) : string {
-	return fields
-		.map(field=> {
-			if(field.value && field.value != 'true') {
-				return `${field.type || 'dynamic'} ${field.name} = ${field.value};`
-			} else {
-				return `${field.type || 'dynamic'} ${field.name};`
-			}
-		})
-		.join('\n')
-}
-
-/**
- * Renders the constructor of the widget function
- * @param name The name of the function
- * @param fields the widget function fields to add to the constructor
- * @returns the generated dart code
- */
-function renderFunctionConstructor(name: string, fields: { name: string, type?: string, value?: string }[]) : string {
-	if(fields.length > 0) {
-		return `${name}({ ${fields.map(f=>`${f.name}`).join(', ')} })`
-	} else {
-		return `${name}()`
+	/**
+	 * Renders as dart text a list of imports.
+	 * @param imports a list of imports to render as code
+	 * @returns the generated dart code
+	 */
+	function renderClassImports(imports: string[]) : string {
+		if(!imports) return ''
+		return imports.map(_import => `// ignore: unused_import\nimport '${_import}';`).join('\r\n')
 	}
-}
+	
+	/**
+	 * Render a single widget function that builds a flutter-view widget tree
+	 * @param widget the widget to render
+	 * @param options flutter-view options
+	 * @returns the generated dart code
+	 */
 
-/**
- * Renders the constructor of the widget function
- * @param name The name of the function
- * @param fields the widget function fields to add to the constructor
- * @returns the generated dart code
- */
-function renderClassConstructor(name: string, fields: { name: string, type?: string, value?: string }[]) : string {
-	if(fields.length == 0) return ''
-	return `${name}({ ${fields.map(f=>`@required this.${f.name}`).join(', ')} });`
-}
-
-/**
- * The most important method, this one recursively builds the whole tree into code.
- * It will go into the parameters of the widget, extract the widgets from there, and
- * then render that code, etc. The result is the rendered code of the full widget.
- * @param widget the widget to render, including its descendants (through its parameters)
- * @param options the flutter-view options
- * @returns the generated dart code
- */
-function renderWidget(widget: Widget, fields: Field[], options: Options) : string {
-	if(!widget) return '\n'
-
-	if(widget.name=='Slot') {
-		// if the slot has a direct value, render that value
-		const valueParam = findParam(widget, undefined, true)
-		if(valueParam && valueParam.value) {
-			if(valueParam.type == 'expression') return valueParam.value.toString()
-			if(valueParam.type == 'literal') return '"' + valueParam.value.toString() + '"'
-		}
-
-		// if the slot has children, render them as options, since only one gets shown at max
-		const childrenParam = findParam(widget, 'children', true)
-		if(!childrenParam || !childrenParam.value) return 'Container()'
-		const children = childrenParam.value as Widget[]
+	function renderFlutterView(widget: Widget, options: Options) : string | null {
+		const fields = getClassConstructorFields(widget)
+		const child = head(getWidgetChildren(widget))
+		const returnType = child.name
 		return multiline(
-			children.map(child=>renderSlotChild(child)).join(':\n'),
-			'// ignore: dead_code',
-			': Container()'
-		)
-
-		/**
-		 * render a single optional slot child
-		 * @param child the child to add to the slot
-		 */
-		function renderSlotChild(child: Widget) {
-			const ifParam = findAndRemoveParam(child, 'vIf')
-			if(ifParam && ifParam.value) {
-				return multiline(
-					`(${ifParam.value}) ?`,
-					indent(multiline(
-						'// ignore: dead_code',
-						renderWidget(child, fields, options)
-					), options.indentation)
-				) 
-			} else {
-				return multiline(
-					`true ?`,
-					indent(multiline(
-						'// ignore: dead_code',
-						renderWidget(child, fields, options)
-					), options.indentation)
-				) 
-			}
-		}
-	}
-
-	// if this is a function, create a Dart function which returns the child tree
-	// of the function
-	if(widget.name=='Function') {
-		const paramsParam = findParam(widget, 'params', true)
-		const params = paramsParam ? paramsParam.value : ''
-		const childParam = findParam(widget, 'child', true)
-		if(!childParam || !childParam.value) return 'null'
-		const child = childParam.value as Widget
-		
-		return multiline(
-			`(${params}) {`,
-			indent(`return ${renderWidget(child, fields, options)};`, options.indentation),
+			'// ignore: non_constant_identifier_names',
+			`${returnType} ${renderFunctionConstructor(widget.name, fields)} {`,
+				indent(renderBuildBody(child, null, options), options.indentation),
 			`}`
 		)
 	}
-
-	// if this widget has v-if, write code that either renders the widget,
-	// or that replaces it with an empty container.
-	const vIfParam = findParam(widget, 'vIf', true)
-	const vForParam = findParam(widget, 'vFor', true)
-	if(vIfParam) {
-		pull(widget.params, vIfParam)
-		const elseValue = (vForParam && vForParam.value) ? '[Container()]' : 'Container()'
-		if(vIfParam.value) {
-			return `${unquote(vIfParam.value.toString())} ? ${renderWidget(widget, fields, options)} : ${elseValue}`
+	
+	function renderFlutterWidget(widget: Widget, options: Options) : string | null {
+	
+		// build the body, which also gathers the members in the process
+		const buildBodyFields : Field[] = []
+		const child = head(getWidgetChildren(widget))
+		const buildBody = renderBuildBody(child, buildBodyFields, options)
+		const constructorFields = getClassConstructorFields(widget)
+		const allFields = concat(constructorFields, buildBodyFields)
+		return multiline(
+			'// ignore: must_be_immutable',
+			`class ${widget.name} extends StatelessWidget {`,
+			indent(multiline(
+				renderClassFields(allFields),
+				'',
+				renderClassConstructor(widget.name, constructorFields),
+				'',
+				multiline(
+					`@override`,
+					`Widget build(BuildContext context) {`,
+						indent(buildBody, options.indentation),
+					`}`
+				),
+				''
+			), options.indentation),
+			'}'
+		)
+		
+	}
+	
+	function renderBuildBody(widget: Widget, fields: Field[], options: Options) {
+		const widgetCode = renderWidget(widget, fields, options)
+		return `return ${widgetCode};`;
+	}
+	
+	function renderClassFields(fields: Field[]) : string {
+		return fields
+			.map(field=> {
+				if(field.value && field.value != 'true') {
+					return `${field.type || 'dynamic'} ${field.name} = ${field.value};`
+				} else {
+					return `${field.type || 'dynamic'} ${field.name};`
+				}
+			})
+			.join('\n')
+	}
+	
+	/**
+	 * Renders the constructor of the widget function
+	 * @param name The name of the function
+	 * @param fields the widget function fields to add to the constructor
+	 * @returns the generated dart code
+	 */
+	function renderFunctionConstructor(name: string, fields: { name: string, type?: string, value?: string }[]) : string {
+		if(fields.length > 0) {
+			return `${name}({ ${fields.map(f=>`${f.name}`).join(', ')} })`
 		} else {
-			console.warn(`${widget.name} has a v-if without a condition`)
+			return `${name}()`
 		}
 	}
-
-	// if this widget has v-for, repeatedly render it
-	if(vForParam) {
-		const result = parseVForExpression(vForParam.value.toString())
-		pull(widget.params, vForParam)
+	
+	/**
+	 * Renders the constructor of the widget function
+	 * @param name The name of the function
+	 * @param fields the widget function fields to add to the constructor
+	 * @returns the generated dart code
+	 */
+	function renderClassConstructor(name: string, fields: { name: string, type?: string, value?: string }[]) : string {
+		if(fields.length == 0) return ''
+		return `${name}({ ${fields.map(f=>`@required this.${f.name}`).join(', ')} });`
+	}
+	
+	/**
+	 * The most important method, this one recursively builds the whole tree into code.
+	 * It will go into the parameters of the widget, extract the widgets from there, and
+	 * then render that code, etc. The result is the rendered code of the full widget.
+	 * @param widget the widget to render, including its descendants (through its parameters)
+	 * @param options the flutter-view options
+	 * @returns the generated dart code
+	 */
+	function renderWidget(widget: Widget, fields: Field[], options: Options) : string {
+		if(!widget) return '\n'
+	
+		if(widget.name=='Slot') {
+			// if the slot has a direct value, render that value
+			const valueParam = findParam(widget, undefined, true)
+			if(valueParam && valueParam.value) {
+				if(valueParam.type == 'expression') return valueParam.value.toString()
+				if(valueParam.type == 'literal') return '"' + valueParam.value.toString() + '"'
+			}
+	
+			// if the slot has children, render them as options, since only one gets shown at max
+			const childrenParam = findParam(widget, 'children', true)
+			if(!childrenParam || !childrenParam.value) return 'Container()'
+			const children = childrenParam.value as Widget[]
+			return multiline(
+				children.map(child=>renderSlotChild(child)).join(':\n'),
+				'// ignore: dead_code',
+				': Container()'
+			)
+	
+			/**
+			 * render a single optional slot child
+			 * @param child the child to add to the slot
+			 */
+			function renderSlotChild(child: Widget) {
+				const ifParam = findAndRemoveParam(child, 'vIf')
+				if(ifParam && ifParam.value) {
+					return multiline(
+						`(${ifParam.value}) ?`,
+						indent(multiline(
+							'// ignore: dead_code',
+							renderWidget(child, fields, options)
+						), options.indentation)
+					) 
+				} else {
+					return multiline(
+						`true ?`,
+						indent(multiline(
+							'// ignore: dead_code',
+							renderWidget(child, fields, options)
+						), options.indentation)
+					) 
+				}
+			}
+		}
+	
+		// if this is a function, create a Dart function which returns the child tree
+		// of the function
+		if(widget.name=='Function') {
+			const paramsParam = findParam(widget, 'params', true)
+			const params = paramsParam ? paramsParam.value : ''
+			const childParam = findParam(widget, 'child', true)
+			if(!childParam || !childParam.value) return 'null'
+			const child = childParam.value as Widget
+			
+			return multiline(
+				`(${params}) {`,
+				indent(`return ${renderWidget(child, fields, options)};`, options.indentation),
+				`}`
+			)
+		}
+	
+		// if this widget has v-if, write code that either renders the widget,
+		// or that replaces it with an empty container.
+		const vIfParam = findParam(widget, 'vIf', true)
+		const vForParam = findParam(widget, 'vFor', true)
+		if(vIfParam) {
+			pull(widget.params, vIfParam)
+			const elseValue = (vForParam && vForParam.value) ? '[Container()]' : 'Container()'
+			if(vIfParam.value) {
+				return `${unquote(vIfParam.value.toString())} ? ${renderWidget(widget, fields, options)} : ${elseValue}`
+			} else {
+				console.warn(`${widget.name} has a v-if without a condition`)
+			}
+		}
+	
+		// if this widget has v-for, repeatedly render it
+		if(vForParam) {
+			const result = parseVForExpression(vForParam.value.toString())
+			pull(widget.params, vForParam)
+			return multiline(
+				(result.index)
+					? multiline(
+						`${result.list}.asMap().entries.map((entry) {`, 
+						indent(multiline(
+							`final index = entry.key;`, 
+							`final ${result.param} = entry.value;`
+						), options.indentation)
+					)
+					: `${result.list}.map<Widget>((${result.param}) {`,
+				indent(multiline(
+					`return`,
+					renderWidget(widget, fields, options)+';'
+				), options.indentation),
+				`}).toList()`,
+			)
+		}
+	
+		const idParam = findAndRemoveParam(widget, 'id')
+		findAndRemoveParam(widget, 'class', true)
+	
+		let assignment: string = ''
+		if(fields && idParam && idParam.value) {
+			fields.push({
+				name: idParam.value.toString(),
+				type: widget.name
+			})
+			assignment = `${idParam.value.toString()} = `
+		}
+	
+		// render the widget class with the parameters
+		const genericParams = widget.generics ? `<${widget.generics.join(',')}>` : ''
+		const vConstructorParam = findAndRemoveParam(widget, 'vConstructor', true)
+		const name = vConstructorParam ? `${widget.name}.${vConstructorParam.value}` : widget.name
+		let pugLineComment = ''
+		if(options.showPugLineNumbers && widget.pugLine != null) {
+			pugLineComment = `// project://${pugFileName}#${widget.pugLine},${widget.pugColumn}`
+		}
 		return multiline(
-			(result.index)
-				? multiline(
-					`${result.list}.asMap().entries.map((entry) {`, 
-					indent(multiline(
-						`final index = entry.key;`, 
-						`final ${result.param} = entry.value;`
-					), options.indentation)
+			`${widget.constant?'const ':''}${assignment}${name}${genericParams}( ${pugLineComment}`,
+			indent(renderParams(widget, fields, options), options.indentation),
+			`)`
+		)
+		
+	}
+	
+	/**
+	 * Renders the parameters of a widget. Since a parameter can contain another widget,
+	 * this is part of the recursive process of renderWidget.
+	 * @param widget the widget to render the parameters for
+	 * @param options the flutter-view options
+	 * @returns the generated dart code
+	 */
+	function renderParams(widget: Widget, fields: Field[], options: Options) : string {
+		const renderedParams : string[] = []
+		const paramsToRender = widget.params ? widget.params.filter(param=>param.name!='const') : null
+		if(paramsToRender) {
+			for(var param of paramsToRender) {
+				if(param.name) {
+					const name = unquote(param.name)
+					renderedParams.push(`${name}: ${renderParamValue(param, fields, options)}`)
+				} else {
+					renderedParams.push(renderParamValue(param, fields, options))
+				}
+			}
+		}
+		return renderedParams.join(',\n')
+		
+	}
+	
+	/**
+	 * Renders the value of a widget parameter. Since a parameter can contain another widget,
+	 * this is part of the recursive process of renderWidget.
+	 * @param widget the widget to render the parameters for
+	 * @param options the flutter-view options
+	 * @returns the generated dart code
+	 */
+	function renderParamValue(param: Param, fields: Field[], options: Options) : string {
+		switch(param.type) {
+			case 'literal': {
+				return `'${param.value}'`
+			}
+			case 'expression': {
+				return `${param.value ? param.value.toString() : ''}`
+			}
+			case 'closure': {
+				if(!param.value) return ''
+				return `() { ${param.value}; }`
+			}
+			case 'widget': {
+				const value = param.value as Widget
+				const _const = findParam(value, 'const', true) ? 'const ' : ''
+				return `${_const}${renderWidget(param.value as Widget, fields, options)}`
+			}
+			case 'array': {
+				const widgets = param.value as Widget[]
+				const values = widgets.map(widget=>`${renderWidget(widget, fields, options)}`)
+				return multiline(
+					`[`,
+					indent(values.join(',\n'), options.indentation),
+					`]`
 				)
-				: `${result.list}.map<Widget>((${result.param}) {`,
-			indent(multiline(
-				`return`,
-				renderWidget(widget, fields, options)+';'
-			), options.indentation),
-			`}).toList()`,
+			}
+			case 'widgets': {
+				const widgets = param.value as Widget[]
+				const values = widgets.map(widget=>`${renderWidget(widget, fields, options)}`)
+				// in v-for loops we generate arrays. these arrays may already be in an array,
+				// so we will want to flatten these arrays of arrays before adding them
+				return multiline(
+					`__flatten([`,
+					indent(values.join(',\n'), options.indentation),
+					`])`
+				)
+			}
+		}
+		throw `unknown parameter type ${param.type}`
+	}
+	
+	/**
+	 * Render the helper methods for the widget, to be added to the dartfile,
+	 * so we do not need to import an external lib.
+	 * @param options the flutter-view options
+	 * @returns the generated dart code
+	 */
+	function renderHelperFunctions(options: Options) : string {
+		return multiline(
+			'// ignore: unused_element',
+			'__flatten(List list) {',
+			indent(
+				multiline(
+					'return List<Widget>.from(list.expand((item) {',
+					indent(
+						'return item is Iterable ? item : [item as Widget];',
+						options.indentation
+					),
+					'}));'
+				),
+				options.indentation
+			),
+			'}'
 		)
 	}
 
-	const idParam = findAndRemoveParam(widget, 'id')
-	findAndRemoveParam(widget, 'class', true)
-
-	let assignment: string = ''
-	if(fields && idParam && idParam.value) {
-		fields.push({
-			name: idParam.value.toString(),
-			type: widget.name
-		})
-		assignment = `${idParam.value.toString()} = `
-	}
-
-	// render the widget class with the parameters
-	const genericParams = widget.generics ? `<${widget.generics.join(',')}>` : ''
-	const vConstructorParam = findAndRemoveParam(widget, 'vConstructor', true)
-	const name = vConstructorParam ? `${widget.name}.${vConstructorParam.value}` : widget.name
-	return multiline(
-		`${widget.constant?'const ':''}${assignment}${name}${genericParams}(`,
-		indent(renderParams(widget, fields, options), options.indentation),
-		`)`
-	)
-	
-}
-
-/**
- * Renders the parameters of a widget. Since a parameter can contain another widget,
- * this is part of the recursive process of renderWidget.
- * @param widget the widget to render the parameters for
- * @param options the flutter-view options
- * @returns the generated dart code
- */
-function renderParams(widget: Widget, fields: Field[], options: Options) : string {
-	const renderedParams : string[] = []
-	const paramsToRender = widget.params ? widget.params.filter(param=>param.name!='const') : null
-	if(paramsToRender) {
-		for(var param of paramsToRender) {
-			if(param.name) {
-				const name = unquote(param.name)
-				renderedParams.push(`${name}: ${renderParamValue(param, fields, options)}`)
-			} else {
-				renderedParams.push(renderParamValue(param, fields, options))
-			}
-		}
-	}
-	return renderedParams.join(',\n')
-	
-}
-
-/**
- * Renders the value of a widget parameter. Since a parameter can contain another widget,
- * this is part of the recursive process of renderWidget.
- * @param widget the widget to render the parameters for
- * @param options the flutter-view options
- * @returns the generated dart code
- */
-function renderParamValue(param: Param, fields: Field[], options: Options) : string {
-	switch(param.type) {
-		case 'literal': {
-			return `'${param.value}'`
-		}
-		case 'expression': {
-			return `${param.value ? param.value.toString() : ''}`
-		}
-		case 'closure': {
-			if(!param.value) return ''
-			return `() { ${param.value}; }`
-		}
-		case 'widget': {
-			const value = param.value as Widget
-			const _const = findParam(value, 'const', true) ? 'const ' : ''
-			return `${_const}${renderWidget(param.value as Widget, fields, options)}`
-		}
-		case 'array': {
-			const widgets = param.value as Widget[]
-			const values = widgets.map(widget=>`${renderWidget(widget, fields, options)}`)
-			return multiline(
-				`[`,
-				indent(values.join(',\n'), options.indentation),
-				`]`
-			)
-		}
-		case 'widgets': {
-			const widgets = param.value as Widget[]
-			const values = widgets.map(widget=>`${renderWidget(widget, fields, options)}`)
-			// in v-for loops we generate arrays. these arrays may already be in an array,
-			// so we will want to flatten these arrays of arrays before adding them
-			return multiline(
-				`__flatten([`,
-				indent(values.join(',\n'), options.indentation),
-				`])`
-			)
-		}
-	}
-	throw `unknown parameter type ${param.type}`
-}
-
-/**
- * Render the helper methods for the widget, to be added to the dartfile,
- * so we do not need to import an external lib.
- * @param options the flutter-view options
- * @returns the generated dart code
- */
-function renderHelperFunctions(options: Options) : string {
-	return multiline(
-		'// ignore: unused_element',
-		'__flatten(List list) {',
-		indent(
-			multiline(
-				'return List<Widget>.from(list.expand((item) {',
-				indent(
-					'return item is Iterable ? item : [item as Widget];',
-					options.indentation
-				),
-				'}));'
-			),
-			options.indentation
-		),
-		'}'
-	)
 }
 
 /**

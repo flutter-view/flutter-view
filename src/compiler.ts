@@ -62,6 +62,8 @@ function compileTag(tag: Tag, options: Options) : Widget {
 	const widgetClass = upperCaseFirst(camelCase(tag.name))
 	const params: Param[] = []
 	let generics: string[]
+	let pugLine: number
+	let pugColumn: number
 
 	// process the tag attributes, transforming them into widget params
 	if(tag.attribs) {
@@ -84,6 +86,13 @@ function compileTag(tag: Tag, options: Options) : Widget {
 				value = value.substring(1)
 			}
 			switch (attr) {
+				case 'pug-line': {
+					const tagValue: string = tag.attribs[attr]
+					const parts = tagValue.split(',')
+					pugLine = parseInt(parts[0])
+					pugColumn = parseInt(parts[1])
+					break
+				}
 				case 'v-type': {
 					generics = value
 						.split(',')
@@ -163,6 +172,8 @@ function compileTag(tag: Tag, options: Options) : Widget {
 		name: widgetClass,
 		originalName,
 		generics,
-		params
+		params,
+		pugLine,
+		pugColumn
 	}
 }
