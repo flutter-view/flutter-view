@@ -339,19 +339,20 @@ export function startWatching(dir: string, configFileName: string, watch: boolea
 			if(options.debug && options.debug.logErrorStack) {
 				console.error(error.stack)	
 			}
-	
-			const errorLines = error.toString().split('\\n')
-			const commentedLines = errorLines.map(line=>` * ${line}`)
-			const errorCode = multiline(
-				'/*',
-				commentedLines.join('\n'),
-				'*/',
-				'',
-				'false // intentional dart error'
-			)
-			const p = parseFileName(file)
-			const dartFile = `${p.dir}/${p.name}.dart`
-			fs.writeFileSync(dartFile, errorCode)
+			if(options.reportErrorsInDart) {
+				const errorLines = error.toString().split('\\n')
+				const commentedLines = errorLines.map(line=>` * ${line}`)
+				const errorCode = multiline(
+					'/*',
+					commentedLines.join('\n'),
+					'*/',
+					'',
+					'false // intentional dart error'
+				)
+				const p = parseFileName(file)
+				const dartFile = `${p.dir}/${p.name}.dart`
+				fs.writeFileSync(dartFile, errorCode)
+			}
 		} catch(e) {
 			console.error(`error handling error ${error} on file ${file}.`)
 		}
