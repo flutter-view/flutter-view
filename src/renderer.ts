@@ -50,7 +50,12 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 	function renderFlutterView(widget: Widget, options: Options) : string | null {
 		const fields = getClassConstructorFields(widget)
 		const child = head(getWidgetChildren(widget))
-		const returnType = child.name
+		let returnType = child.name
+		switch(child.name) {
+			case 'Slot':
+			case 'Call': { returnType = 'Widget'; break }
+			case 'Array': { returnType = 'List'; break }
+		}
 		return multiline(
 			'// ignore: non_constant_identifier_names',
 			`${returnType} ${renderFunctionConstructor(widget.name, fields)} {`,
@@ -59,50 +64,9 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 		)
 	}
 	
-	function renderFlutterWidget(widget: Widget, options: Options) : string | null {
-	
-		// build the body, which also gathers the members in the process
-		const buildBodyFields : Field[] = []
-		const child = head(getWidgetChildren(widget))
-		const buildBody = renderBuildBody(child, buildBodyFields, options)
-		const constructorFields = getClassConstructorFields(widget)
-		const allFields = concat(constructorFields, buildBodyFields)
-		return multiline(
-			'// ignore: must_be_immutable',
-			`class ${widget.name} extends StatelessWidget {`,
-			indent(multiline(
-				renderClassFields(allFields),
-				'',
-				renderClassConstructor(widget.name, constructorFields),
-				'',
-				multiline(
-					`@override`,
-					`Widget build(BuildContext context) {`,
-						indent(buildBody, options.indentation),
-					`}`
-				),
-				''
-			), options.indentation),
-			'}'
-		)
-		
-	}
-	
 	function renderBuildBody(widget: Widget, fields: Field[], options: Options) {
 		const widgetCode = renderWidget(widget, fields, options)
 		return `return ${widgetCode};`;
-	}
-	
-	function renderClassFields(fields: Field[]) : string {
-		return fields
-			.map(field=> {
-				if(field.value && field.value != 'true') {
-					return `${field.type || 'dynamic'} ${field.name} = ${field.value};`
-				} else {
-					return `${field.type || 'dynamic'} ${field.name};`
-				}
-			})
-			.join('\n')
 	}
 	
 	/**
@@ -120,17 +84,6 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 	}
 	
 	/**
-	 * Renders the constructor of the widget function
-	 * @param name The name of the function
-	 * @param fields the widget function fields to add to the constructor
-	 * @returns the generated dart code
-	 */
-	function renderClassConstructor(name: string, fields: { name: string, type?: string, value?: string }[]) : string {
-		if(fields.length == 0) return ''
-		return `${name}({ ${fields.map(f=>`@required this.${f.name}`).join(', ')} });`
-	}
-	
-	/**
 	 * The most important method, this one recursively builds the whole tree into code.
 	 * It will go into the parameters of the widget, extract the widgets from there, and
 	 * then render that code, etc. The result is the rendered code of the full widget.
@@ -141,6 +94,17 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 	function renderWidget(widget: Widget, fields: Field[], options: Options) : string {
 		if(!widget) return '\n'
 	
+		if(widget.name=='Call') {
+			const methodParam = findAndRemoveParam(widget, 'method', true)
+			if(!methodParam || !methodParam.value) throw 'call tags requires a method property'
+			const method = methodParam.value
+			return multiline(
+				`${method}(`,
+				indent(renderParams(widget, fields, options), options.indentation),
+				')'
+			)
+		}
+
 		if(widget.name=='Slot') {
 			// if the slot has a direct value, render that value
 			const valueParam = findParam(widget, undefined, true)
@@ -286,7 +250,6 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 			}
 		}
 		return renderedParams.join(',\n')
-		
 	}
 	
 	/**
