@@ -198,7 +198,8 @@ export function startWatching(dir: string, configFileName: string, watch: boolea
 		const templateName = 'flutter'
 		const parsed: Block = pugload.file(file, {
 			lex: puglex,
-			parse: pugparse
+			parse: pugparse,
+			basedir: dir
 		})
 		const linked: Block = puglinker(parsed)
 		addPugLineAttributes(linked)
