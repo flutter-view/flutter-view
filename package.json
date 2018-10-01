@@ -28,6 +28,8 @@
     "pug": "^2.0.3",
     "pug-code-gen": "^2.0.1",
     "pug-lexer": "^4.0.0",
+    "pug-linker": "^3.0.5",
+    "pug-load": "^2.0.11",
     "pug-parser": "^5.0.0",
     "pug-runtime": "^2.0.4",
     "style-parser": "^1.1.1"

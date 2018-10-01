@@ -18,6 +18,8 @@ import * as pugparse from 'pug-parser'
 import * as puglex from 'pug-lexer'
 import * as pugcodegen from 'pug-code-gen'
 import * as pugwrap from 'pug-runtime/wrap'
+import * as pugload from 'pug-load'
+import * as puglinker from 'pug-linker'
 
 export interface RenderPlugin {
 	transformWidget(widget: Widget, options: Options) : Widget
@@ -194,11 +196,13 @@ export function startWatching(dir: string, configFileName: string, watch: boolea
 	
 	function renderPugFileAsHtml(file: string) : string {
 		const templateName = 'flutter'
-		const pug = fs.readFileSync(file).toString()
-		const lexed = puglex(pug)
-		const parsed: Block = pugparse(lexed)
-		addPugLineAttributes(parsed)
-		const codegenfn = pugcodegen(parsed, {
+		const parsed: Block = pugload.file(file, {
+			lex: puglex,
+			parse: pugparse
+		})
+		const linked: Block = puglinker(parsed)
+		addPugLineAttributes(linked)
+		const codegenfn = pugcodegen(linked, {
 			compileDebug: false,
 			pretty: true,
 			inlineRuntimeFunctions: false,
