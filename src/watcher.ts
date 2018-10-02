@@ -62,6 +62,7 @@ const defaultOptions: Options = {
 		"./plugins/process-scoped-animation-tag",
 		"./plugins/process-scoped-tag",
 		"./plugins/process-reactive-tag",
+		"./plugins/process-assign-tag",
 		"./plugins/process-as-param",
 		"./plugins/process-array-tag",
 		"./plugins/automatic-columns",
