@@ -19,6 +19,11 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		includeResolved: true
 	})
 
+	const fitParam = findAndRemoveParam(widget, 'fit', {
+		includeExpressions: false,
+		includeResolved: true
+	})
+
 	const paddingParam = findAndRemoveParam(widget, 'padding', {
 		includeExpressions: false,
 		includeResolved: true
@@ -71,6 +76,17 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			name: 'height',
 			type: 'expression',
 			value: parseStyleDoubleValue(heightParam.value.toString()),
+			resolved: true
+		})
+	}
+
+
+	if (fitParam && fitParam.value) {
+		widget.params.push({
+			class: 'param',
+			name: 'fit',
+			type: 'expression',
+			value: `BoxFit.${fitParam.value}`,
 			resolved: true
 		})
 	}
