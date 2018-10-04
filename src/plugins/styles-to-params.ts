@@ -22,7 +22,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		const styleRules = styleparser(style)
 		for(const attr in styleRules) {
 			let name: string = attr
-			let value = styleRules[attr]
+			let value: string = styleRules[attr]
 			let type: 'expression' | 'literal' = 'literal'
 			if(attr.startsWith(':')) {
 				type = 'expression'
@@ -37,6 +37,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 				resolved = true
 				value = value.substring(1)
 			}
+			value = value.replace(' [', '[') // css adds space between name and block bracket
 			widget.params.push({
 				class: 'param',
 				type: type,

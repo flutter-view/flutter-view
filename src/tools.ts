@@ -87,7 +87,7 @@ export function parseStyleColor(color: string) : string {
 	if(color.length == 7 && color.startsWith('#') && color) {
 		return `Color(0xFF${color.substring(1, 7).toUpperCase()})` // Color(0xFFB74093)
 	}
-	const shadeRegExp = /(\w+)\s#(\d{3})/g
+	const shadeRegExp = /(\w+)\[(\d{3})\]/g
 	const match = shadeRegExp.exec(color)
 	if(match) {
 		const flutterColor = match[1]
@@ -156,7 +156,7 @@ export function parseStyleCrossAxisSize(alignment: string) : string {
 }
 
 export function parseTRBLStyle(style: string) : { top?: string, right?: string, bottom?: string, left?: string } {
-	const regexp = /[.a-z0-9\-\_\*\:\.\,\(\)]+/gi
+	const regexp = /[.a-z0-9\-\_\*\:\.\,\(\)\[\]]+/gi
 	const matches = style.match(regexp)
 	switch (matches.length) {
 		case 1: return {
@@ -189,7 +189,7 @@ export function parseTRBLStyle(style: string) : { top?: string, right?: string, 
 export type Border = { width?: string, style?: string, color?: string }
 
 export function parseBorderStyle(border: string) : Border {
-	const regexp = /[.a-z0-9\-\.\,\(\)]+/gi
+	const regexp = /[.a-z0-9\-\.\,\(\)\[\]]+/gi
 	const matches = border.match(regexp)
 	switch (matches.length) {
 		case 1: {
