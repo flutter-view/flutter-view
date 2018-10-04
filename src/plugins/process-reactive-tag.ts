@@ -7,12 +7,12 @@ import { Options } from '../watcher';
  * 
  * It replaces this:
  * 
- * reactive(model='someModel')
+ * reactive(watch='someModel' name=)
  *     child
  * 
  * With this:
  * 
- * reactive-model(model='someModel')
+ * reactive-widget(watch='someModel')
  *     function(as='builder' params='context, model')
  *         child
  * 
@@ -21,11 +21,13 @@ import { Options } from '../watcher';
  * @return the transformed widget tree
  */
 export function transformWidget(widget: Widget, options: Options): Widget {
-	if(widget.name=='Reactive') {
-		const listenableParam = findParam(widget, 'listenable', true)
-		if (listenableParam != null) listenableParam.value = `${listenableParam.value} as Listenable`
-		const isReactiveListener = listenableParam != null
+	const watchParam = findParam(widget, 'watch', true)
 
+	if(widget.name=='Reactive' && watchParam != null && watchParam.value != null) {
+		watchParam.value = `${watchParam.value} as Listenable`
+		watchParam.type = 'expression'
+		const nameParam = findAndRemoveParam(widget, 'name')
+		const name = (nameParam && nameParam.value) ? nameParam.value : '$'
 		const asParam = findParam(widget, 'as', true)
 		const children = getWidgetChildren(widget)
 		findAndRemoveParam(widget, 'children')
@@ -46,7 +48,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 						class: 'param',
 						type: 'literal',
 						name: 'params',
-						value: `context, ${isReactiveListener ? 'listenable' : 'model'}`,
+						value: `context, ${name}`,
 						resolved: true
 					},
 					{
@@ -58,7 +60,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 					}
 				]
 			}
-			widget.name = isReactiveListener ? 'ReactiveListener' : 'ReactiveModel'
+			widget.name = 'ReactiveWidget'
 			widget.params.push({
 					class: 'param',
 					type: 'widget',
