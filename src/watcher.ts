@@ -69,6 +69,7 @@ const defaultOptions: Options = {
 		"./plugins/process-container-text-style",
 		"./plugins/process-container-style",
 		"./plugins/process-layout-style",
+		"./plugins/process-color-style",
 		"./plugins/process-positioned-tag",
 		"./plugins/process-axis-alignment",
 		"./plugins/process-text"

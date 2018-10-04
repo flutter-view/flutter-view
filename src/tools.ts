@@ -87,6 +87,13 @@ export function parseStyleColor(color: string) : string {
 	if(color.length == 7 && color.startsWith('#') && color) {
 		return `Color(0xFF${color.substring(1, 7).toUpperCase()})` // Color(0xFFB74093)
 	}
+	const shadeRegExp = /(\w+)\s#(\d{3})/g
+	const match = shadeRegExp.exec(color)
+	if(match) {
+		const flutterColor = match[1]
+		const flutterShade = match[2]
+		return `Colors.${flutterColor}.shade${flutterShade}`
+	}
 	if(color.indexOf('.') < 0 && color.indexOf('(') < 0) {
 		return `Colors.${color}`
 	}
