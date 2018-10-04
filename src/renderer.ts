@@ -95,7 +95,10 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 		if(!widget) return '\n'
 	
 		if(widget.name=='Call') {
-			const methodParam = findAndRemoveParam(widget, 'method', true)
+			const methodParam = findAndRemoveParam(widget, 'method', {
+				includeExpressions: true,
+				includeResolved: true
+			})
 			if(!methodParam || !methodParam.value) throw 'call tags requires a method property'
 			const method = methodParam.value
 			return multiline(
@@ -202,7 +205,10 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 		}
 	
 		const idParam = findAndRemoveParam(widget, 'id')
-		findAndRemoveParam(widget, 'class', true)
+		findAndRemoveParam(widget, 'class', {
+			includeExpressions: true,
+			includeResolved: true
+		})
 	
 		let assignment: string = ''
 		if(fields && idParam && idParam.value) {
@@ -215,7 +221,10 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 	
 		// render the widget class with the parameters
 		const genericParams = widget.generics ? `<${widget.generics.join(',')}>` : ''
-		const vConstructorParam = findAndRemoveParam(widget, 'vConstructor', true)
+		const vConstructorParam = findAndRemoveParam(widget, 'vConstructor', {
+			includeExpressions: true,
+			includeResolved: true
+		})
 		const name = vConstructorParam ? `${widget.name}.${vConstructorParam.value}` : widget.name
 		let pugLineComment = ''
 		if(options.showPugLineNumbers && widget.pugLine != null) {

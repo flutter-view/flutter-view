@@ -61,10 +61,23 @@ export function findParam(widget: Widget, name: string, includeResolved?: boolea
 	return widget.params.find(param => param.name==name && (includeResolved || !param.resolved))
 }
 
-/** Find and remove an unresolved parameter in the widget */
-export function findAndRemoveParam(widget: Widget, name: string, includeResolved?: boolean) : Param | null {
+/** Find and remove a parameter in the widget */
+export function findAndRemoveParam(
+		widget: Widget, 
+		name: string, 
+		options: { includeResolved?: boolean, includeExpressions?: boolean } = 
+			{ includeExpressions: true, includeResolved: true }
+	) : Param | null {
 	if(!widget.params) return null
-	const param = widget.params.find(param => param.name==name && (includeResolved || !param.resolved))
+	function filter(param: Param) : boolean {
+		if(param.name != name) return false
+		if(options != null) {
+			if(!options.includeResolved && !param.resolved) return false
+			if(!options.includeExpressions && param.type == 'expression') return false
+		}
+		return true
+	}
+	const param = widget.params.find(filter)
 	if(param) pull(widget.params, param)
 	return param
 }

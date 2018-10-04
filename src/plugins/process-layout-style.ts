@@ -6,22 +6,48 @@ type Borders = { top?: Border, right?: Border, bottom?: Border, left?: Border }
 
 export function transformWidget(widget: Widget, options: Options): Widget {
 	
-	const widthParam = findAndRemoveParam(widget, 'width')
-	const heightParam = findAndRemoveParam(widget, 'height')
+	const widthParam = findAndRemoveParam(widget, 'width', {
+		includeExpressions: false,
+		includeResolved: true
+	})
+	const heightParam = findAndRemoveParam(widget, 'height', {
+		includeExpressions: false,
+		includeResolved: true
+	})
+	const sizeParam = findAndRemoveParam(widget, 'size', {
+		includeExpressions: false,
+		includeResolved: true
+	})
 
-	const paddingParam = findAndRemoveParam(widget, 'padding')
+	const paddingParam = findAndRemoveParam(widget, 'padding', {
+		includeExpressions: false,
+		includeResolved: true
+	})
 	const paddingTopParam = findAndRemoveParam(widget, 'paddingTop')
 	const paddingRightParam = findAndRemoveParam(widget, 'paddingRight')
 	const paddingBottomParam = findAndRemoveParam(widget, 'paddingBottom')
 	const paddingLeftParam = findAndRemoveParam(widget, 'paddingLeft')
 
-	const marginParam = findAndRemoveParam(widget, 'margin')
+	const marginParam = findAndRemoveParam(widget, 'margin', {
+		includeExpressions: false,
+		includeResolved: true
+	})
 	const marginTopParam = findAndRemoveParam(widget, 'marginTop')
 	const marginRightParam = findAndRemoveParam(widget, 'marginRight')
 	const marginBottomParam = findAndRemoveParam(widget, 'marginBottom')
 	const marginLeftParam = findAndRemoveParam(widget, 'marginLeft')
 
 	// dimensions
+
+	if (sizeParam && sizeParam.value) {
+		widget.params.push({
+			class: 'param',
+			name: 'size',
+			type: 'expression',
+			value: parseStyleDoubleValue(sizeParam.value.toString()),
+			resolved: true
+		})
+	}
 
 	if (widthParam && widthParam.value) {
 		widget.params.push({
@@ -89,15 +115,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 
 
 	// margin
-	if(marginParam && marginParam.value && marginParam.type == 'expression') {
-		widget.params.push({
-			class: 'param',
-			name: 'margin',
-			type: 'expression',
-			value: marginParam.value.toString(),
-			resolved: true
-		})
-	} else {
+	if(marginParam && marginParam.value) {
 		let margins: { top?: string, right?: string, bottom?: string, left?: string } = {}
 		if (marginParam && marginParam.value) {
 			margins = parseTRBLStyle(marginParam.value.toString())

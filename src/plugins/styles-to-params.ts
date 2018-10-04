@@ -12,7 +12,10 @@ import { Options } from '../watcher';
  */
 export function transformWidget(widget: Widget, options: Options): Widget {
 	
-	const styleParam = findAndRemoveParam(widget, 'style', false)
+	const styleParam = findAndRemoveParam(widget, 'style', {
+		includeExpressions: false,
+		includeResolved: true
+	})
 
 	if(styleParam && styleParam.value) {
 		const style = styleParam.value as string

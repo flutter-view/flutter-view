@@ -28,7 +28,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 
 		const asParam = findParam(widget, 'as', true)
 		const children = getWidgetChildren(widget)
-		findAndRemoveParam(widget, 'children', true)
+		findAndRemoveParam(widget, 'children')
 		if(children.length > 0) {
 			const functionWidget: Widget = {
 				class: 'widget',

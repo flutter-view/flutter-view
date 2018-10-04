@@ -24,7 +24,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		// we cannot remove while iterating the children, so we do this in two steps:
 		// 1) find all the children to be moved, and what prop to put them 
 		for(let child of children) {
-			const asParam = findAndRemoveParam(child, 'as', true)
+			const asParam = findAndRemoveParam(child, 'as')
 			if(asParam) {
 				params.push({ 
 					name: asParam.value.toString(), 
@@ -48,7 +48,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 	const childParam = findParam(widget, 'child', true)
 	if(childParam) {
 		const child = childParam.value as Widget
-		const asParam = findAndRemoveParam(child, 'as', true)
+		const asParam = findAndRemoveParam(child, 'as')
 		if(asParam) {
 			childParam.name = camelCase(asParam.value.toString())
 		}
