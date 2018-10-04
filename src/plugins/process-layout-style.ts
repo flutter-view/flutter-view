@@ -1,5 +1,5 @@
 import { Widget } from '../models/flutter-model';
-import { applyOnDescendants, Border, findAndRemoveParam, parseStyleDoubleValue, parseTRBLStyle } from '../tools';
+import { applyOnDescendants, Border, findAndRemoveParam, parseStyleDoubleValue, parseTRBLStyle, toBorderRadiusCode } from '../tools';
 import { Options } from '../watcher';
 
 type Borders = { top?: Border, right?: Border, bottom?: Border, left?: Border }
@@ -36,6 +36,12 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 	const marginRightParam = findAndRemoveParam(widget, 'marginRight')
 	const marginBottomParam = findAndRemoveParam(widget, 'marginBottom')
 	const marginLeftParam = findAndRemoveParam(widget, 'marginLeft')
+
+	const borderRadiusParam = findAndRemoveParam(widget, 'borderRadius', {
+		includeExpressions: false,
+		includeResolved: true
+	})
+
 
 	// dimensions
 
@@ -149,6 +155,18 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		}
 	}
 
+
+	// border radius
+
+	if (borderRadiusParam && borderRadiusParam.value) widget.params.push({
+		class: 'param',
+		name: 'borderRadius',
+		type: 'expression',
+		value: toBorderRadiusCode(borderRadiusParam.value.toString()),
+		resolved: true
+	})
+
+	
 	// also apply the plugin to the rest of the widget tree of this widget
 	applyOnDescendants(widget, descendant => transformWidget(descendant, options))
 

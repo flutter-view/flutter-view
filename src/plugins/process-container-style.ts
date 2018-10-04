@@ -1,5 +1,5 @@
 import { Param, Widget } from '../models/flutter-model';
-import { applyOnDescendants, Border, findAndRemoveParam, parseBorderStyle, parseBoxShadow, parseStyleBackgroundSize, parseStyleColor, parseStyleDoubleValue, parseStyleRepeat, parseStyleUrl, parseTRBLStyle, unquote } from '../tools';
+import { applyOnDescendants, Border, findAndRemoveParam, parseBorderStyle, parseBoxShadow, parseStyleBackgroundSize, parseStyleColor, parseStyleDoubleValue, parseStyleRepeat, parseStyleUrl, parseTRBLStyle, unquote, toBorderRadiusCode } from '../tools';
 import { Options } from '../watcher';
 
 type Borders = { top?: Border, right?: Border, bottom?: Border, left?: Border }
@@ -310,23 +310,6 @@ function toBorderWidget(borders: Borders): Widget {
 		})
 	}
 	return borderWidget
-}
-
-function toBorderRadiusCode(radius: string): string {
-	function toRadius(value: string) {
-		if (parseFloat(value)) {
-			return `Radius.circular(${parseStyleDoubleValue(value)})`
-		} else {
-			return unquote(value)
-		}
-	}
-	const radiusValue = parseTRBLStyle(radius)
-	const params: string[] = []
-	if (radiusValue.top) params.push(`topLeft: ${toRadius(radiusValue.top)}`)
-	if (radiusValue.right) params.push(`topRight: ${toRadius(radiusValue.right)}`)
-	if (radiusValue.bottom) params.push(`bottomRight: ${toRadius(radiusValue.bottom)}`)
-	if (radiusValue.left) params.push(`bottomLeft: ${toRadius(radiusValue.left)}`)
-	return `BorderRadius.only(${params.join(', ')})`
 }
 
 function toShapeCode(shape: string): string {
