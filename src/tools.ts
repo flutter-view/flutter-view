@@ -3,6 +3,12 @@ import { Param, Widget } from './models/flutter-model';
 import { Options, RenderPlugin } from './watcher';
 import { camelCase, upperCaseFirst } from 'change-case';
 
+/**
+ * Remove starting and ending double or single quotes.
+ * Only removes if these quotes are of the same type,
+ * and at the start and end of the text.
+ * @param text the text to remove the quotes from
+ */
 export function unquote(text: string): string {
 	if (!text) return ''
 	if (text.startsWith('"') && text.endsWith('"')) {
@@ -14,14 +20,32 @@ export function unquote(text: string): string {
 	return text
 }
 
+/**
+ * Join multiple lines of text with newlines.
+ * Same as lines.join('\n\)
+ * @param lines 
+ */
 export function multiline(...lines: string[]): string {
 	return lines.join('\n')
 }
 
+/**
+ * Create a deep clone of the object by converting it
+ * to JSON and back to an object. Only works with data objects.
+ * Note: can be slow, so only use when necessary.
+ * @param object the object to clone
+ */
 export function clone(object: any) {
 	return JSON.parse(JSON.stringify(object))
 }
 
+/**
+ * Perform a deep merge, including the merging of arrays.
+ * By default lodash.merge does not merge arrays.
+ * @param object the original object
+ * @param other the object to merge with
+ * @returns the merged object
+ */
 export function merge(object, other) {
 	function customizer(objValue, srcValue) {
 		if (isArray(objValue)) {

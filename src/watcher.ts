@@ -66,8 +66,9 @@ const defaultOptions: Options = {
 		"./plugins/process-as-param",
 		"./plugins/process-array-tag",
 		"./plugins/automatic-columns",
-		"./plugins/process-text-style",
+		"./plugins/process-container-text-style",
 		"./plugins/process-container-style",
+		"./plugins/process-layout-style",
 		"./plugins/process-positioned-tag",
 		"./plugins/process-axis-alignment",
 		"./plugins/process-text"

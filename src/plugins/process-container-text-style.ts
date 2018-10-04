@@ -3,7 +3,17 @@ import { Param, Widget } from '../models/flutter-model';
 import { applyOnDescendants, findAndRemoveParam, findParam, parseStyleColor, parseStyleDoubleValue, unquote } from '../tools';
 import { Options } from '../watcher';
 
+/**
+ * Processes text styles on a container, and if any styles are found, it wraps the container
+ * with a DefaultTextStyle wrapper widget, which applies those styles on the container and
+ * its descendants.
+ */
 export function transformWidget(widget: Widget, options: Options): Widget {
+
+	if(widget.name != 'Container' && widget.name != 'AnimatedContainer') {
+		applyOnDescendants(widget, descendant=>transformWidget(descendant, options))
+		return widget
+	}
 
 	const fontSizeParam = findAndRemoveParam(widget, 'fontSize')
 	const fontColorParam = findAndRemoveParam(widget, 'color')
@@ -78,11 +88,13 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 	}
 
 	if(fontWeightParam) {
+		const value = unquote(fontWeightParam.value.toString())
+		const fontWeightProperty = parseInt(value) ? 'w' + value : value
 		textStyleParams.push({
 			class: 'param',
 			name: 'fontWeight',
 			type: 'expression',
-			value: `FontWeight.${unquote(fontWeightParam.value.toString())}`,
+			value: `FontWeight.${fontWeightProperty}`,
 			resolved: true
 		})
 	}
