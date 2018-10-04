@@ -258,7 +258,8 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 				}
 			}
 		}
-		return renderedParams.join(',\n')
+		const trailing = paramsToRender.length > 0 ? ',' : ''
+		return renderedParams.join(',\n') + trailing
 	}
 	
 	/**
