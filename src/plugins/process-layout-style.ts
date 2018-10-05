@@ -91,7 +91,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'param',
 			name: 'fit',
 			type: 'expression',
-			value: `BoxFit.${fitParam.value}`,
+			value: `BoxFit.${camelCase(fitParam.value.toString())}`,
 			resolved: true
 		})
 	}
