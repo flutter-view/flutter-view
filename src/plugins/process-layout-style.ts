@@ -1,6 +1,7 @@
 import { Widget } from '../models/flutter-model';
 import { applyOnDescendants, Border, findAndRemoveParam, parseStyleDoubleValue, parseTRBLStyle, toBorderRadiusCode } from '../tools';
 import { Options } from '../watcher';
+import { camelCase, upperCaseFirst } from 'change-case';
 
 type Borders = { top?: Border, right?: Border, bottom?: Border, left?: Border }
 
@@ -47,6 +48,11 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		includeResolved: true
 	})
 
+	const alignmentParam = findAndRemoveParam(widget, 'alignment', {
+		includeExpressions: false,
+		includeResolved: true
+	})
+
 
 	// dimensions
 
@@ -80,13 +86,24 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		})
 	}
 
-
 	if (fitParam && fitParam.value) {
 		widget.params.push({
 			class: 'param',
 			name: 'fit',
 			type: 'expression',
 			value: `BoxFit.${fitParam.value}`,
+			resolved: true
+		})
+	}
+
+	// alignment
+
+	if (alignmentParam && alignmentParam.value) {
+		widget.params.push({
+			class: 'param',
+			name: 'alignment',
+			type: 'expression',
+			value: `Alignment.${camelCase(alignmentParam.value.toString())}`,
 			resolved: true
 		})
 	}
