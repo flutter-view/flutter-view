@@ -51,7 +51,6 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 	 */
 	function renderFlutterView(widget: Widget, options: Options) : string | null {
 		const fields = getFlutterViewParameters(widget)
-		console.log('fvparams', fields)
 		const child = head(getWidgetChildren(widget))
 		let returnType = child.name
 		switch(child.name) {
@@ -74,21 +73,17 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 	 */
 	function getFlutterViewParameters(widget: Widget) : FVParam[] {
 		function toFVParam(param: Param) {
-			console.log('toFVParam', param)
 			const paramValueRegExp = /([a-z\-]+)(\[[a-zA-Z]+\])?(\?)?/g // format: appModel[AppModel]?
 			const match = paramValueRegExp.exec(param.value.toString())
-			const fvparam: FVParam = { name: undefined, optional: true }
-			if(match) {
-				return { 
-					name: camelCase(match[1]), 
-					type: trim(match[2], '[]'),
-					optional: match[3] == '?'
-				}
-			} else throw `Invalid flutter-view parameter format. passed was: ${JSON.stringify(param, null, 2)}`
+			return match ? { 
+				name: camelCase(match[1]), 
+				type: trim(match[2], '[]'),
+				optional: match[3] == '?'
+			} : null
 		}
 		if(widget.params) {
 			return widget.params
-				.filter(p=>p.type=='expression' && !p.resolved)
+				.filter(p=>p.type=='expression' && !p.resolved && p.value)
 				.map(toFVParam)
 				.filter(p=>p)
 		} else {
@@ -99,12 +94,17 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 	/**
 	 * Renders the constructor of a flutter view
 	 * @param name The name of the flutter view
-	 * @param fields the flutter view fields to add to the constructor
+	 * @param params the flutter view fields to add to the constructor
 	 * @returns the generated dart code
 	 */
-	function renderFlutterViewConstructor(name: string, fields: { name: string, type?: string, value?: string }[]) : string {
-		if(fields.length > 0) {
-			return `${name}({ ${fields.map(f=>`${f.name}`).join(', ')} })`
+	function renderFlutterViewConstructor(name: string, params: FVParam[]) : string {
+		function renderParameter(param: FVParam) : string {
+			const required = !param.optional ? '@required ' : ''
+			const declaration = param.type ? `${param.type} ${param.name}` : param.name
+			return required + declaration
+		}
+		if(params.length > 0) {
+			return `${name}({ ${params.map(param=>renderParameter(param)).join(', ')} })`
 		} else {
 			return `${name}()`
 		}
