@@ -1,13 +1,16 @@
 import * as indent from 'indent-string';
-import { pull, union, head, concat } from 'lodash';
+import { pull, union, head, concat, trim } from 'lodash';
 import { Param, Widget } from './models/flutter-model';
 import { findAndRemoveParam, findParam, multiline, unquote, getWidgetChildren } from './tools';
 import { Options } from './watcher';
+import { camelCase, upperCaseFirst } from 'change-case';
 
-type Field = { 
+/** A flutter-view parameter */
+type FVParam = { 
 	name: string, 
 	type?: string, 
-	value?: string
+	value?: string,
+	optional?: boolean
 }
 
 /**
@@ -46,9 +49,9 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 	 * @param options flutter-view options
 	 * @returns the generated dart code
 	 */
-
 	function renderFlutterView(widget: Widget, options: Options) : string | null {
-		const fields = getClassConstructorFields(widget)
+		const fields = getFlutterViewParameters(widget)
+		console.log('fvparams', fields)
 		const child = head(getWidgetChildren(widget))
 		let returnType = child.name
 		switch(child.name) {
@@ -64,6 +67,35 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 		)
 	}
 	
+	/**
+	 * Extract the flutter-view params from the top level widget
+	 * @param widget a top level widget, representing the widget function
+	 * @returns a list of fields
+	 */
+	function getFlutterViewParameters(widget: Widget) : FVParam[] {
+		function toFVParam(param: Param) {
+			console.log('toFVParam', param)
+			const paramValueRegExp = /([a-z\-]+)(\[[a-zA-Z]+\])?(\?)?/g // format: appModel[AppModel]?
+			const match = paramValueRegExp.exec(param.value.toString())
+			const fvparam: FVParam = { name: undefined, optional: true }
+			if(match) {
+				return { 
+					name: camelCase(match[1]), 
+					type: trim(match[2], '[]'),
+					optional: match[3] == '?'
+				}
+			} else throw `Invalid flutter-view parameter format. passed was: ${JSON.stringify(param, null, 2)}`
+		}
+		if(widget.params) {
+			return widget.params
+				.filter(p=>p.type=='expression' && !p.resolved)
+				.map(toFVParam)
+				.filter(p=>p)
+		} else {
+			return []
+		}
+	}
+
 	/**
 	 * Renders the constructor of a flutter view
 	 * @param name The name of the flutter view
@@ -326,21 +358,6 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 		)
 	}
 
-}
-
-/**
- * Extract the fields of the widget function from the top level widget
- * @param widget a top level widget, representing the widget function
- * @returns a list of fields
- */
-function getClassConstructorFields(widget: Widget) : Field[] {
-	if(widget.params) {
-		return widget.params
-			.filter(p=>p.type=='expression')
-			.map(p=>({ name: p.name, value: (p.value ? p.value.toString() : null) }))
-	} else {
-		return []
-	}
 }
 
 /**
