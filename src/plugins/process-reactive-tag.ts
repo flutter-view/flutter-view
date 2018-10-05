@@ -24,7 +24,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 	const watchParam = findParam(widget, 'watch', true)
 
 	if(widget.name=='Reactive' && watchParam != null && watchParam.value != null) {
-		watchParam.value = `${watchParam.value} as Listenable`
+		watchParam.value = watchParam.value
 		watchParam.type = 'expression'
 		const nameParam = findAndRemoveParam(widget, 'name')
 		const name = (nameParam && nameParam.value) ? nameParam.value : '$'
