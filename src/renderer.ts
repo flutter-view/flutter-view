@@ -221,13 +221,13 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 			return multiline(
 				(result.index)
 					? multiline(
-						`${result.list}.asMap().entries.map((entry) {`, 
+						`(${result.list} as List).asMap().entries.map((entry) {`, 
 						indent(multiline(
 							`final index = entry.key;`, 
 							`final ${result.param} = entry.value;`
 						), options.indentation)
 					)
-					: `${result.list}.map<Widget>((${result.param}) {`,
+					: `(${result.list} as List).map((${result.param}) {`,
 				indent(multiline(
 					`return`,
 					renderWidget(widget, options)+';'
