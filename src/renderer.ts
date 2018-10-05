@@ -58,31 +58,31 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 		}
 		return multiline(
 			'// ignore: non_constant_identifier_names',
-			`${returnType} ${renderFunctionConstructor(widget.name, fields)} {`,
-				indent(renderBuildBody(child, null, options), options.indentation),
+			`${returnType} ${renderFlutterViewConstructor(widget.name, fields)} {`,
+				indent(renderFlutterViewBody(child, options), options.indentation),
 			`}`
 		)
 	}
 	
-	function renderBuildBody(widget: Widget, fields: Field[], options: Options) {
-		const widgetCode = renderWidget(widget, fields, options)
-		return `return ${widgetCode};`;
-	}
-	
 	/**
-	 * Renders the constructor of the widget function
-	 * @param name The name of the function
-	 * @param fields the widget function fields to add to the constructor
+	 * Renders the constructor of a flutter view
+	 * @param name The name of the flutter view
+	 * @param fields the flutter view fields to add to the constructor
 	 * @returns the generated dart code
 	 */
-	function renderFunctionConstructor(name: string, fields: { name: string, type?: string, value?: string }[]) : string {
+	function renderFlutterViewConstructor(name: string, fields: { name: string, type?: string, value?: string }[]) : string {
 		if(fields.length > 0) {
 			return `${name}({ ${fields.map(f=>`${f.name}`).join(', ')} })`
 		} else {
 			return `${name}()`
 		}
 	}
-	
+
+	function renderFlutterViewBody(widget: Widget, options: Options) {
+		const widgetCode = renderWidget(widget, options)
+		return `return ${widgetCode};`;
+	}
+
 	/**
 	 * The most important method, this one recursively builds the whole tree into code.
 	 * It will go into the parameters of the widget, extract the widgets from there, and
@@ -91,7 +91,7 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 	 * @param options the flutter-view options
 	 * @returns the generated dart code
 	 */
-	function renderWidget(widget: Widget, fields: Field[], options: Options) : string {
+	function renderWidget(widget: Widget, options: Options) : string {
 		if(!widget) return '\n'
 	
 		if(widget.name=='Call') {
@@ -103,7 +103,7 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 			const method = methodParam.value
 			return multiline(
 				`${method}(`,
-				indent(renderParams(widget, fields, options), options.indentation),
+				indent(renderParams(widget, options), options.indentation),
 				')'
 			)
 		}
@@ -137,7 +137,7 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 						`(${ifParam.value}) ?`,
 						indent(multiline(
 							'// ignore: dead_code',
-							renderWidget(child, fields, options)
+							renderWidget(child, options)
 						), options.indentation)
 					) 
 				} else {
@@ -145,7 +145,7 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 						`true ?`,
 						indent(multiline(
 							'// ignore: dead_code',
-							renderWidget(child, fields, options)
+							renderWidget(child, options)
 						), options.indentation)
 					) 
 				}
@@ -163,7 +163,7 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 			
 			return multiline(
 				`(${params}) {`,
-				indent(`return ${renderWidget(child, fields, options)};`, options.indentation),
+				indent(`return ${renderWidget(child, options)};`, options.indentation),
 				`}`
 			)
 		}
@@ -176,7 +176,7 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 			pull(widget.params, vIfParam)
 			const elseValue = (vForParam && vForParam.value) ? '[Container()]' : 'Container()'
 			if(vIfParam.value) {
-				return `${unquote(vIfParam.value.toString())} ? ${renderWidget(widget, fields, options)} : ${elseValue}`
+				return `${unquote(vIfParam.value.toString())} ? ${renderWidget(widget, options)} : ${elseValue}`
 			} else {
 				console.warn(`${widget.name} has a v-if without a condition`)
 			}
@@ -198,7 +198,7 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 					: `${result.list}.map<Widget>((${result.param}) {`,
 				indent(multiline(
 					`return`,
-					renderWidget(widget, fields, options)+';'
+					renderWidget(widget, options)+';'
 				), options.indentation),
 				`}).toList()`,
 			)
@@ -209,15 +209,6 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 			includeExpressions: true,
 			includeResolved: true
 		})
-	
-		let assignment: string = ''
-		if(fields && idParam && idParam.value) {
-			fields.push({
-				name: idParam.value.toString(),
-				type: widget.name
-			})
-			assignment = `${idParam.value.toString()} = `
-		}
 	
 		// render the widget class with the parameters
 		const genericParams = widget.generics ? `<${widget.generics.join(',')}>` : ''
@@ -231,8 +222,8 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 			pugLineComment = `// project://${pugFileName}#${widget.pugLine},${widget.pugColumn}`
 		}
 		return multiline(
-			`${widget.constant?'const ':''}${assignment}${name}${genericParams}( ${pugLineComment}`,
-			indent(renderParams(widget, fields, options), options.indentation),
+			`${widget.constant?'const ':''}${name}${genericParams}( ${pugLineComment}`,
+			indent(renderParams(widget, options), options.indentation),
 			`)`
 		)
 		
@@ -245,16 +236,16 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 	 * @param options the flutter-view options
 	 * @returns the generated dart code
 	 */
-	function renderParams(widget: Widget, fields: Field[], options: Options) : string {
+	function renderParams(widget: Widget, options: Options) : string {
 		const renderedParams : string[] = []
 		const paramsToRender = widget.params ? widget.params.filter(param=>param.name!='const') : null
 		if(paramsToRender) {
 			for(var param of paramsToRender) {
 				if(param.name) {
 					const name = unquote(param.name)
-					renderedParams.push(`${name}: ${renderParamValue(param, fields, options)}`)
+					renderedParams.push(`${name}: ${renderParamValue(param, options)}`)
 				} else {
-					renderedParams.push(renderParamValue(param, fields, options))
+					renderedParams.push(renderParamValue(param, options))
 				}
 			}
 		}
@@ -269,7 +260,7 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 	 * @param options the flutter-view options
 	 * @returns the generated dart code
 	 */
-	function renderParamValue(param: Param, fields: Field[], options: Options) : string {
+	function renderParamValue(param: Param, options: Options) : string {
 		switch(param.type) {
 			case 'literal': {
 				return `'${param.value}'`
@@ -284,11 +275,11 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 			case 'widget': {
 				const value = param.value as Widget
 				const _const = findParam(value, 'const', true) ? 'const ' : ''
-				return `${_const}${renderWidget(param.value as Widget, fields, options)}`
+				return `${_const}${renderWidget(param.value as Widget, options)}`
 			}
 			case 'array': {
 				const widgets = param.value as Widget[]
-				const values = widgets.map(widget=>`${renderWidget(widget, fields, options)}`)
+				const values = widgets.map(widget=>`${renderWidget(widget, options)}`)
 				return multiline(
 					`[`,
 					indent(values.join(',\n'), options.indentation),
@@ -297,7 +288,7 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 			}
 			case 'widgets': {
 				const widgets = param.value as Widget[]
-				const values = widgets.map(widget=>`${renderWidget(widget, fields, options)}`)
+				const values = widgets.map(widget=>`${renderWidget(widget, options)}`)
 				// in v-for loops we generate arrays. these arrays may already be in an array,
 				// so we will want to flatten these arrays of arrays before adding them
 				return multiline(
