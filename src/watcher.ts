@@ -248,7 +248,7 @@ export function startWatching(dir: string, configFileName: string, watch: boolea
 			}
 			case '.css': case '.sass': {
 				if(isUpdate) {
-					const p = parseFileName(file)
+					const p = parseFileName(relative(process.cwd(), file))
 					const pugFile = `${p.dir}/${p.name}.pug`
 					const htmlFile = `${p.dir}/${p.name}.html`
 					if(fs.existsSync(pugFile)) {
@@ -314,6 +314,7 @@ export function startWatching(dir: string, configFileName: string, watch: boolea
 		if(fs.existsSync(sassFile)) {
 			const cssResult = renderSync({
 				file: sassFile,
+				includePaths: [process.cwd()+'/lib'],
 				outputStyle: 'expanded',
 				indentedSyntax: true
 			})
@@ -324,7 +325,10 @@ export function startWatching(dir: string, configFileName: string, watch: boolea
 		if(css) {
 			// merge the css styles into the html
 			const mergedHtml = juice.inlineContent(html, css, {
-				xmlMode: false
+				xmlMode: false,
+				webResources: {
+					relativeTo: process.cwd()+'/lib'
+				}
 			})
 			return await parse(mergedHtml)
 		} else {
