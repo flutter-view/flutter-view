@@ -73,7 +73,8 @@ const defaultOptions: Options = {
 		"./plugins/process-positioned-tag",
 		"./plugins/process-axis-alignment",
 		"./plugins/process-text",
-		"./plugins/process-number-properties"
+		"./plugins/process-number-properties",
+		"./plugins/process-boolean-properties"
 	],
 	imports: [
 		'package:flutter/material.dart',
