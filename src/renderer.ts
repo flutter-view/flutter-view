@@ -100,7 +100,8 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 	function renderFlutterViewConstructor(name: string, params: FVParam[]) : string {
 		function renderParameter(param: FVParam) : string {
 			const required = !param.optional ? '@required ' : ''
-			const declaration = param.type ? `${param.type} ${param.name}` : param.name
+			const defaultValue = param.type == 'bool' ? ' = false' : ''
+			const declaration = param.type ? `${param.type} ${param.name}${defaultValue}` : param.name
 			return required + declaration
 		}
 		if(params.length > 0) {
