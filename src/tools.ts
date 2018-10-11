@@ -66,15 +66,13 @@ export function findAndRemoveParam(
 		widget: Widget, 
 		name: string, 
 		options: { includeResolved?: boolean, includeExpressions?: boolean } = 
-			{ includeExpressions: true, includeResolved: true }
+			{ includeExpressions: true, includeResolved: false }
 	) : Param | null {
 	if(!widget.params) return null
 	function filter(param: Param) : boolean {
 		if(param.name != name) return false
-		if(options != null) {
-			if(!options.includeResolved && !param.resolved) return false
-			if(!options.includeExpressions && param.type == 'expression') return false
-		}
+		if(!options.includeResolved && param.resolved) return false
+		if(!options.includeExpressions && param.type == 'expression') return false
 		return true
 	}
 	const param = widget.params.find(filter)

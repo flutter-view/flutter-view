@@ -23,7 +23,10 @@ import { Options } from '../watcher';
 export function transformWidget(widget: Widget, options: Options): Widget {
 	if (widget.name=='Assign') {
 		const nameParam = findParam(widget, 'name', true)
-		const valueParam = findAndRemoveParam(widget, 'value')
+		const valueParam = findAndRemoveParam(widget, 'value', {
+			includeExpressions: true,
+			includeResolved: true
+		})
 
 		if (nameParam && valueParam) {
 			valueParam.name = 'value'
@@ -31,7 +34,10 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			widget.params.push(valueParam)
 			const asParam = findParam(widget, 'as', true)
 			const children = getWidgetChildren(widget)
-			findAndRemoveParam(widget, 'children')
+			findAndRemoveParam(widget, 'children', {
+				includeExpressions: true,
+				includeResolved: true
+			})
 			if(children.length > 0) {
 				const functionWidget: Widget = {
 					class: 'widget',

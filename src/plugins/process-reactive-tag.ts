@@ -34,7 +34,10 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		const name = (nameParam && nameParam.value) ? nameParam.value : '$'
 		const asParam = findParam(widget, 'as', true)
 		const children = getWidgetChildren(widget)
-		findAndRemoveParam(widget, 'children')
+		findAndRemoveParam(widget, 'children', {
+			includeExpressions: true,
+			includeResolved: true
+		})
 		if(children.length > 0) {
 			const functionWidget: Widget = {
 				class: 'widget',
