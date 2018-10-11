@@ -13,7 +13,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 
 	const colorParams = widget.params.filter(param=>
 		param.name 
-		&& param.name.toLowerCase().endsWith('color') 
+		&& (param.name.toLowerCase().endsWith('color') || param.name.indexOf('Color') > 0)
 		&& !param.resolved 
 		&& param.type != 'expression')
 
