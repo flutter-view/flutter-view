@@ -80,8 +80,21 @@ export function findAndRemoveParam(
 	return param
 }
 
+export function isThemeStyle(style: string) : boolean {
+	return style.startsWith('theme')
+}
+
+export function parseThemeStyle(style: string) : string | null {
+	const themeRegExp = /theme\(([\w\-]+)\)/g
+	const match = themeRegExp.exec(style)
+	if(!match) return null
+	return `Theme.of(context).${camelCase(match[1])}`
+}
+
 export function parseStyleColor(color: string) : string {
 	if(!color) return ''
+	// const themeStyle = parseThemeStyle(color)
+	// if(themeStyle) return themeStyle
 	if(color.length == 7 && color.startsWith('#') && color) {
 		return `Color(0xFF${color.substring(1, 7).toUpperCase()})` // Color(0xFFB74093)
 	}

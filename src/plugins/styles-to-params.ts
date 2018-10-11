@@ -2,7 +2,7 @@ import { camelCase } from 'change-case';
 import * as decode from 'decode-html';
 import * as styleparser from 'style-parser';
 import { Widget } from '../models/flutter-model';
-import { applyOnDescendants, findAndRemoveParam, unquote } from '../tools';
+import { applyOnDescendants, findAndRemoveParam, unquote, parseThemeStyle } from '../tools';
 import { Options } from '../watcher';
 
 /**
@@ -32,6 +32,11 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 				type = 'expression'
 				value = unquote(value).substring(1)
 			}
+			// const themeStyle = parseThemeStyle(unquote(value))
+			// if(themeStyle) {
+			// 	type = 'expression'
+			// 	value = themeStyle
+			// }
 			let resolved = false
 			if(value.startsWith('^')) {
 				resolved = true

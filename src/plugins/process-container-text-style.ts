@@ -88,13 +88,16 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 	}
 
 	if(fontWeightParam) {
-		const value = unquote(fontWeightParam.value.toString())
-		const fontWeightProperty = parseInt(value) ? 'w' + value : value
+		let value = unquote(fontWeightParam.value.toString())
+		if(fontWeightParam.type == 'literal') {
+			const fontWeightProperty = parseInt(value) ? 'w' + value : value
+			value = `FontWeight.${fontWeightProperty}` 
+		}
 		textStyleParams.push({
 			class: 'param',
 			name: 'fontWeight',
 			type: 'expression',
-			value: `FontWeight.${fontWeightProperty}`,
+			value: value,
 			resolved: true
 		})
 	}
