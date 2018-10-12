@@ -53,10 +53,14 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 		const fields = getFlutterViewParameters(widget)
 		const child = head(getWidgetChildren(widget))
 		let returnType = child.name
-		switch(child.name) {
+		switch(returnType) {
 			case 'Slot':
 			case 'Call': { returnType = 'Widget'; break }
 			case 'Array': { returnType = 'List'; break }
+			default: {
+				const dotPosition = returnType.indexOf('.')
+				if(dotPosition > 0) returnType = returnType.substr(0, dotPosition)
+			}
 		}
 		return multiline(
 			'// ignore: non_constant_identifier_names',

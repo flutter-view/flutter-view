@@ -258,7 +258,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 	const newRootWidget: Widget = {
 		constant: false,
 		class: 'widget',
-		name: 'DefaultTextStyle',
+		name: 'DefaultTextStyle.merge',
 		params: params
 	}
 
