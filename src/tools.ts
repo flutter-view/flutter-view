@@ -85,16 +85,24 @@ export function isThemeStyle(style: string) : boolean {
 }
 
 export function parseThemeStyle(style: string) : string | null {
-	const themeRegExp = /theme\(([\w\-]+)\)/g
-	const match = themeRegExp.exec(style)
-	if(!match) return null
-	return `Theme.of(context).${camelCase(match[1])}`
+	let selector: string
+	if(unquote(style) == style) {
+		const themeRegExp = /theme\(([\w\-\/]+)\)/g
+		const match = themeRegExp.exec(style)
+		if(!match) return null
+		const escaped = match[1].replace(/\//g, 'xxx')
+		const cased = camelCase(escaped)
+		selector = cased.replace(/xxx/g, '.')
+	} else {
+		selector = unquote(style)
+	}
+	return `Theme.of(context).${selector}`
 }
 
 export function parseStyleColor(color: string) : string {
 	if(!color) return ''
-	// const themeStyle = parseThemeStyle(color)
-	// if(themeStyle) return themeStyle
+	const themeStyle = parseThemeStyle(color)
+	if(themeStyle) return themeStyle
 	if(color.length == 7 && color.startsWith('#') && color) {
 		return `Color(0xFF${color.substring(1, 7).toUpperCase()})` // Color(0xFFB74093)
 	}

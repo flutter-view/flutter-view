@@ -13,7 +13,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 
 	for(let param of widget.params) {
 		if(param.value && param.type == 'literal') {
-			const value = unquote(param.value.toString())
+			const value = param.value.toString()
 			const themeStyle = parseThemeStyle(value)
 			if(themeStyle) {
 				param.type = 'expression'

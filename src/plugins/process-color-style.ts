@@ -24,7 +24,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'param',
 			name: param.name,
 			type: 'expression',
-			value: parseStyleColor(unquote(param.value.toString())),
+			value: parseStyleColor(param.value.toString()),
 			resolved: true
 		})
 	}
