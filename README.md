@@ -127,7 +127,50 @@ Some notes:
 - in the html and pug, always use dash-cased instead of camel case, except for in string values.
 - To show the name in a string, we are using normal Dart string interpolation: $name. This means that single parameters can use $param, and if you want to traverse to a property use the Dart ${param.property} notation. For example, if you have a class User with a property name, you could pass the name as ${user.name}.
 
-### Parameter types
+#### Optional parameters
+
+By default, any parameter in a flutter view is required. In rendering to Dart, flutter-view will add a @required annotation to the field. To make a parameter option, add a **?** sign at the end of it. For example:
+
+```pug
+greeting-message(flutter-view :name[String]?)
+	| Hello ${ name ?? 'stranger' }!
+```
+
+#### Typed Parameters
+
+By default, passed parameters are of type *dynamic*. However it is possible and recommended to define the type of a parameter. This will give you code completion in the Dart code, as well as better error checking.
+
+To add a type to a flutter-view parameter definition, add the type in square brackets. For example, to make the earlier greeting message flutter view use typed parameters:
+
+```pug
+greeting-message(flutter-view :name[String] :on-close[Function])
+	| Hello $name!
+	raised-button(@on-pressed='onClose()') close
+```
+
+which will render as:
+
+```dart
+Column GreetingMessage({ @required String name, @required Function onClose }) {
+	return Column(
+		Text(
+			'Hello $name!'
+		),
+		RaisedButton(
+			child: Text(
+				'close'
+			),
+			onPressed: () {
+				onClose();
+			},
+		)
+
+	);
+}
+```
+
+
+### Kinds of Parameters
 
 #### Expression parameters
 

@@ -258,8 +258,8 @@ export function startWatching(dir: string, configFileName: string, watch: boolea
 					} else if(fs.existsSync(htmlFile)) {
 						return await processFile(htmlFile, isUpdate)
 					}
-					throw `no pug or html template found for ${relativeFile}`
-				} else return null
+				}
+				return null
 			}
 		}
 		if(!html) throw `no html found in file ${file}`
