@@ -42,6 +42,7 @@ export interface Options {
 	autowrapChildren?: true, // use a wrapper child if a tag without a children parameter has multiple children in the template
 	autowrapChildrenClass?: string, // the class to use as the child wrapper
 	showPugLineNumbers?: boolean // show Pug line numbers in the dart file?
+	showCommentsInDart?: boolean // show html classes and ids as comment lines in the dart file?
 	reportErrorsInDart?: boolean, // should errors also be reported in the dart file?
 	propagateDelete?: boolean, // should genenerated dart file be deleted if the pug/html file with the same name is deleted?
 	debug?: { // some debugging settings
@@ -106,6 +107,7 @@ const defaultOptions: Options = {
 	autowrapChildren: true,
 	autowrapChildrenClass: 'Column',
 	showPugLineNumbers: true,
+	showCommentsInDart: true,
 	reportErrorsInDart: true,
 	propagateDelete: true,
 	debug: {

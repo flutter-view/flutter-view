@@ -241,6 +241,7 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 			)
 		}
 	
+		// remove id and class attributes
 		const ids = findAndRemoveParam(widget, 'id', {
 			includeExpressions: true,
 			includeResolved: true
@@ -249,16 +250,20 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 			includeExpressions: true,
 			includeResolved: true
 		})
-		let htmlIdentifiers = []
-		if(ids && ids.value) {
-			htmlIdentifiers = concat(htmlIdentifiers, ids.value.toString().split(' '))
-		}
-		if(classes && classes.value) {
-			htmlIdentifiers = concat(htmlIdentifiers, classes.value.toString().split(' '))
-		}
+
+		// create comment line based on ids and classes on the tag
 		let separatorComment : string
-		if(htmlIdentifiers.length > 0) {
-			separatorComment = htmlIdentifiers.map(name=>name.toUpperCase()).join(' / ')
+		if(options.showCommentsInDart) {
+			let htmlIdentifiers = []
+			if(ids && ids.value) {
+				htmlIdentifiers = concat(htmlIdentifiers, ids.value.toString().split(' '))
+			}
+			if(classes && classes.value) {
+				htmlIdentifiers = concat(htmlIdentifiers, classes.value.toString().split(' '))
+			}
+			if(htmlIdentifiers.length > 0) {
+				separatorComment = htmlIdentifiers.map(name=>name.toUpperCase()).join(' / ')
+			}
 		}
 	
 		// render the widget class with the parameters
