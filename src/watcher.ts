@@ -266,7 +266,7 @@ export function startWatching(dir: string, configFileName: string, watch: boolea
 		if(options.debug && options.debug.logHTML) 
 			console.debug(relativeFile, 'HTML:\n' + html)
 
-		// convert the html into an abstract syntax tree, merging any css in the process
+		// convert the html into an abstract syntax tree
 		const ast = await processHtml(file, html)
 		if(!ast) throw `no ast found in html of file ${file}`
 		if(options.debug && options.debug.logHtmlAST) 

@@ -1,7 +1,7 @@
+import { camelCase } from 'change-case';
 import { isArray, mergeWith, pull, tail } from 'lodash';
 import { Param, Widget } from './models/flutter-model';
 import { Options, RenderPlugin } from './watcher';
-import { camelCase, upperCaseFirst } from 'change-case';
 
 /**
  * Remove starting and ending double or single quotes.
@@ -22,11 +22,11 @@ export function unquote(text: string): string {
 
 /**
  * Join multiple lines of text with newlines.
- * Same as lines.join('\n\)
+ * Filters out the nulls
  * @param lines 
  */
 export function multiline(...lines: string[]): string {
-	return lines.join('\n')
+	return lines.filter(line=>!!line).join('\n')
 }
 
 /**

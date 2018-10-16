@@ -241,11 +241,25 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 			)
 		}
 	
-		const idParam = findAndRemoveParam(widget, 'id')
-		findAndRemoveParam(widget, 'class', {
+		const ids = findAndRemoveParam(widget, 'id', {
 			includeExpressions: true,
 			includeResolved: true
 		})
+		const classes = findAndRemoveParam(widget, 'class', {
+			includeExpressions: true,
+			includeResolved: true
+		})
+		let htmlIdentifiers = []
+		if(ids && ids.value) {
+			htmlIdentifiers = concat(htmlIdentifiers, ids.value.toString().split(' '))
+		}
+		if(classes && classes.value) {
+			htmlIdentifiers = concat(htmlIdentifiers, classes.value.toString().split(' '))
+		}
+		let separatorComment : string
+		if(htmlIdentifiers.length > 0) {
+			separatorComment = htmlIdentifiers.map(name=>name.toUpperCase()).join(' / ')
+		}
 	
 		// render the widget class with the parameters
 		const genericParams = widget.generics ? `<${widget.generics.join(',')}>` : ''
@@ -259,6 +273,7 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 			pugLineComment = `// project://${pugFileName}#${widget.pugLine},${widget.pugColumn}`
 		}
 		return multiline(
+			separatorComment ? `\n//-- ${separatorComment} ----------------------------------------------------------` : null,
 			`${widget.constant?'const ':''}${name}${genericParams}( ${pugLineComment}`,
 			indent(renderParams(widget, options), options.indentation),
 			`)`
