@@ -348,6 +348,32 @@ bottom-navigation-bar(:current-index='currentTab')
 
 Here each **BottomNavigationBar** is created as an entry of an array and put in the *items* property of the BottomNavigationBar.
 
+#### Flatten widget arrays
+
+If you add children to an array that are widgets that use *v-for*, you might want to flatten the array.
+
+Say you have have a list of tabs somewhere, and want to render them, you may try this:
+
+```pug
+custom-scroll-view
+	array(as='slivers')
+		.header this is my list
+		.item(v-for='item in items') $item.title
+```
+
+However, the *v-for* will generate an array, so effectively you will have an array in an array. By adding the flatten property, flutter-view will flatten the array before passing it:
+
+```pug
+custom-scroll-view
+	array(as='slivers' flatten)
+		.header this is my list
+		.item(v-for='item in items') $item.title
+```
+
+Now the slivers property is a single list of widgets.
+
+Note: due to generic restrictions, flatten only works on a list of widgets.
+
 ### Passing single items
 
 Sometimes you want to insert a single item into a tree of widgets, by value. This means you do not yet know the tag you will insert, so you can not use the *as* property.

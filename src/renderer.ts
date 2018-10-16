@@ -286,7 +286,7 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 				}
 			}
 		}
-		const trailing = paramsToRender.length > 0 ? ',' : ''
+		const trailing = (paramsToRender && paramsToRender.length > 0) ? ',' : ''
 		return renderedParams.join(',\n') + trailing
 	}
 	
@@ -318,9 +318,9 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 				const widgets = param.value as Widget[]
 				const values = widgets.map(widget=>`${renderWidget(widget, options)}`)
 				return multiline(
-					`__flatten([`,
+					`[`,
 					indent(values.join(',\n'), options.indentation),
-					`])`
+					`]`
 				)
 			}
 			case 'widgets': {
