@@ -59,6 +59,7 @@ const defaultOptions: Options = {
 	indentation: 2,
 	plugins: [
 		"./plugins/styles-to-params",
+		"./plugins/process-display-params",
 		"./plugins/process-theme-style",
 		"./plugins/process-duration-params",
 		"./plugins/process-scoped-animation-tag",
