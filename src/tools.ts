@@ -103,8 +103,23 @@ export function parseStyleColor(color: string) : string {
 	if(!color) return ''
 	const themeStyle = parseThemeStyle(color)
 	if(themeStyle) return themeStyle
+	if(color.length == 4 && color.startsWith('#') && color) {
+		// #xyz => 0xFFxxyyzz
+		const c = color.toUpperCase()
+		return `Color(0xFF${c.charAt(1)}${c.charAt(1)}${c.charAt(2)}${c.charAt(2)}${c.charAt(3)}${c.charAt(3)})` // Color(0xFFB74093)
+	}
+	if(color.length == 5 && color.startsWith('#') && color) {
+		// #xyzO => 0xOOxxyyzz
+		const c = color.toUpperCase()
+		return `Color(0x${c.charAt(4)}${c.charAt(4)}${c.charAt(1)}${c.charAt(1)}${c.charAt(2)}${c.charAt(2)}${c.charAt(3)}${c.charAt(3)})` // Color(0xFFB74093)
+	}
 	if(color.length == 7 && color.startsWith('#') && color) {
+		// #abcdef => 0xFFabcdef
 		return `Color(0xFF${color.substring(1, 7).toUpperCase()})` // Color(0xFFB74093)
+	}
+	if(color.length == 9 && color.startsWith('#') && color) {
+		// #abcdefop => 0xopabcdef
+		return `Color(0x${color.substring(3, 9).toUpperCase()}${color.substring(1, 2).toUpperCase()})`
 	}
 	const shadeRegExp = /(\w+)\[(\d{3})\]/g
 	const match = shadeRegExp.exec(color)
@@ -276,7 +291,7 @@ export function parseStyleUrl(value: string) : { type: 'url' | 'asset', location
 }
 
 export function parseBoxShadow(value: string) : { color?: string, hoffset: string, voffset: string, blur?: string, spread?: string } {
-	const regexp = /([\w\.\(\)\:\_\-\#]+)/g
+	const regexp = /([\w\.\(\)\:\_\-\#\[\]]+)/g
 	const matches = value.match(regexp)
 	let params = []
 	switch (matches.length) {

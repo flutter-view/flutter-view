@@ -354,7 +354,7 @@ function toBoxShadow(boxShadow: { color?: string, hoffset: string, voffset: stri
 	}
 	return {
 		class: 'widget',
-		constant: true,
+		constant: false,
 		name: 'BoxShadow',
 		params: params
 	}
