@@ -27,7 +27,6 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 				includeResolved: true,
 				includeExpressions: true
 			})
-			if(displayParam) console.log('DISPLAY ' + displayParam)
 			if(displayParam && displayParam.value == 'none') {
 				params.push({ 
 					name: displayParam.value.toString(), 
