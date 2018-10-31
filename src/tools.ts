@@ -263,7 +263,8 @@ export function parseBorderStyle(border: string) : Border {
 }
 
 export function parseStyleDoubleValue(value: string) : string {
-	return `(${value}).toDouble()`
+	// return `(${value}).toDouble()` // used to be necessary, but fixed in Dart 2.0
+	return value
 }
 
 /**
