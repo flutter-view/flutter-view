@@ -248,11 +248,11 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		})
 	}
 
-	// if the widget uses vFor, move that vFor to the textstyle instead
-	const vForParam = findParam(widget, 'vFor')
-	if(vForParam) {
-		pull(widget.params, vForParam)
-		params.push(vForParam)
+	// if the widget uses for, move that for to the textstyle instead
+	const forParam = findParam(widget, 'for')
+	if(forParam) {
+		pull(widget.params, forParam)
+		params.push(forParam)
 	}
 
 	const newRootWidget: Widget = {
