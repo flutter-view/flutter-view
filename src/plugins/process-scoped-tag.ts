@@ -12,7 +12,7 @@ import { Options } from '../watcher';
  * 
  * With this:
  * 
- * scoped-model-descendant(v-type='MyModel')
+ * scoped-model-descendant(type='MyModel')
  *     function(as='builder' params='context, widget, app')
  *         child
  * 

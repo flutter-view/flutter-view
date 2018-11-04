@@ -268,11 +268,11 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 	
 		// render the widget class with the parameters
 		const genericParams = widget.generics ? `<${widget.generics.join(',')}>` : ''
-		const vConstructorParam = findAndRemoveParam(widget, 'vConstructor', {
+		const constructorParam = findAndRemoveParam(widget, 'constructor', {
 			includeExpressions: true,
 			includeResolved: true
 		})
-		const name = vConstructorParam ? `${widget.name}.${vConstructorParam.value}` : widget.name
+		const name = constructorParam ? `${widget.name}.${constructorParam.value}` : widget.name
 		let pugLineComment = ''
 		if(options.showPugLineNumbers && widget.pugLine != null) {
 			pugLineComment = `// project://${pugFileName}#${widget.pugLine},${widget.pugColumn}`

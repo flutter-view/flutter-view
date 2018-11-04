@@ -261,12 +261,12 @@ Tags that have *as* as a property, are placed as the child of that name of their
 
 #### Setting generic types
 
-If a widget is generic, that is, if you need to pass a generic parameter, you can do so with the *v-type* property. The value of the property is the name of the generic parameter. If there are multiple generic parameters, pass them both as the value, separated by a comma.
+If a widget is generic, that is, if you need to pass a generic parameter, you can do so with the *type* property. The value of the property is the name of the generic parameter. If there are multiple generic parameters, pass them both as the value, separated by a comma.
 
 For example:
 
 ```pug
-scoped-model(v-type='UserModel' :model='myModel')
+scoped-model(type='UserModel' :model='myModel')
 	...
 ```
 
@@ -295,10 +295,10 @@ ListView(shrinkWrap=true)
 
 However, there are cases where you need to call a specific named constructor, like **ListView.builder()**.
 
-In that case, you can use the *v-constructor* property, which you set to the name of the constructor.
+In that case, you can use the *constructor* property, which you set to the name of the constructor.
 
 ```pug
-list-view(v-constructor='builder' :shrink-wrap='true')
+list-view(constructor='builder' :shrink-wrap='true')
 ```
 
 will generate:
@@ -314,7 +314,7 @@ Some widgets require a function to be passed. A very common example in Flutter i
 For example, to implement ScopedModelDescendant:
 
 ```pug
-scoped-model-descendant(v-type='UserModel')
+scoped-model-descendant(type='UserModel')
 	function(as='builder' params='(context, widget, model')
 		...
 ```

@@ -12,7 +12,7 @@ import { Options } from '../watcher';
  * 
  * With this:
  * 
- * animated-model-controller(v-type='MyAnimModel' :duration='Duration(seconds:1)' :model-fn='model.createHeightAnimModel')
+ * animated-model-controller(type='MyAnimModel' :duration='Duration(seconds:1)' :model-fn='model.createHeightAnimModel')
  *     function(as='builder' params='anim')
  *         child
  * 

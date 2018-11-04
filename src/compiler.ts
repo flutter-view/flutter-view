@@ -93,7 +93,7 @@ function compileTag(tag: Tag, options: Options) : Widget {
 					pugColumn = parseInt(parts[1])
 					break
 				}
-				case 'v-type': {
+				case 'type': {
 					generics = value
 						.split(',')
 						.map(param=>param.trim())
