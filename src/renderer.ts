@@ -168,7 +168,7 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 			 * @param child the child to add to the slot
 			 */
 			function renderSlotChild(child: Widget) {
-				const ifParam = findAndRemoveParam(child, 'vIf')
+				const ifParam = findAndRemoveParam(child, 'if')
 				if(ifParam && ifParam.value) {
 					return multiline(
 						`(${ifParam.value}) ?`,
@@ -205,7 +205,7 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 			)
 		}
 	
-		// if this widget has v-if, write code that either renders the widget,
+		// if this widget has an if property, write code that either renders the widget,
 		// or that replaces it with an empty container.
 		const ifParam = findParam(widget, 'if', true)
 		const forParam = findParam(widget, 'for', true)
@@ -215,11 +215,11 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 			if(ifParam.value) {
 				return `${unquote(ifParam.value.toString())} ? ${renderWidget(widget, options)} : ${elseValue}`
 			} else {
-				console.warn(`${widget.name} has a v-if without a condition`)
+				console.warn(`${widget.name} has an if property without a condition`)
 			}
 		}
 	
-		// if this widget has for, repeatedly render it
+		// if this widget has a for property, repeatedly render it
 		if(forParam) {
 			const result = parseForExpression(forParam.value.toString())
 			pull(widget.params, forParam)
