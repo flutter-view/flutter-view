@@ -2,7 +2,7 @@ import { camelCase } from 'change-case';
 import * as decode from 'decode-html';
 import * as styleparser from 'style-parser';
 import { Widget } from '../models/flutter-model';
-import { applyOnDescendants, findAndRemoveParam, unquote, parseThemeStyle } from '../tools';
+import { applyOnDescendants, findAndRemoveParam, unquote, parseThemeStyle, findParam } from '../tools';
 import { Options } from '../watcher';
 
 /**
@@ -22,6 +22,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		const styleRules = styleparser(style)
 		for(const attr in styleRules) {
 			let name: string = attr
+			if(findParam(widget, name, true)) break
 			let value: string = styleRules[attr]
 			let type: 'expression' | 'literal' = 'literal'
 			if(attr.startsWith(':')) {
