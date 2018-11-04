@@ -350,7 +350,7 @@ Here each **BottomNavigationBar** is created as an entry of an array and put in 
 
 #### Flatten widget arrays
 
-If you add children to an array that are widgets that use *v-for*, you might want to flatten the array.
+If you add children to an array that are widgets that use *for*, you might want to flatten the array.
 
 Say you have have a list of tabs somewhere, and want to render them, you may try this:
 
@@ -358,16 +358,16 @@ Say you have have a list of tabs somewhere, and want to render them, you may try
 custom-scroll-view
 	array(as='slivers')
 		.header this is my list
-		.item(v-for='item in items') $item.title
+		.item(for='item in items') $item.title
 ```
 
-However, the *v-for* will generate an array, so effectively you will have an array in an array. By adding the flatten property, flutter-view will flatten the array before passing it:
+However, the *for* will generate an array, so effectively you will have an array in an array. By adding the flatten property, flutter-view will flatten the array before passing it:
 
 ```pug
 custom-scroll-view
 	array(as='slivers' flatten)
 		.header this is my list
-		.item(v-for='item in items') $item.title
+		.item(for='item in items') $item.title
 ```
 
 Now the slivers property is a single list of widgets.
@@ -417,14 +417,14 @@ show-counter(flutter-view :count)
 
 ### Looping and Iteration
 
-By passing the reserved **v-for** property in a tag, you can loop through a list of values and repeat the tag and all of its children for each value in the list.
+By passing the reserved **for** property in a tag, you can loop through a list of values and repeat the tag and all of its children for each value in the list.
 
 For example, this code will show all names being passed:
 
 ```pug
 show-names(flutter-view :names)
 	.names
-		.name(v-for='name in names') $name
+		.name(for='name in names') $name
 ```
 
 To use, simple pass a list:
@@ -455,7 +455,7 @@ For example, consider the following view:
 ```pug
 show-names(flutter-view :names)
 	#name-entries
-		.name-entry(v-for='name in names') $name
+		.name-entry(for='name in names') $name
 ```
 
 Here *#name-entries* is an *id* and *.name-entry* is a *class*. This information will be lost once dart code is generated. 
