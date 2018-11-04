@@ -22,7 +22,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		const styleRules = styleparser(style)
 		for(const attr in styleRules) {
 			let name: string = attr
-			if(findParam(widget, name, true)) break
+			if(findParam(widget, name, true)) continue
 			let value: string = styleRules[attr]
 			let type: 'expression' | 'literal' = 'literal'
 			if(attr.startsWith(':')) {
