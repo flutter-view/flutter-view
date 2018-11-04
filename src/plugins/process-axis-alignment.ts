@@ -16,7 +16,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'param',
 			name: 'mainAxisAlignment',
 			type: 'expression',
-			value: parseStyleMainAxisAlignment(mainAxisAlignmentParam.value.toString()),
+			value: parseStyleMainAxisAlignment(mainAxisAlignmentParam),
 			resolved: true
 		})
 	}
@@ -26,7 +26,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'param',
 			name: 'crossAxisAlignment',
 			type: 'expression',
-			value: parseStyleCrossAxisAlignment(crossAxisAlignmentParam.value.toString()),
+			value: parseStyleCrossAxisAlignment(crossAxisAlignmentParam),
 			resolved: true
 		})
 	}
@@ -36,7 +36,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'param',
 			name: 'mainAxisSize',
 			type: 'expression',
-			value: parseStyleMainAxisSize(mainAxisSizeParam.value.toString()),
+			value: parseStyleMainAxisSize(mainAxisSizeParam),
 			resolved: true
 		})
 	}
@@ -46,7 +46,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'param',
 			name: 'crossAxisSize',
 			type: 'expression',
-			value: parseStyleCrossAxisSize(crossAxisSizeParam.value.toString()),
+			value: parseStyleCrossAxisSize(crossAxisSizeParam),
 			resolved: true
 		})
 	}

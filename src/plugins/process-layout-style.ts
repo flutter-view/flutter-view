@@ -185,7 +185,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		class: 'param',
 		name: 'borderRadius',
 		type: 'expression',
-		value: toBorderRadiusCode(borderRadiusParam.value.toString()),
+		value: toBorderRadiusCode(borderRadiusParam),
 		resolved: true
 	})
 

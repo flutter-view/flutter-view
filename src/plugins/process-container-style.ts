@@ -1,5 +1,5 @@
 import { Param, Widget } from '../models/flutter-model';
-import { applyOnDescendants, Border, findAndRemoveParam, parseBorderStyle, parseBoxShadow, parseStyleBackgroundSize, parseStyleColor, parseStyleDoubleValue, parseStyleRepeat, parseStyleUrl, parseTRBLStyle, unquote, toBorderRadiusCode } from '../tools';
+import { applyOnDescendants, Border, findAndRemoveParam, parseBorderStyle, parseBoxShadow, parseStyleBackgroundSize, parseStyleColor, parseStyleDoubleValue, parseStyleRepeat, parseStyleUrl, parseTRBLStyle, unquote, toBorderRadiusCode, parsePropertyStyle } from '../tools';
 import { Options } from '../watcher';
 
 type Borders = { top?: Border, right?: Border, bottom?: Border, left?: Border }
@@ -145,7 +145,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 					name: 'repeat',
 					type: 'expression',
 					resolved: false,
-					value: parseStyleRepeat(backgroundRepeatParam.value.toString())
+					value: parseStyleRepeat(backgroundRepeatParam)
 				})
 			}
 			if (backgroundSizeParam && backgroundSizeParam.value) {
@@ -154,7 +154,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 					name: 'fit',
 					type: 'expression',
 					resolved: false,
-					value: parseStyleBackgroundSize(backgroundSizeParam.value.toString())
+					value: parseStyleBackgroundSize(backgroundSizeParam)
 				})
 			}
 		}
@@ -194,14 +194,14 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 				class: 'param',
 				name: 'borderRadius',
 				type: 'expression',
-				value: toBorderRadiusCode(borderRadiusParam.value.toString()),
+				value: toBorderRadiusCode(borderRadiusParam),
 				resolved: true
 			})
 			if (shapeParam && shapeParam.value) boxDecorationWidget.params.push({
 				class: 'param',
 				name: 'shape',
 				type: 'expression',
-				value: toShapeCode(shapeParam.value.toString()),
+				value: parsePropertyStyle('BoxShape', shapeParam),
 				resolved: true
 			})
 			if (boxShadowParam && boxShadowParam.value) {
@@ -310,10 +310,6 @@ function toBorderWidget(borders: Borders): Widget {
 		})
 	}
 	return borderWidget
-}
-
-function toShapeCode(shape: string): string {
-	return `BoxShape.${shape}`
 }
 
 function toBoxShadow(boxShadow: { color?: string, hoffset: string, voffset: string, blur?: string, spread?: string }) : Widget {

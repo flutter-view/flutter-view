@@ -84,6 +84,14 @@ export function isThemeStyle(style: string) : boolean {
 	return style.startsWith('theme')
 }
 
+export function parsePropertyStyle(enumName: string, styleParam: Param) {
+	if(styleParam.type == 'expression') {
+		return styleParam.value.toString()
+	} else {
+		return `${enumName}.${camelCase(unquote(styleParam.value.toString()))}`
+	}
+}
+
 export function parseThemeStyle(style: string) : string | null {
 	let selector: string
 	if(unquote(style) == style) {
@@ -131,58 +139,69 @@ export function parseStyleColor(color: string) : string {
 	if(color.indexOf('.') < 0 && color.indexOf('(') < 0) {
 		return `Colors.${color}`
 	}
-	if(color.startsWith(':')) return color
 	return color
 }
 
-export function parseStyleRepeat(repeat: string) : string {
-	if(!repeat) return ''
+export function parseStyleRepeat(repeatParam: Param) : string {
+	if(!repeatParam) return ''
+	const repeat = repeatParam.value.toString()
+	if(repeatParam.type == 'expression') return repeat
 	if(repeat.indexOf('.') < 0 && repeat.indexOf('(') < 0) {
 		return `ImageRepeat.${camelCase(repeat)}`
 	}
 	return repeat
 }
 
-export function parseStyleBackgroundSize(size: string) : string {
+export function parseStyleBackgroundSize(sizeParam: Param) : string {
 	// CSS:     https://www.w3schools.com/cssref/css3_pr_background-size.asp
 	// Flutter: https://docs.flutter.io/flutter/painting/BoxFit-class.html
-	if(!size) return ''
+	if(!sizeParam) return ''
+	const size = sizeParam.value.toString()
+	if(sizeParam.type == 'expression') return size
 	if(size.indexOf('.') < 0 && size.indexOf('(') < 0) {
 		return `BoxFit.${camelCase(size)}`
 	}
 	return size
 }
 
-export function parseStyleMainAxisAlignment(alignment: string) : string {
+export function parseStyleMainAxisAlignment(alignmentParam: Param) : string {
 	// Flutter: https://docs.flutter.io/flutter/rendering/MainAxisAlignment-class.html
-	if(!alignment) return ''
+	if(!alignmentParam) return ''
+	const alignment = alignmentParam.value.toString()
+	if(alignmentParam.type == 'expression') return alignment
 	if(alignment.indexOf('.') < 0 && alignment.indexOf('(') < 0) {
 		return `MainAxisAlignment.${camelCase(alignment)}`
 	}
 	return alignment
 }
 
-export function parseStyleCrossAxisAlignment(alignment: string) : string {
+export function parseStyleCrossAxisAlignment(alignmentParam: Param) : string {
 	// Flutter: https://docs.flutter.io/flutter/rendering/CrossAxisAlignment-class.html
-	if(!alignment) return ''
+	if(!alignmentParam) return ''
+	const alignment = alignmentParam.value.toString()
+	if(alignmentParam.type == 'expression') return alignment
 	if(alignment.indexOf('.') < 0 && alignment.indexOf('(') < 0) {
 		return `CrossAxisAlignment.${camelCase(alignment)}`
 	}
 	return alignment
 }
 
-export function parseStyleMainAxisSize(alignment: string) : string {
+export function parseStyleMainAxisSize(alignmentParam: Param) : string {
 	// Flutter: https://docs.flutter.io/flutter/rendering/MainAxisSize-class.html
-	if(!alignment) return ''
+	if(!alignmentParam) return ''
+	const alignment = alignmentParam.value.toString()
+	if(alignmentParam.type == 'expression') return alignment
 	if(alignment.indexOf('.') < 0 && alignment.indexOf('(') < 0) {
 		return `MainAxisSize.${camelCase(alignment)}`
 	}
 	return alignment
 }
 
-export function parseStyleCrossAxisSize(alignment: string) : string {
+export function parseStyleCrossAxisSize(alignmentParam: Param) : string {
 	// Flutter: https://docs.flutter.io/flutter/rendering/CrossAxisSize-class.html
-	if(!alignment) return ''
+	if(!alignmentParam) return ''
+	const alignment = alignmentParam.value.toString()
+	if(alignmentParam.type == 'expression') return alignment
 	if(alignment.indexOf('.') < 0 && alignment.indexOf('(') < 0) {
 		return `CrossAxisSize.${camelCase(alignment)}`
 	}
@@ -394,7 +413,7 @@ export function getWidgetChildren(widget: Widget) : Widget[] {
 	return []
 }
 
-export function toBorderRadiusCode(radius: string): string {
+export function toBorderRadiusCode(radiusParam: Param): string {
 	function toRadius(value: string) {
 		if (parseFloat(value) || parseFloat(value) == 0) {
 			return `Radius.circular(${parseStyleDoubleValue(value)})`
@@ -402,6 +421,8 @@ export function toBorderRadiusCode(radius: string): string {
 			return unquote(value)
 		}
 	}
+	const radius = radiusParam.value.toString()
+	if(radiusParam.type == 'expression') return radius 
 	const radiusValue = parseTRBLStyle(radius)
 	const params: string[] = []
 	if (radiusValue.top) params.push(`topLeft: ${toRadius(radiusValue.top)}`)
