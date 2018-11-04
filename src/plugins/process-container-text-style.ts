@@ -192,7 +192,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'param',
 			name: 'textAlign',
 			type: 'expression',
-			value: `TextAlign.${unquote(textAlignParam.value.toString())}`,
+			value: parsePropertyStyle('TextAlign', textAlignParam),
 			resolved: true
 		})
 	}
@@ -202,7 +202,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'param',
 			name: 'overflow',
 			type: 'expression',
-			value: `TextOverflow.${unquote(textOverflowParam.value.toString())}`,
+			value: parsePropertyStyle('TextOverflow', textOverflowParam),
 			resolved: true
 		})
 	}
