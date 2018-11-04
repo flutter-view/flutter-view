@@ -207,22 +207,22 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 	
 		// if this widget has v-if, write code that either renders the widget,
 		// or that replaces it with an empty container.
-		const vIfParam = findParam(widget, 'vIf', true)
-		const vForParam = findParam(widget, 'vFor', true)
-		if(vIfParam) {
-			pull(widget.params, vIfParam)
-			const elseValue = (vForParam && vForParam.value) ? '[Container()]' : 'Container()'
-			if(vIfParam.value) {
-				return `${unquote(vIfParam.value.toString())} ? ${renderWidget(widget, options)} : ${elseValue}`
+		const ifParam = findParam(widget, 'if', true)
+		const forParam = findParam(widget, 'for', true)
+		if(ifParam) {
+			pull(widget.params, ifParam)
+			const elseValue = (forParam && forParam.value) ? '[Container()]' : 'Container()'
+			if(ifParam.value) {
+				return `${unquote(ifParam.value.toString())} ? ${renderWidget(widget, options)} : ${elseValue}`
 			} else {
 				console.warn(`${widget.name} has a v-if without a condition`)
 			}
 		}
 	
-		// if this widget has v-for, repeatedly render it
-		if(vForParam) {
-			const result = parseVForExpression(vForParam.value.toString())
-			pull(widget.params, vForParam)
+		// if this widget has for, repeatedly render it
+		if(forParam) {
+			const result = parseForExpression(forParam.value.toString())
+			pull(widget.params, forParam)
 			return multiline(
 				(result.index)
 					? multiline(
@@ -346,7 +346,7 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 			case 'widgets': {
 				const widgets = param.value as Widget[]
 				const values = widgets.map(widget=>`${renderWidget(widget, options)}`)
-				// in v-for loops we generate arrays. these arrays may already be in an array,
+				// in for loops we generate arrays. these arrays may already be in an array,
 				// so we will want to flatten these arrays of arrays before adding them
 				return multiline(
 					`__flatten([`,
@@ -386,11 +386,11 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 }
 
 /**
- * Parse the parameter passed into a v-for tag
+ * Parse the parameter passed into a for tag
  * @param expression the parameter passed
  * @returns the name of the iterating parameter and the name of the list being iterated
  */
-function parseVForExpression(expression: string) : { param: string, index?: string, list: string } {
+function parseForExpression(expression: string) : { param: string, index?: string, list: string } {
 	const regexp3params = /(\w+), (\w+)? in ([\$\(\)\w.]+)/g
 	const match3 = regexp3params.exec(expression)
 	if(match3) return { param: match3[1], index: match3[2], list: match3[3] }
@@ -399,7 +399,7 @@ function parseVForExpression(expression: string) : { param: string, index?: stri
 	const match2 = regexp2params.exec(expression)
 	if(match2) return { param: match2[1], list: match2[2] }
 
-	throw `Invalid v-for expression: "${expression}"`
+	throw `Invalid for expression: "${expression}"`
 }
 
 function isFlutterView(widget: Widget) {
