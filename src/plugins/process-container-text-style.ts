@@ -147,7 +147,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'param',
 			name: 'decorationStyle',
 			type: 'expression',
-			value: `TextDecorationStyle.${unquote(textDecorationStyleParam.value.toString())}`,
+			value: parsePropertyStyle('TextDecorationStyle', textDecorationStyleParam),
 			resolved: true
 		})
 	}
