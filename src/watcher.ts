@@ -58,6 +58,7 @@ export interface Options {
 const defaultOptions: Options = {
 	indentation: 2,
 	plugins: [
+		"./plugins/add-constructor-params",
 		"./plugins/styles-to-params",
 		"./plugins/process-display-params",
 		"./plugins/process-theme-style",
