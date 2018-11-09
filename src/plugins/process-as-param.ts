@@ -38,7 +38,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			widget.params.push({
 				class: 'param',
 				type: 'widget',
-				name: camelCase(param.name),
+				name: param.name !== 'value' ? camelCase(param.name) : undefined,
 				value: param.value,
 				resolved: false
 			})
@@ -50,7 +50,11 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		const child = childParam.value as Widget
 		const asParam = findAndRemoveParam(child, 'as')
 		if(asParam) {
-			childParam.name = camelCase(asParam.value.toString())
+			if(childParam.name == 'value') {
+				childParam.name = undefined
+			} else {
+				childParam.name = camelCase(asParam.value.toString())
+			}
 		}
 	}
 

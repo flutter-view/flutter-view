@@ -10,7 +10,7 @@ import { Options } from '../watcher';
  */
 export function transformWidget(widget: Widget, options: Options): Widget {
 
-	if(widget.name != 'Container' && widget.name != 'AnimatedContainer') {
+	if(widget.name != 'Container' && widget.name != 'AnimatedContainer' && widget.name != 'TextSpan') {
 		applyOnDescendants(widget, descendant=>transformWidget(descendant, options))
 		return widget
 	}
@@ -255,14 +255,31 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		params.push(forParam)
 	}
 
-	const newRootWidget: Widget = {
-		constant: false,
-		class: 'widget',
-		name: 'DefaultTextStyle.merge',
-		params: params
+	if(widget.name == 'Container' || widget.name == 'AnimatedContainer') {
+		const newRootWidget: Widget = {
+			constant: false,
+			class: 'widget',
+			name: 'DefaultTextStyle.merge',
+			params: params
+		}
+		applyOnDescendants(newRootWidget, descendant=>transformWidget(descendant, options))
+		return newRootWidget
+	} else {
+		console.log('processing!', widget)
+		if (!widget.params) widget.params = []
+		// widget.params.push({
+		// 	class: 'param',
+		// 	name: 'style',
+		// 	type: 'widget',
+		// 	resolved: true,
+		// 	value: {
+		// 		constant: false,
+		// 		class: 'widget',
+		// 		name: 'TextStyle',
+		// 		params: params
+		// 	}
+		// })
+		applyOnDescendants(widget, descendant => transformWidget(descendant, options))
+		return widget
 	}
-
-	applyOnDescendants(newRootWidget, descendant=>transformWidget(descendant, options))
-
-	return newRootWidget
 }
