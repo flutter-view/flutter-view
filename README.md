@@ -1,4 +1,4 @@
-# FLUTTER VIEW
+# FLUTTER-VIEW
 
 A tool for creating Flutter views in dart code using html and css. It searches for pug or html files in a directory you pass, and uses it to generate Dart functions that build a tree of flutter widgets. You can also use css or sass to set properties of these widgets.
 
