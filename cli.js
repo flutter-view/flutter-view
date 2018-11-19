@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const program = require('commander')
 const fs = require('fs')
-const watcher = require('./dest/watcher.js')
+const watcher = require('./dist/watcher.js')
 const _ = require('lodash')
 
 program

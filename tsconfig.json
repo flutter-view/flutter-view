@@ -5,12 +5,11 @@
         "moduleResolution": "node",
         "module": "commonjs",
         "target": "ES6",
-        "outDir": "dest",
+        "outDir": "dist",
         "rootDir": "src"
     },
     "exclude": [
         "dist",
-        "dest",
         "node_modules"
     ]
 }

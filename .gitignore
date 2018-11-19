@@ -4,6 +4,8 @@ node_modules
 # logs
 npm-debug.log
 
-dest
+# typescript
 dist
-.vscode/settings.json
+
+# vscode
+.vscode

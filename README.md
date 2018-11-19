@@ -8,14 +8,24 @@ Flutter view has support for ScopedModel and makes it possible to create a react
 
 A working Typescipt install (install using *npm install -g typescript*)
 
-## Installing
+## Getting Started
 
-You need 
+In your terminal of choice type:
+
+	npm install -g flutter-view
+
+*Note: you may need to add **--unsafe-perm** for things to work due to an [issue
+with node-gyp](https://github.com/nodejs/node-gyp/issues/454)*
+
+## Building Locally
+
+Steps to build the project locally:
 
 1. clone this repository
 2. change to the project directory
 3. *npm install*
-4. *npm link*
+4. *tsc*
+5. *npm link*
 
 Typing *flutter-view* in any directory should now work.
 
