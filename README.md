@@ -10,7 +10,7 @@ You use it by running the `flutter-view` command in your terminal to let it moni
 
 In standard Flutter Dart code, the "state" of your application is mixed in with the presentation. This can make it hard to structure your code well.
 
-Flutter-view is about creating **views**, which are functions that return a widget tree for presenting something. These functions act a bit like components. Flutter-view uses **Pug** to make layouts more terse and **Sass** to let you style faster and more easily.The state part comes into play when you make your view **reactive**. You can pass models (or streams) into your views. When these models change, the views automatically adapt.
+Flutter-view is about creating **views**, which are functions that return a widget tree for presenting something. These functions act a bit like components. Flutter-view uses **Pug** to make layouts more terse and **Sass** to let you style faster and more easily. The state part comes into play when you make your view **reactive**. You can pass models (or streams) into your views. When these models change, the views automatically adapt.
 
 ## Creating a view
 
