@@ -4,11 +4,7 @@ import { applyOnDescendants, findAndRemoveParam, findParam } from '../tools';
 import { Options } from '../watcher';
 
 /**
- * This plugin processes the **as** parameters.
- * 
- * It finds all child/children widgets with the as="..." parameter, 
- * and changes any of those widgets from child(ren) to direct parameters of
- * the name in the as parameter value.
+ * This plugin processes the **display** parameters.
  * 
  * @param widget the widget tree to process
  * @param options the flutter-view options

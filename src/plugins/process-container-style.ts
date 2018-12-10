@@ -162,7 +162,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		// box decoration
 
 		let boxDecorationWidget: Widget
-		if (borderWidget || backgroundColorParam || backgroundImageParam || decorationImageWidget || shapeParam) {
+		if (borderWidget || backgroundColorParam || backgroundImageParam || decorationImageWidget || shapeParam || borderRadiusParam || boxShadowParam) {
 			boxDecorationWidget = {
 				class: 'widget',
 				name: 'BoxDecoration',
