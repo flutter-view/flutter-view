@@ -40,7 +40,6 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 	if(childParam) {
 		const child = childParam.value as Widget
 		const displayParam = findAndRemoveParam(child, 'display')
-		if(displayParam) console.log('DISPLAY ' + displayParam)
 		if(displayParam && displayParam.value == 'none') {
 			findAndRemoveParam(widget, 'child', {
 				includeResolved: true,
