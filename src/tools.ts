@@ -92,8 +92,18 @@ export function parsePropertyStyle(enumName: string, styleParam: Param) {
 	}
 }
 
+export function parseStyleString(styleParam: Param) {
+	if(styleParam.type == 'expression') {
+		return styleParam.value.toString()
+	} else {
+		return `"${unquote(styleParam.value.toString())}"`
+	}
+}
+
+
 export function parseThemeStyle(style: string) : string | null {
 	let selector: string
+	if(!isThemeStyle(style)) return null
 	if(unquote(style) == style) {
 		const themeRegExp = /theme\(([\w\-\/]+)\)/g
 		const match = themeRegExp.exec(style)

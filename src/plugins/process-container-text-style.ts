@@ -1,6 +1,6 @@
 import { pull } from 'lodash';
 import { Param, Widget } from '../models/flutter-model';
-import { applyOnDescendants, findAndRemoveParam, findParam, parseStyleColor, parseStyleDoubleValue, unquote, parsePropertyStyle } from '../tools';
+import { applyOnDescendants, findAndRemoveParam, findParam, parseStyleColor, parseStyleDoubleValue, unquote, parsePropertyStyle, parseStyleString } from '../tools';
 import { Options } from '../watcher';
 
 /**
@@ -82,7 +82,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			class: 'param',
 			name: 'fontFamily',
 			type: 'expression',
-			value: fontFamilyParam.value.toString(),
+			value: parseStyleString(fontFamilyParam),
 			resolved: true
 		})
 	}
