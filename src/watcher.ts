@@ -6,20 +6,19 @@ import * as juice from 'juice';
 import * as fs from 'mz/fs';
 import { renderSync } from 'node-sass';
 import { extname, parse as parseFileName, relative } from 'path';
-import { renderFile } from 'pug';
+import * as pugcodegen from 'pug-code-gen';
+import * as puglex from 'pug-lexer';
+import * as puglinker from 'pug-linker';
+import * as pugload from 'pug-load';
+import * as pugparse from 'pug-parser';
+import * as pugwrap from 'pug-runtime/wrap';
 import { compile, extractImports } from './compiler';
 import { Widget } from './models/flutter-model';
 import { Element } from './models/html-model';
-import { renderDartFile } from './renderer';
-import { merge, multiline, clone } from './tools';
+import { Block, Tag } from './models/pug-model';
 import * as removeEmptyChildren from './plugins/remove-empty-children';
-import { Block, Tag, Attribute, Text } from './models/pug-model'
-import * as pugparse from 'pug-parser'
-import * as puglex from 'pug-lexer'
-import * as pugcodegen from 'pug-code-gen'
-import * as pugwrap from 'pug-runtime/wrap'
-import * as pugload from 'pug-load'
-import * as puglinker from 'pug-linker'
+import { renderDartFile } from './renderer';
+import { clone, merge, multiline } from './tools';
 
 export interface RenderPlugin {
 	transformWidget(widget: Widget, options: Options) : Widget
@@ -267,7 +266,13 @@ export function startWatching(dir: string, configFileName: string, watch: boolea
 				return null
 			}
 		}
-		if(!html) throw `no html found in file ${file}`
+
+		if(!html) {
+			if(options.debug && options.debug.logHTML) 
+				console.debug(`no html found in file ${file}`)
+			return null
+		}
+
 		if(options.debug && options.debug.logHTML) 
 			console.debug(relativeFile, 'HTML:\n' + html)
 
