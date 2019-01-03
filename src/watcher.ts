@@ -104,7 +104,8 @@ const defaultOptions: Options = {
 		'Wrap',
 		'ListBody',
 		'ListView',
-		'CustomMultiChildLayout'
+		'CustomMultiChildLayout',
+		'ButtonBar'
 	],
 	autowrapChildren: true,
 	autowrapChildrenClass: 'Column',
