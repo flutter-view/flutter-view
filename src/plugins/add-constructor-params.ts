@@ -18,7 +18,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 	if(widget.originalName) {
 		const split = widget.originalName.split(':')
 		if(split.length == 2) {
-			widget.name = upperCaseFirst(split[0])
+			widget.name = upperCaseFirst(camelCase(split[0]))
 			if(!widget.params) widget.params = []
 			widget.params.push({
 				class: 'param',
