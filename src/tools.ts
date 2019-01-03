@@ -21,6 +21,15 @@ export function unquote(text: string): string {
 }
 
 /**
+ * Escapes only the quotation marks in the string.
+ * For example: "That's right" becomes "That\'s right"
+ * @param text the text to escape the quotation marks
+ */
+export function escapeQuotes(text: string): string {
+	return text.replace("'", "\\\'").replace('"', '\\\"')
+}
+
+/**
  * Join multiple lines of text with newlines.
  * Filters out the nulls
  * @param lines 

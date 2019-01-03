@@ -4,6 +4,7 @@ import { pull, concat } from 'lodash';
 import { Param, Widget } from './models/flutter-model';
 import { Element, Tag, Text } from './models/html-model';
 import { Options } from './watcher';
+import { escapeQuotes } from './tools';
 
 /**
  * Extracts from the html any import elements, and returns those elements as imports
@@ -141,7 +142,7 @@ function compileTag(tag: Tag, options: Options) : Widget {
 									{
 										class: 'param',
 										type: 'literal',
-										value: decode(value),
+										value: escapeQuotes(decode(value)),
 										resolved: true
 									}
 								]
