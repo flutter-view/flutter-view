@@ -144,10 +144,10 @@ export function parseStyleColor(color: string) : string {
 	if(match) {
 		const flutterColor = match[1]
 		const flutterShade = match[2]
-		return `Colors.${flutterColor}.shade${flutterShade}`
+		return `Colors.${camelCase(flutterColor)}.shade${flutterShade}`
 	}
 	if(color.indexOf('.') < 0 && color.indexOf('(') < 0) {
-		return `Colors.${color}`
+		return `Colors.${camelCase(color)}`
 	}
 	return color
 }
