@@ -252,7 +252,7 @@ export function parseTRBLStyle(style: string) : { top?: string, right?: string, 
 export type Border = { width?: string, style?: string, color?: string }
 
 export function parseBorderStyle(border: string) : Border {
-	const regexp = /[.a-z0-9\-\.\,\(\)\[\]]+/gi
+	const regexp = /[.a-z0-9\#\-\.\,\(\)\[\]]+/gi
 	const matches = border.match(regexp)
 	switch (matches.length) {
 		case 1: {
