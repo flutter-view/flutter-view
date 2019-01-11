@@ -1,7 +1,5 @@
 # FLUTTER-VIEW
 
-![Logo](https://github.com/flutter-view/website/raw/master/images/flutter-view.png)
-
 https://flutter-view.io
 
 Flutter-view is a tool that makes writing reactive [Flutter](http://flutter.io) layouts a breeze. It lets you use [Pug](http://pugjs.org) and [Sass](http://sass-lang.com) \(or HTML and CSS if you prefer\) to generate the Flutter Dart code that renders the views in your app.
