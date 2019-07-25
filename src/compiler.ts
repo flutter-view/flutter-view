@@ -142,7 +142,8 @@ function compileTag(tag: Tag, options: Options) : Widget {
 									{
 										class: 'param',
 										type: 'literal',
-										value: escapeQuotes(decode(value)),
+										// value: escapeQuotes(decode(value)),
+										value: decode(value),
 										resolved: true
 									}
 								]
