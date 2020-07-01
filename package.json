@@ -1,6 +1,6 @@
 {
   "name": "flutter-view",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Create flutter view widgets using pug and sass",
   "main": "cli.js",
   "bin": {
@@ -23,7 +23,7 @@
     "juice": "^4.3.2",
     "lodash": "^4.17.15",
     "mz": "^2.7.0",
-    "node-sass": "^4.12.0",
+    "node-sass": "^4.14.1",
     "path": "^0.12.7",
     "pug": "^2.0.4",
     "pug-code-gen": "^2.0.2",

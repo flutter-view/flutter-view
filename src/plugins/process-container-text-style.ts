@@ -10,8 +10,8 @@ import { Options } from '../watcher';
  */
 export function transformWidget(widget: Widget, options: Options): Widget {
 
-	if(widget.name != 'Container' && widget.name != 'AnimatedContainer' && widget.name != 'TextSpan') {
-		applyOnDescendants(widget, descendant=>transformWidget(descendant, options))
+	if (widget.name != 'Container' && widget.name != 'AnimatedContainer' && widget.name != 'TextSpan') {
+		applyOnDescendants(widget, descendant => transformWidget(descendant, options))
 		return widget
 	}
 
@@ -21,6 +21,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 	const fontWeightParam = findAndRemoveParam(widget, 'fontWeight')
 	const fontStyleParam = findAndRemoveParam(widget, 'fontStyle')
 	const lineHeightParam = findAndRemoveParam(widget, 'lineHeight')
+	const letterSpacingParam = findAndRemoveParam(widget, 'letterSpacing')
 	const textDecorationParam = findAndRemoveParam(widget, 'textDecoration')
 	const textDecorationColorParam = findAndRemoveParam(widget, 'textDecorationColor')
 	const textDecorationStyleParam = findAndRemoveParam(widget, 'textDecorationStyle')
@@ -34,14 +35,15 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 
 	const update =
 		fontSizeParam ||
-		fontColorParam || 
-		fontFamilyParam || 
+		fontColorParam ||
+		fontFamilyParam ||
 		fontWeightParam ||
 		fontStyleParam ||
 		lineHeightParam ||
 		textDecorationParam ||
 		textDecorationColorParam ||
 		textDecorationStyleParam ||
+		letterSpacingParam ||
 		wordSpacingParam ||
 		textAlignParam ||
 		textOverflowParam ||
@@ -49,15 +51,15 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		softWrapParam ||
 		maxLinesParam ||
 		lineClampParam
-	
-	if(!update) {
-		applyOnDescendants(widget, descendant=>transformWidget(descendant, options))
+
+	if (!update) {
+		applyOnDescendants(widget, descendant => transformWidget(descendant, options))
 		return widget
 	}
 
 	const textStyleParams: Param[] = []
 
-	if(fontSizeParam) {
+	if (fontSizeParam) {
 		textStyleParams.push({
 			class: 'param',
 			name: 'fontSize',
@@ -67,7 +69,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		})
 	}
 
-	if(fontColorParam) {
+	if (fontColorParam) {
 		textStyleParams.push({
 			class: 'param',
 			name: 'color',
@@ -77,7 +79,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		})
 	}
 
-	if(fontFamilyParam) {
+	if (fontFamilyParam) {
 		textStyleParams.push({
 			class: 'param',
 			name: 'fontFamily',
@@ -87,11 +89,11 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		})
 	}
 
-	if(fontWeightParam) {
+	if (fontWeightParam) {
 		let value = unquote(fontWeightParam.value.toString())
-		if(fontWeightParam.type == 'literal') {
+		if (fontWeightParam.type == 'literal') {
 			const fontWeightProperty = parseInt(value) ? 'w' + value : value
-			value = `FontWeight.${fontWeightProperty}` 
+			value = `FontWeight.${fontWeightProperty}`
 		}
 		textStyleParams.push({
 			class: 'param',
@@ -102,7 +104,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		})
 	}
 
-	if(fontStyleParam) {
+	if (fontStyleParam) {
 		textStyleParams.push({
 			class: 'param',
 			name: 'fontStyle',
@@ -112,7 +114,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		})
 	}
 
-	if(lineHeightParam) {
+	if (lineHeightParam) {
 		textStyleParams.push({
 			class: 'param',
 			name: 'height',
@@ -122,7 +124,17 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		})
 	}
 
-	if(textDecorationParam) {
+	if (letterSpacingParam) {
+		textStyleParams.push({
+			class: 'param',
+			name: 'letterSpacing',
+			type: 'expression',
+			value: parseStyleDoubleValue(letterSpacingParam.value.toString()),
+			resolved: true
+		})
+	}
+
+	if (textDecorationParam) {
 		textStyleParams.push({
 			class: 'param',
 			name: 'decoration',
@@ -132,7 +144,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		})
 	}
 
-	if(textDecorationColorParam) {
+	if (textDecorationColorParam) {
 		textStyleParams.push({
 			class: 'param',
 			name: 'decorationColor',
@@ -142,7 +154,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		})
 	}
 
-	if(textDecorationStyleParam) {
+	if (textDecorationStyleParam) {
 		textStyleParams.push({
 			class: 'param',
 			name: 'decorationStyle',
@@ -152,7 +164,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		})
 	}
 
-	if(wordSpacingParam) {
+	if (wordSpacingParam) {
 		textStyleParams.push({
 			class: 'param',
 			name: 'wordSpacing',
@@ -174,7 +186,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		}
 	]
 
-	if(textStyleParams.length > 0) params.push({
+	if (textStyleParams.length > 0) params.push({
 		class: 'param',
 		name: 'style',
 		type: 'widget',
@@ -187,7 +199,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		resolved: true
 	})
 
-	if(textAlignParam) {
+	if (textAlignParam) {
 		params.push({
 			class: 'param',
 			name: 'textAlign',
@@ -197,7 +209,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		})
 	}
 
-	if(textOverflowParam) {
+	if (textOverflowParam) {
 		params.push({
 			class: 'param',
 			name: 'overflow',
@@ -207,12 +219,12 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		})
 	}
 
-	if(wordWrapParam || softWrapParam) {
-		let wordWrap : string
-		if(softWrapParam) {
+	if (wordWrapParam || softWrapParam) {
+		let wordWrap: string
+		if (softWrapParam) {
 			wordWrap = softWrapParam.value.toString()
 		} else {
-			switch(unquote(wordWrapParam.value.toString())) {
+			switch (unquote(wordWrapParam.value.toString())) {
 				case 'normal': case 'true': {
 					wordWrap = 'true'
 					break
@@ -235,8 +247,8 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		})
 	}
 
-	if(maxLinesParam || lineClampParam) {
-		let maxLinesValue 
+	if (maxLinesParam || lineClampParam) {
+		let maxLinesValue
 		if (maxLinesParam) maxLinesValue = maxLinesParam.value.toString()
 		if (lineClampParam) maxLinesValue = lineClampParam.value.toString()
 		params.push({
@@ -250,19 +262,19 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 
 	// if the widget uses for, move that for to the textstyle instead
 	const forParam = findParam(widget, 'for')
-	if(forParam) {
+	if (forParam) {
 		pull(widget.params, forParam)
 		params.push(forParam)
 	}
 
-	if(widget.name == 'Container' || widget.name == 'AnimatedContainer') {
+	if (widget.name == 'Container' || widget.name == 'AnimatedContainer') {
 		const newRootWidget: Widget = {
 			constant: false,
 			class: 'widget',
 			name: 'DefaultTextStyle.merge',
 			params: params
 		}
-		applyOnDescendants(newRootWidget, descendant=>transformWidget(descendant, options))
+		applyOnDescendants(newRootWidget, descendant => transformWidget(descendant, options))
 		return newRootWidget
 	} else {
 		console.log('processing!', widget)
