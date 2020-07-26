@@ -14,15 +14,17 @@ Flutter-view is about creating **views**, which are functions that return a widg
 
 ## Creating a view
 
-A single flutter-view generates a Dart function that usually returns a widget tree. You can either use Pug or HTML:
+A single flutter-view generates a Dart function that usually returns a widget tree. You use Pug to create a view, which gets transformed into HTML and then Dart code automatically:
 
 Pug:
+
 ```pug
 hello(flutter-view)
     .greeting Hello world!
 ```
 
-HTML:
+Generated (internal) HTML:
+
 ```markup
 <hello flutter-view>
     <div class="greeting">
@@ -32,6 +34,7 @@ HTML:
 ```
 
 Generated Dart:
+
 ```dart
 Container Hello() {
     return Container(
@@ -44,15 +47,17 @@ This generated function can be used like any other Dart code, and will return th
 
 ## Adding Styling
 
-You can add Sass/CSS to styles to your view. Flutter-view contains plugins that take your CSS properties and convert them into code. For our example, you can easily add a text color, background color, some font properties, and add padding:
+You can add Sass with CSS rules to style your view. Flutter-view contains plugins that take your CSS properties and convert them into code. For our example, you can easily add a text color, background color, some font properties, and add padding:
 
 Pug:
+
 ```pug
 hello(flutter-view)
     .greeting Hello world!
 ```
 
 Sass:
+
 ```sass
 .greeting
     color: red
@@ -62,6 +67,7 @@ Sass:
 ```
 
 Generated Dart:
+
 ```dart
 Hello() {
     return DefaultTextStyle.merge(
@@ -126,45 +132,47 @@ Widget Hello({user}) {
 }
 ```
 
-The view now takes a User as a parameter and watches it for changes. Now when we change the the user name and call  `user.notifyListeners()`,  the view will automatically update.
+The view now takes a User as a parameter and watches it for changes. Now when we change the the user name and call `user.notifyListeners()`, the view will automatically update.
 
 ## Requirements
 
 - Flutter
-- A working Typescipt installation (install using *npm install -g typescript*)
+- A working Typescipt installation (install using _npm install -g typescript_)
 
 ## Getting Started
 
 In your terminal of choice type:
 
-	npm install -g flutter-view
+    npm install -g flutter-view
 
-*Note: you may need to add **--unsafe-perm** for things to work due to an [issue
-with node-gyp](https://github.com/nodejs/node-gyp/issues/454)*
+_Note: you may need to add **--unsafe-perm** for things to work due to an [issue
+with node-gyp](https://github.com/nodejs/node-gyp/issues/454)_
 
 ## Building Locally
+
+Only necessary if you want to modify flutter-view yourself.
 
 Steps to build the project locally:
 
 1. clone this repository
 2. change to the project directory
-3. *npm install*
-4. *tsc*
-5. *npm link*
+3. _npm install_
+4. _tsc_
+5. _npm link_
 
-Typing *flutter-view* in any directory should now work.
+Typing _flutter-view_ in any directory should now work.
 
 ## Usage
 
-In a terminal, go into the directory of your Flutter project, and type *flutter-view -w lib*. This should start the tool watching on your lib directory.
+In a terminal, go into the directory of your Flutter project, and type _flutter-view -w lib_. This should start the tool watching on your lib directory.
 
 In general, use is as follows:
 
-	> flutter-view [-w] <directory>
+    > flutter-view [-w] <directory>
 
 You can use the following flags:
 
-	-V, --version        output the version number
+    -V, --version        output the version number
     -w, --watch          Watch for changes
     -c, --config <file>  Optional config file to use (default: flutter-view.json)
     -h, --help           output usage information
