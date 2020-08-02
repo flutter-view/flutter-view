@@ -5,7 +5,7 @@ import { Options } from '../watcher';
 type Borders = { top?: Border, right?: Border, bottom?: Border, left?: Border }
 
 export function transformWidget(widget: Widget, options: Options): Widget {
-	
+
 	if (widget.name == 'Container' || widget.name == 'AnimatedContainer') {
 		if (!widget.params) widget.params = []
 
@@ -28,7 +28,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		const shapeParam = findAndRemoveParam(widget, 'shape')
 
 		// border
-		
+
 		let borders: Borders = {}
 		if (borderParam && borderParam.value) {
 			const border = parseBorderStyle(borderParam.value.toString())
@@ -118,6 +118,9 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 						}
 						break
 					}
+					case 'linear-gradient': {
+
+					}
 				}
 			}
 		}
@@ -206,7 +209,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 			})
 			if (boxShadowParam && boxShadowParam.value) {
 				const values = boxShadowParam.value.toString().split(',')
-				const boxShadows = values.map(value=>toBoxShadow(parseBoxShadow(value)))
+				const boxShadows = values.map(value => toBoxShadow(parseBoxShadow(value)))
 				boxDecorationWidget.params.push({
 					class: 'param',
 					name: 'boxShadow',
@@ -312,8 +315,8 @@ function toBorderWidget(borders: Borders): Widget {
 	return borderWidget
 }
 
-function toBoxShadow(boxShadow: { color?: string, hoffset: string, voffset: string, blur?: string, spread?: string }) : Widget {
-	const params : Param[] = []
+function toBoxShadow(boxShadow: { color?: string, hoffset: string, voffset: string, blur?: string, spread?: string }): Widget {
+	const params: Param[] = []
 	params.push({
 		class: 'param',
 		type: 'expression',
@@ -321,7 +324,7 @@ function toBoxShadow(boxShadow: { color?: string, hoffset: string, voffset: stri
 		name: 'offset',
 		value: `Offset(${boxShadow.hoffset}, ${boxShadow.voffset})`
 	})
-	if(boxShadow.color) {
+	if (boxShadow.color) {
 		params.push({
 			class: 'param',
 			type: 'expression',
@@ -330,7 +333,7 @@ function toBoxShadow(boxShadow: { color?: string, hoffset: string, voffset: stri
 			value: boxShadow.color
 		})
 	}
-	if(boxShadow.blur) {
+	if (boxShadow.blur) {
 		params.push({
 			class: 'param',
 			type: 'expression',
@@ -339,7 +342,7 @@ function toBoxShadow(boxShadow: { color?: string, hoffset: string, voffset: stri
 			value: boxShadow.blur
 		})
 	}
-	if(boxShadow.spread) {
+	if (boxShadow.spread) {
 		params.push({
 			class: 'param',
 			type: 'expression',
