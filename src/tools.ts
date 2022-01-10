@@ -327,14 +327,14 @@ export function parseStyleUrl(value: string): CSSURL | CSSAssetURL | CSSLinearGr
 		type: 'asset',
 		url: matchesAsset[1]
 	}
-	const matchesLinearGradient = /linear-gradient\(['"]([a-zA-Z0-9:\/\._-]+)['"]\)/g.exec(value)
-	if (matchesLinearGradient) {
-		const params = matchesLinearGradient[1]
-		return {
-			type: 'linear-gradient',
-			location: matchesLinearGradient[1]
-		}
-	}
+	// const matchesLinearGradient = /linear-gradient\(['"]([a-zA-Z0-9:\/\._-]+)['"]\)/g.exec(value)
+	// if (matchesLinearGradient) {
+	// 	const params = matchesLinearGradient[1]
+	// 	return {
+	// 		type: 'linear-gradient',
+	// 		location: matchesLinearGradient[1]
+	// 	}
+	// }
 	return null
 }
 

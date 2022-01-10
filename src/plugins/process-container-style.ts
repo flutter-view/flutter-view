@@ -96,7 +96,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 									class: 'param',
 									resolved: false,
 									type: 'literal',
-									value: imgLocation.location
+									value: imgLocation.url
 								}
 							]
 						}
@@ -112,7 +112,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 									class: 'param',
 									resolved: false,
 									type: 'literal',
-									value: imgLocation.location
+									value: imgLocation.url
 								}
 							]
 						}
