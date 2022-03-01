@@ -329,7 +329,7 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 	function renderParamValue(param: Param, options: Options): string {
 		switch (param.type) {
 			case 'literal': {
-				return `'${escapeQuotes(param.value + '')})'`
+				return `'${escapeQuotes(param.value + '')}'`
 			}
 			case 'expression': {
 				return `${param.value ? param.value.toString() : ''}`

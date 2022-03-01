@@ -86,12 +86,14 @@ const defaultOptions: Options = {
 	],
 	ignores: [
 		'prefer_const_constructors',
-		'unnecessary_import',
 		'non_constant_identifier_names',
+		'unnecessary_import',
 		'avoid_unnecessary_containers',
 		'dead_code',
 		'unused_element',
-		'unnecessary_cast'
+		'unnecessary_cast',
+		'unnecessary_string_interpolations',
+		'sized_box_for_whitespace'
 	],
 	tagClasses: {
 		text: 'Text',

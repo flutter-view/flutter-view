@@ -1,8 +1,8 @@
 import { camelCase } from 'change-case';
 import { isArray, mergeWith, pull, tail } from 'lodash';
 import { Param, Widget } from './models/flutter-model';
+import { CSSAssetURL, CSSLinearGradientURL, CSSURL } from './models/html-model';
 import { Options, RenderPlugin } from './watcher';
-import { CSSStyleValue, CSSURL, CSSAssetURL, CSSLinearGradientURL } from './models/html-model';
 
 /**
  * Remove starting and ending double or single quotes.
