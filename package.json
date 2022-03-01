@@ -1,53 +1,53 @@
 {
-  "name": "flutter-view",
-  "version": "1.0.3",
-  "description": "Create flutter view widgets using pug and sass",
-  "main": "cli.js",
-  "bin": {
-    "flutter-view": "./cli.js"
-  },
-  "directories": {
-    "test": "test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/blueneogeo/flutter-view"
-  },
-  "dependencies": {
-    "change-case": "^3.1.0",
-    "commander": "^2.20.0",
-    "decode-html": "^2.0.0",
-    "gaze": "^1.1.3",
-    "htmlparser": "^1.7.7",
-    "indent-string": "^3.2.0",
-    "juice": "^8.0.0",
-    "lodash": "^4.17.15",
-    "mz": "^2.7.0",
-    "node-sass": "^7.0.1",
-    "path": "^0.12.7",
-    "pug": "^3.0.2",
-    "pug-code-gen": "^2.0.2",
-    "pug-lexer": "^4.1.0",
-    "pug-linker": "^3.0.6",
-    "pug-load": "^2.0.12",
-    "pug-parser": "^5.0.1",
-    "pug-runtime": "^2.0.5",
-    "style-parser": "^1.1.1"
-  },
-  "devDependencies": {
-    "@types/lodash": "^4.14.136",
-    "@types/mz": "0.0.32",
-    "@types/node-sass": "^3.10.32",
-    "@types/pug": "^2.0.4"
-  },
-  "scripts": {
-    "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Christian Vogel",
-  "license": "ISC",
-  "files": [
-    "dist",
-    "cli.js"
-  ]
+	"name": "flutter-view",
+	"version": "1.1.0",
+	"description": "Create flutter view widgets using pug and sass",
+	"main": "cli.js",
+	"bin": {
+		"flutter-view": "./cli.js"
+	},
+	"directories": {
+		"test": "test"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/blueneogeo/flutter-view"
+	},
+	"dependencies": {
+		"change-case": "^3.1.0",
+		"commander": "^2.20.0",
+		"decode-html": "^2.0.0",
+		"gaze": "^1.1.3",
+		"htmlparser": "^1.7.7",
+		"indent-string": "^3.2.0",
+		"juice": "^8.0.0",
+		"lodash": "^4.17.15",
+		"mz": "^2.7.0",
+		"node-sass": "^7.0.1",
+		"path": "^0.12.7",
+		"pug": "^3.0.2",
+		"pug-code-gen": "^2.0.2",
+		"pug-lexer": "^4.1.0",
+		"pug-linker": "^3.0.6",
+		"pug-load": "^2.0.12",
+		"pug-parser": "^5.0.1",
+		"pug-runtime": "^2.0.5",
+		"style-parser": "^1.1.1"
+	},
+	"devDependencies": {
+		"@types/lodash": "^4.14.136",
+		"@types/mz": "0.0.32",
+		"@types/node-sass": "^3.10.32",
+		"@types/pug": "^2.0.4"
+	},
+	"scripts": {
+		"build": "tsc",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Christian Vogel",
+	"license": "ISC",
+	"files": [
+		"dist",
+		"cli.js"
+	]
 }

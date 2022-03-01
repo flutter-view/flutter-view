@@ -6,7 +6,7 @@ const _ = require("lodash");
 
 function cli() {
 	program
-		.version("1.0.3")
+		.version("1.1.0")
 		.usage("[options] <directory ...>")
 		.description(
 			"Converts html and css templates into Flutter view widget code."

@@ -28,6 +28,7 @@ export interface Options {
 	indentation: 2, // the indentation of the code to generate
 	plugins?: string[],
 	imports: string[], // a list of imports to put in every generated file
+	ignores: string[], // a list of ignore statements at the top of every generated file
 	tagClasses: { // a map of tags with their asociated classes
 		div: string, // the class to represent a div in dart code
 		text: string // the class to represent text in dart code
@@ -37,7 +38,6 @@ export interface Options {
 		backgroundAssetImg: string // the class to represent a background asset image
 	}, 
 	multiChildClasses: string[], // a list of classes that have a children constructor parameter
-
 	autowrapChildren?: true, // use a wrapper child if a tag without a children parameter has multiple children in the template
 	autowrapChildrenClass?: string, // the class to use as the child wrapper
 	showPugLineNumbers?: boolean // show Pug line numbers in the dart file?
@@ -83,6 +83,14 @@ const defaultOptions: Options = {
 	imports: [
 		'package:flutter/material.dart',
 		'package:flutter/cupertino.dart'
+	],
+	ignores: [
+		'prefer_const_constructors',
+		'unnecessary_import',
+		'non_constant_identifier_names',
+		'avoid_unnecessary_containers',
+		'dead_code',
+		'unused_element'
 	],
 	tagClasses: {
 		text: 'Text',

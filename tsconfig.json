@@ -6,7 +6,8 @@
         "module": "commonjs",
         "target": "ES6",
         "outDir": "dist",
-        "rootDir": "src"
+        "rootDir": "src",
+		"skipLibCheck": true
     },
     "exclude": [
         "dist",
