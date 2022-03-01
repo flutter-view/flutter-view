@@ -85,14 +85,19 @@ const defaultOptions: Options = {
 		'package:flutter/cupertino.dart'
 	],
 	ignores: [
+		// const is not always detectable, so by default suppress the errors
 		'prefer_const_constructors',
 		'non_constant_identifier_names',
+		// we sometimes do unnecessary code but it should not cause performance issues
 		'unnecessary_import',
-		'avoid_unnecessary_containers',
 		'dead_code',
 		'unused_element',
 		'unnecessary_cast',
 		'unnecessary_string_interpolations',
+		'invalid_null_aware_operator',
+		// for now we use these because classes create containers and we want them to be styleable
+		// later we may be able to detect if we have styles and use Nil and SizedBox containers where possible
+		'avoid_unnecessary_containers',
 		'sized_box_for_whitespace'
 	],
 	tagClasses: {
