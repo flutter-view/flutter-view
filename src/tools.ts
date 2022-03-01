@@ -120,7 +120,7 @@ export function parseThemeStyle(style: string): string | null {
 		if (!match) return null
 		const escaped = match[1].replace(/\//g, 'xxx')
 		const cased = camelCase(escaped)
-		selector = cased.replace(/xxx/g, '.')
+		selector = cased.replace(/xxx/g, '?.')
 	} else {
 		selector = unquote(style)
 	}
