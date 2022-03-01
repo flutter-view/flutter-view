@@ -90,7 +90,8 @@ const defaultOptions: Options = {
 		'non_constant_identifier_names',
 		'avoid_unnecessary_containers',
 		'dead_code',
-		'unused_element'
+		'unused_element',
+		'unnecessary_cast'
 	],
 	tagClasses: {
 		text: 'Text',
