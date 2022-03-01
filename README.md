@@ -6,6 +6,8 @@ Flutter-view is a tool that makes writing reactive [Flutter](http://flutter.io) 
 
 You use it by running the `flutter-view` command in your terminal to let it monitor your project. When it detects changes in a Pug, HTML, Sass or CSS file, it automatically generates or updates a matching Dart file.
 
+`NOTE: From 2.0 on, Flutter-view generates null-safe code (Dart 2.12 and forward). Use an older version if you use an older version of Dart.`
+
 ## Why views in Flutter
 
 In standard Flutter Dart code, the "state" of your application is mixed in with the presentation. This can make it hard to structure your code well.

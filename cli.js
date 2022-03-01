@@ -6,7 +6,7 @@ const _ = require("lodash");
 
 function cli() {
 	program
-		.version("1.1.0")
+		.version("2.0.0")
 		.usage("[options] <directory ...>")
 		.description(
 			"Converts html and css templates into Flutter view widget code."
@@ -23,9 +23,8 @@ function cli() {
 	const dir = program.args.length > 0 ? program.args[0] : null;
 	console.log("flutter-view - flutter template code generator");
 	if (!dir) {
-		console.log(
-			"Converts html and css templates into Flutter view widget code."
-		);
+		console.log("Converts html and css templates into Flutter view widget code.");
+		console.log("- Generates null-safe code. Use pre-2.0 version if you do not want null-safe code -")
 		console.log("Please pass a directory to scan.");
 		console.log("flutter-view -h for help.");
 		return;
