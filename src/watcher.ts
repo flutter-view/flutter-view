@@ -19,6 +19,7 @@ import { Block, Tag } from './models/pug-model';
 import * as removeEmptyChildren from './plugins/remove-empty-children';
 import { renderDartFile } from './renderer';
 import { clone, merge, multiline } from './tools';
+import { indexOf } from 'lodash'
 
 export interface RenderPlugin {
 	transformWidget(widget: Widget, options: Options) : Widget
@@ -29,7 +30,8 @@ export interface Options {
 	plugins?: string[],
 	imports: string[], // a list of imports to put in every generated file
 	ignores: string[], // a list of ignore statements at the top of every generated file
-	tagClasses: { // a map of tags with their asociated classes
+	warnings: string[], // override the default ignores with these
+	tagClasses?: { // a map of tags with their asociated classes
 		div: string, // the class to represent a div in dart code
 		text: string // the class to represent text in dart code
 		span: string, // the class to represent a span element in dart code
@@ -38,8 +40,9 @@ export interface Options {
 		backgroundAssetImg: string // the class to represent a background asset image
 	}, 
 	multiChildClasses: string[], // a list of classes that have a children constructor parameter
-	autowrapChildren?: true, // use a wrapper child if a tag without a children parameter has multiple children in the template
+	autowrapChildren?: boolean, // use a wrapper child if a tag without a children parameter has multiple children in the template
 	autowrapChildrenClass?: string, // the class to use as the child wrapper
+	autoAddConst?: boolean,
 	showPugLineNumbers?: boolean // show Pug line numbers in the dart file?
 	showCommentsInDart?: boolean // show html classes and ids as comment lines in the dart file?
 	reportErrorsInDart?: boolean, // should errors also be reported in the dart file?
@@ -100,6 +103,7 @@ const defaultOptions: Options = {
 		'avoid_unnecessary_containers',
 		'sized_box_for_whitespace'
 	],
+	warnings: [],
 	tagClasses: {
 		text: 'Text',
 		div: 'Container',
@@ -124,6 +128,7 @@ const defaultOptions: Options = {
 	],
 	autowrapChildren: true,
 	autowrapChildrenClass: 'Column',
+	autoAddConst: true,
 	showPugLineNumbers: true,
 	showCommentsInDart: true,
 	reportErrorsInDart: true,
@@ -148,6 +153,16 @@ export function startWatching(dir: string, configFileName: string, watch: boolea
 		if(fs.existsSync(configFileName)) {
 			const loadedOptions = JSON.parse(fs.readFileSync(configFileName).toString())
 			options = merge(options, loadedOptions)
+			// remove ignores that are also in warnings (warnings overrides ignores)
+			const newIgnores = []
+			for(let ignore of options.ignores) {
+				// only add ignores that are not in the warnings list
+				if(indexOf(options.warnings, ignore)) {
+					newIgnores.push(ignore)
+				}
+			}
+			options.ignores = newIgnores
+
 		}
 		plugins = []
 		if(options && options.plugins) {
@@ -164,7 +179,7 @@ export function startWatching(dir: string, configFileName: string, watch: boolea
 
 	loadOptions()
 
-	gaze('**/*.+(pug|htm|html|sass|css)', { cwd: dir }, (err, watcher) => {
+	gaze('**/*.+(pug|htm|html|sass|css)', { cwd: dir }, (_err: any, watcher: any) => {
 
 		function processAllWatched() {
 			const dirs = watcher.watched()
