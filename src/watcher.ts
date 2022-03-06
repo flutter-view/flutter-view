@@ -27,32 +27,33 @@ export interface RenderPlugin {
 
 export interface Options {
 	indentation: 2, // the indentation of the code to generate
-	plugins?: string[],
-	imports: string[], // a list of imports to put in every generated file
-	ignores: string[], // a list of ignore statements at the top of every generated file
-	warnings: string[], // override the default ignores with these
+	plugins?: string[]
+	imports: string[] // a list of imports to put in every generated file
+	ignores: string[] // a list of ignore statements at the top of every generated file
+	warnings: string[] // override the default ignores with these
 	tagClasses?: { // a map of tags with their asociated classes
-		div: string, // the class to represent a div in dart code
+		div: string // the class to represent a div in dart code
 		text: string // the class to represent text in dart code
-		span: string, // the class to represent a span element in dart code
-		button: string, // the class to represent a button element in dart code
-		backgroundUrlImg: string, // the class to represent a background url image
+		span: string // the class to represent a span element in dart code
+		button: string // the class to represent a button element in dart code
+		backgroundUrlImg: string // the class to represent a background url image
 		backgroundAssetImg: string // the class to represent a background asset image
-	}, 
-	multiChildClasses: string[], // a list of classes that have a children constructor parameter
-	autowrapChildren?: boolean, // use a wrapper child if a tag without a children parameter has multiple children in the template
-	autowrapChildrenClass?: string, // the class to use as the child wrapper
-	autoAddConst?: boolean,
+		empty: string // the class to render when we want an empty block
+	} 
+	multiChildClasses: string[] // a list of classes that have a children constructor parameter
+	autowrapChildren?: boolean // use a wrapper child if a tag without a children parameter has multiple children in the template
+	autowrapChildrenClass?: string // the class to use as the child wrapper
+	autoConstText?: boolean // try to make literal text const if no expressions found inside
 	showPugLineNumbers?: boolean // show Pug line numbers in the dart file?
 	showCommentsInDart?: boolean // show html classes and ids as comment lines in the dart file?
-	reportErrorsInDart?: boolean, // should errors also be reported in the dart file?
-	propagateDelete?: boolean, // should genenerated dart file be deleted if the pug/html file with the same name is deleted?
+	reportErrorsInDart?: boolean // should errors also be reported in the dart file?
+	propagateDelete?: boolean // should genenerated dart file be deleted if the pug/html file with the same name is deleted?
 	debug?: { // some debugging settings
-		logHTML?: boolean, // log the generated merged style html
-		logHtmlAST?: boolean, // log the generated AST from the parsed html
-		logDartPreAST?: boolean, // log the generated AST from compiling the html AST
-		logDartPostAST?: boolean, // log the generated AST after applying the plugins on the generated AST
-		logCode?: boolean, // log the generated code
+		logHTML?: boolean // log the generated merged style html
+		logHtmlAST?: boolean // log the generated AST from the parsed html
+		logDartPreAST?: boolean // log the generated AST from compiling the html AST
+		logDartPostAST?: boolean // log the generated AST after applying the plugins on the generated AST
+		logCode?: boolean // log the generated code
 		logErrorStack?: boolean // log the full error stracktrace when an error occurs
 	}
 }
@@ -110,7 +111,8 @@ const defaultOptions: Options = {
 		span: 'Wrap',
 		button: 'RaisedButton',
 		backgroundAssetImg: 'ExactAssetImage',
-		backgroundUrlImg: 'NetworkImage'
+		backgroundUrlImg: 'NetworkImage',
+		empty: 'SizedBox'
 	},
 	multiChildClasses: [
 		'Row',
@@ -128,7 +130,7 @@ const defaultOptions: Options = {
 	],
 	autowrapChildren: true,
 	autowrapChildrenClass: 'Column',
-	autoAddConst: true,
+	autoConstText: true,
 	showPugLineNumbers: true,
 	showCommentsInDart: true,
 	reportErrorsInDart: true,

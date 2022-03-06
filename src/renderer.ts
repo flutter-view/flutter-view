@@ -43,7 +43,7 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 	 */
 	function renderClassIgnores(ignores: string[]): string {
 		if (!ignores) return ''
-		return ignores.map(ignore => `// ignore_for_file: ${ignore}`).join('\r\n')
+		return '// ignore_for_file: ' + ignores.join(', ')
 	}
 
 	/**
@@ -167,11 +167,11 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 
 			// if the slot has children, render them as options, since only one gets shown at max
 			const childrenParam = findParam(widget, 'children', true)
-			if (!childrenParam || !childrenParam.value) return 'Container()'
+			if (!childrenParam || !childrenParam.value) return `${options.tagClasses.empty}()`
 			const children = childrenParam.value as Widget[]
 			return multiline(
 				children.map(child => renderSlotChild(child)).join(':\n'),
-				': Container()'
+				`: ${options.tagClasses.empty}()`
 			)
 
 			/**
@@ -220,7 +220,7 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 		const forParam = findParam(widget, 'for', true)
 		if (ifParam) {
 			pull(widget.params, ifParam)
-			const elseValue = (forParam && forParam.value) ? '[Container()]' : 'Container()'
+			const elseValue = (forParam && forParam.value) ? `[${options.tagClasses.empty}()]` : `${options.tagClasses.empty}()`
 			if (ifParam.value) {
 				return `${unquote(ifParam.value.toString())} ? ${renderWidget(widget, options)} : ${elseValue}`
 			} else {
@@ -287,7 +287,7 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 			pugLineComment = `// project://${pugFileName}#${widget.pugLine},${widget.pugColumn}`
 		}
 		return multiline(
-			separatorComment ? `\n//-- ${separatorComment} ----------------------------------------------------------` : null,
+			separatorComment ? `//-- ${separatorComment} ----------------------------------------------------------` : null,
 			`${widget.constant ? 'const ' : ''}${name}${genericParams}( ${pugLineComment}`,
 			indent(renderParams(widget, options), options.indentation),
 			`)`
