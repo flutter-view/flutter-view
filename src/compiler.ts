@@ -132,7 +132,7 @@ function compileTag(tag: Tag, options: Options): Widget {
 					const values = text.data.split('\n').map(line => line.trim())
 					for (let value of values) {
 						if (value.length !== 0 && !value.startsWith('//')) {
-							const makeConst = options.autoConstText && value.indexOf('${') == -1
+							const makeConst = options.autoConstText && value.indexOf('$') == -1
 							const widget: Widget = {
 								class: 'widget',
 								name: options.tagClasses['text'],
