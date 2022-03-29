@@ -91,12 +91,24 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 		function toFVParam(param: Param) {
 			const paramValueRegExp = /([a-z\-]+)(\[[a-zA-Z]+\])?(\?)?/g // format: appModel[AppModel]?
 			const match = paramValueRegExp.exec(param.value.toString())
+			if(!match) return null
+
+			const type = trim(match[2], '[]')
+			
+			if(type == 'bool') return {
+				name: camelCase(match[1]),
+				type: 'bool',
+				optional: true
+			}
+
+			const optional = match[3] == '?'
 			return match ? {
 				name: camelCase(match[1]),
-				type: trim(match[2], '[]'),
-				optional: match[3] == '?'
+				type: trim(match[2], '[]') + (optional && type.length > 0 ? '?' : ''),
+				optional: optional
 			} : null
 		}
+
 		if (widget.params) {
 			return widget.params
 				.filter(p => p.type == 'expression' && !p.resolved && p.value)
@@ -167,11 +179,14 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 
 			// if the slot has children, render them as options, since only one gets shown at max
 			const childrenParam = findParam(widget, 'children', true)
-			if (!childrenParam || !childrenParam.value) return `${options.tagClasses.empty}()`
+			if (!childrenParam || !childrenParam.value) {
+				return options.tagClasses.empty == 'null' ? 'null' : `${options.tagClasses.empty}()`
+			}
 			const children = childrenParam.value as Widget[]
+			const elseFn = options.tagClasses.empty == 'null' ? 'null' : `${options.tagClasses.empty}()`
 			return multiline(
 				children.map(child => renderSlotChild(child)).join(':\n'),
-				`: ${options.tagClasses.empty}()`
+				`: ${elseFn}`
 			)
 
 			/**
@@ -220,7 +235,8 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 		const forParam = findParam(widget, 'for', true)
 		if (ifParam) {
 			pull(widget.params, ifParam)
-			const elseValue = (forParam && forParam.value) ? `[${options.tagClasses.empty}()]` : `${options.tagClasses.empty}()`
+			const elseFn = options.tagClasses.empty == 'null' ? 'null' : `${options.tagClasses.empty}()`
+			const elseValue = (forParam && forParam.value) ? `[${elseFn}]` : elseFn
 			if (ifParam.value) {
 				return `${unquote(ifParam.value.toString())} ? ${renderWidget(widget, options)} : ${elseValue}`
 			} else {
