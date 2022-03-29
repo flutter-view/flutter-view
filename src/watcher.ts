@@ -98,6 +98,7 @@ const defaultOptions: Options = {
 		'unused_element',
 		'unnecessary_cast',
 		'unnecessary_string_interpolations',
+		'unnecessary_brace_in_string_interps',
 		'invalid_null_aware_operator',
 		// for now we use these because classes create containers and we want them to be styleable
 		// later we may be able to detect if we have styles and use Nil and SizedBox containers where possible
