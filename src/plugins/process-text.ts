@@ -7,7 +7,7 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 	const textTransformParam = findAndRemoveParam(widget, 'textTransform')
 	
 	if (textTransformParam && widget.params) {
-		let transformationFunction
+		let transformationFunction: string
 		switch(textTransformParam.value) {
 			case 'lowercase': {
 				transformationFunction = 'toLowerCase' 

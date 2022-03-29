@@ -6,9 +6,10 @@ type Borders = { top?: Border, right?: Border, bottom?: Border, left?: Border }
 
 export function transformWidget(widget: Widget, options: Options): Widget {
 
-	if (widget.name == 'Container' || widget.name == 'AnimatedContainer') {
+	if (widget.name == 'Container' || widget.name == 'AnimatedContainer' || widget.name == 'BoxDecoration') {
 		if (!widget.params) widget.params = []
 
+		const colorParam = findAndRemoveParam(widget, 'color')
 		const backgroundColorParam = findAndRemoveParam(widget, 'backgroundColor')
 		const backgroundImageParam = findAndRemoveParam(widget, 'backgroundImage')
 		const backgroundRepeatParam = findAndRemoveParam(widget, 'backgroundRepeat')
@@ -186,6 +187,13 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 				resolved: true,
 				value: borderWidget
 			})
+			if (colorParam && colorParam.value) boxDecorationWidget.params.push({
+				class: 'param',
+				name: 'color',
+				type: 'expression',
+				value: parseStyleColor(unquote(colorParam.value.toString())),
+				resolved: true
+			})
 			if (backgroundColorParam && backgroundColorParam.value) boxDecorationWidget.params.push({
 				class: 'param',
 				name: 'color',
@@ -221,13 +229,21 @@ export function transformWidget(widget: Widget, options: Options): Widget {
 		}
 
 		if (boxDecorationWidget) {
-			widget.params.push({
-				class: 'param',
-				name: 'decoration',
-				type: 'widget',
-				resolved: true,
-				value: boxDecorationWidget
-			})
+			if(widget.name == 'BoxDecoration') {
+				// if this widget is a box decoration, we just want to add these parameters
+				for(let param of boxDecorationWidget.params) {
+					widget.params.push(param)
+				}
+			} else {
+				// add the box decoration to the widget
+				widget.params.push({
+					class: 'param',
+					name: 'decoration',
+					type: 'widget',
+					resolved: true,
+					value: boxDecorationWidget
+				})
+			}
 		}
 
 	}
