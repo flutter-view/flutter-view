@@ -232,7 +232,9 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 		// if this widget has an if property, write code that either renders the widget,
 		// or that replaces it with an empty container.
 		const ifParam = findParam(widget, 'if', true)
+		const nullIfParam = findParam(widget, 'nullIf', true)
 		const forParam = findParam(widget, 'for', true)
+
 		if (ifParam) {
 			pull(widget.params, ifParam)
 			const elseFn = options.tagClasses.empty == 'null' ? 'null' : `${options.tagClasses.empty}()`
@@ -241,6 +243,19 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 				return `${unquote(ifParam.value.toString())} ? ${renderWidget(widget, options)} : ${elseValue}`
 			} else {
 				console.warn(`${widget.name} has an if property without a condition`)
+			}
+		}
+
+		// if this widget has a null-if property, write code that either renders the widget,
+		// or that replaces it with an empty container, depending if the passed condition is true
+		if (nullIfParam) {
+			pull(widget.params, nullIfParam)
+			const elseFn = 'null'
+			const elseValue = (forParam && forParam.value) ? `[${elseFn}]` : elseFn
+			if (nullIfParam.value) {
+				return `!(${unquote(nullIfParam.value.toString())}) ? ${renderWidget(widget, options)} : ${elseValue}`
+			} else {
+				console.warn(`${widget.name} has a null-if property without a condition`)
 			}
 		}
 
