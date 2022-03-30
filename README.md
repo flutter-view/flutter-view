@@ -147,9 +147,6 @@ In your terminal of choice type:
 
     npm install -g flutter-view
 
-_Note: you may need to add **--unsafe-perm** for things to work due to an [issue
-with node-gyp](https://github.com/nodejs/node-gyp/issues/454)_
-
 ## Building Locally
 
 Only necessary if you want to modify flutter-view yourself.
@@ -181,4 +178,4 @@ You can use the following flags:
 
 # Full documentation
 
-For a guide and reference to the pug and sass styles, check the [online documentation](https://flutter-view.gitbook.io/project/)
+For a guide and reference to the pug and sass styles, check the [online documentation](https://docs.flutter-view.io)
