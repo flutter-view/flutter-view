@@ -2,7 +2,7 @@ import { camelCase } from 'change-case';
 import * as indent from 'indent-string';
 import { concat, head, pull, trim, union } from 'lodash';
 import { Param, Widget } from './models/flutter-model';
-import { escapeQuotes, findAndRemoveParam, findParam, getWidgetChildren, multiline, unquote } from './tools';
+import { escapeQuotes, findAndRemoveParam, findParam, getWidgetChildren, moveElementToEnd, multiline, unquote } from './tools';
 import { Options } from './watcher';
 
 /** A flutter-view parameter */
@@ -335,8 +335,14 @@ export function renderDartFile(dartFile: string, widgets: Widget[], imports: str
 	 */
 	function renderParams(widget: Widget, options: Options): string {
 		const renderedParams: string[] = []
-		const paramsToRender = widget.params ? widget.params.filter(param => param.name != 'const') : null
+		var paramsToRender = widget.params ? widget.params.filter(param => param.name != 'const') : null
 		if (paramsToRender) {
+			// always move the child or children element to the end, per dart(sort_child_properties_last)
+			const childParam = paramsToRender.find(param => param.name == 'child' || param.name == 'children')
+			if (childParam) {
+				paramsToRender = moveElementToEnd(paramsToRender, childParam)
+			}
+			// render the parameters
 			for (var param of paramsToRender) {
 				if (param.name) {
 					const name = unquote(param.name)

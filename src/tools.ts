@@ -465,3 +465,7 @@ export function toBorderRadiusCode(radiusParam: Param): string {
 	if (radiusValue.left) params.push(`bottomLeft: ${toRadius(radiusValue.left)}`)
 	return `BorderRadius.only(${params.join(', ')})`
 }
+
+export function moveElementToEnd<T>(array: T[], element: T): T[] {
+	return [...array.filter(a => a !== element), element]
+}
